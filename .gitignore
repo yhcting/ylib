@@ -1,0 +1,10 @@
+.*
+*~
+*.o
+*.ede
+GPATH
+GRTAGS
+GSYMS
+GTAGS
+ID
+ytest

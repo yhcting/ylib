@@ -1,7 +1,7 @@
 #include "ytree.h"
 #include "common.h"
 
-#ifdef __YUNITTEST__
+#ifdef _YDBG
 
 #include <assert.h>
 
@@ -237,4 +237,4 @@ void test_tree() {
     yassert(sv == dmem_count());
 }
 
-#endif /* __YUNITTEST__ */
+#endif /* _YDBG */

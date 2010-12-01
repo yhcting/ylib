@@ -6,15 +6,8 @@
  *
  ******************************************/
 
-#ifndef _YDEf_h_
-#define _YDEf_h_
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* Enable for unittest of y library */
-#define __YUNITTEST__
+#ifndef __YDEf_h__
+#define __YDEf_h__
 
 /* if compiler doesn't support 'inline' directive, we should enable below */
 /* #define inline */
@@ -62,8 +55,9 @@ extern "C" {
     }
 
 /* For debugging */
-#ifdef __YUNITTEST__
+#ifdef _YDBG
 
+#   include <malloc.h>
 #   include <assert.h>
 
 #   define ymalloc(x)   dmalloc(x)
@@ -73,18 +67,14 @@ extern "C" {
     extern void* dmalloc(unsigned int);
     extern void  dfree(void*);
 
-#else /* __YUNITTEST__ */
+#else /* _YDBG */
+
+#   include <malloc.h>
 
 #   define ymalloc(x)   malloc(x)
 #   define yfree(x)     free(x)
+#   define yassert(x)   do{}while(0)
 
-#   define yassert(x)  do{}while(0)
+#endif /* _YDBG */
 
-#endif /* __YUNITTEST__ */
-
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* _YDEf_h_ */
+#endif /* __YDEf_h__ */

@@ -1,16 +1,11 @@
-#ifndef _COMMOn_h_
-#define _COMMOn_h_
+#ifndef __COMMOn_h__
+#define __COMMOn_h__
 
 #include "ydef.h"
 
 /*=======================================
  * Macros
  *=======================================*/
-
-#ifdef __YUNITTEST__
-#   include <assert.h>
-#endif /* __YUNITTEST__ */
-
 
 #ifndef abs
 #	define abs(x) (((x)>0)?(x):-(x))
@@ -28,4 +23,4 @@
 #	define max(x,y) (((x)<(y))?y:x)
 #endif
 
-#endif /* _COMMOn_h_ */
+#endif /* __COMMOn_h__ */

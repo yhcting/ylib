@@ -63,9 +63,9 @@ static const unsigned short _crc16_table[256] = {
 
 
 unsigned short
-ycrc16(unsigned short crc, const char *data, unsigned int len)
+ycrc16(unsigned short crc, const unsigned char* data, unsigned int len)
 {
-    const char* end = data + len;
+    const unsigned char* end = data + len;
     unroll16(crc = (crc >> 8) ^ _crc16_table[(crc ^ (*data++)) & 0xff];, len, data < end);
     return crc;
 }
@@ -160,9 +160,9 @@ static const unsigned int _crc32_table[256] = {
  */
 
 unsigned int 
-ycrc32(unsigned int crc, const char *data, unsigned int len)
+ycrc32(unsigned int crc, const unsigned char* data, unsigned int len)
 {
-    const char* end = data + len;
+    const unsigned char* end = data + len;
     unroll16( crc = (crc >> 8) ^ _crc32_table[(crc ^ (*data++)) & 0xff];, len, data < end );
     return crc;
 }

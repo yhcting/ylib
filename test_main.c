@@ -3,7 +3,7 @@
 
 #include "ydef.h"
 
-#ifdef __YUNITTEST__
+#ifdef _YDBG
 
 static int  _mem_count = 0;
 
@@ -41,4 +41,4 @@ int main() {
     return 0;
 }
 
-#endif /* __YUNITTEST__ */
+#endif /* _YDBG */

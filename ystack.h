@@ -2,15 +2,10 @@
  * Operation to the empty list is not defined. It's consumer's responsibility!
  */
 
-#ifndef _YSTACk_h_
-#define _YSTACk_h_
+#ifndef __YSTACk_h__
+#define __YSTACk_h__
 
 #include "ylist.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 struct ystack {
     struct ylist    __l;
@@ -63,9 +58,4 @@ ystack_size(const struct ystack* s) {
     return ylist_size(&s->__l);
 }
 
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* _YSTACk_h_ */
+#endif /* __YSTACk_h__ */

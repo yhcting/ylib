@@ -1,7 +1,7 @@
 #include "common.h"
 #include "ylist.h"
 
-#ifdef __YUNITTEST__
+#ifdef _YDBG
 
 #include <assert.h>
 
@@ -171,4 +171,4 @@ void test_list() {
 }
 
 
-#endif /* _UNITTEST_ */
+#endif /* _YDBG */

@@ -2,14 +2,10 @@
 * Operation to the empty list is not defined. It's consumer's responsibility!
  */
 
-#ifndef _YQUEUe_h_
-#define _YQUEUe_h_
+#ifndef __YQUEUe_h__
+#define __YQUEUe_h__
 
 #include "ylist.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 struct yqueue {
     struct ylist    __l;
@@ -63,10 +59,4 @@ yqueue_size(const struct yqueue* q) {
     return ylist_size(&q->__l);
 }
 
-
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* _YQUEUe_h_ */
+#endif /* __YQUEUe_h__ */

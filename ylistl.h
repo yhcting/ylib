@@ -4,21 +4,21 @@
  */
 
 
-#ifndef _YLISTl_h_
-#define _YLISTl_h_
+#ifndef __YLISTl_h__
+#define __YLISTl_h__
 
 #include "ydef.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 /*================================
  * Define primitive operation of linked list!
  * User should understand algorithm fully before using this!
  * (From "include/linux/list.h" (with a little modification - 'GCC' dependent factors are removed))
  *================================*/
+
+
+/*======================================
+ * Double Linked List
+ *======================================*/
 
 /**
  * If possible DO NOT access struct directly!.
@@ -148,11 +148,4 @@ ylistl_size(const struct ylistl_link* head) {
     return size;
 }
 
-
-
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* _YLISTl_h_ */
+#endif /* __YLISTl_h__ */

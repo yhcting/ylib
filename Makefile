@@ -20,11 +20,12 @@ OUTDIR=
 
 TARGET=$(OUTDIR)y
 LIB=lib$(TARGET).a
-PUB_HEADER=ycrc.h ydef.h ylist.h ylistl.h yqueue.h ystack.h ytree.h ytreel.h ylib.h 
+PUB_HEADER=ycrc.h ydef.h ylist.h ylistl.h yqueue.h ystack.h ytree.h ytreel.h ytrie.h yhash.h ylib.h 
 
 
 INCLUDES=
-SOURCES=crc.c test_list.c test_main.c test_queue.c test_stack.c test_tree.c tree.c
+SOURCES=crc.c  tree.c trie.c hash.c \
+	test_list.c test_main.c test_queue.c test_stack.c test_tree.c test_hash.c
 OBJ=$(subst .c,.o, $(addprefix $(OUTDIR),$(SOURCES)))
 DEP_FILES=$(subst .c,.P, $(addprefix $(DEPDIR),$(SOURCES)))
 
@@ -46,8 +47,9 @@ $(OUTDIR)%.o: %.c
 $(LIB): $(OBJ)
 	@echo '$(AR_CMD) $@ $^'; \
 	$(AR_CMD) $@ $^
-	cp $@ ../lib/
-	cp $(PUB_HEADER) ../include
+	cp $@ ../libs/
+	chmod 0644 $@
+	cp $(PUB_HEADER) ../includes/
 
 $(TARGET): $(OBJ)
 	@echo '$(C_LINK) -o $@ $^'; \

@@ -7,8 +7,7 @@
     "Using make file in top directory"
     (interactive)
     (let ((cmd ""))
-        (set 'cmd (concat "cd " yhc.topdir "; make CFLAGS=-g DEFS=-D__YUNITTEST__ debug"))
-        ;(message cmd)))
+        (set 'cmd (concat "cd " yhc.topdir "; make CFLAGS=-g DEFS=-D_YDBG debug"))
         (compile cmd)))
 
 (defun yhc.compile.release ()
@@ -16,7 +15,6 @@
     (interactive)
     (let ((cmd ""))
         (set 'cmd (concat "cd " yhc.topdir "; make release"))
-        ;(message cmd)))
         (compile cmd)))
 
 (defun yhc.gdb ()
@@ -34,7 +32,7 @@
 
 (ede-cpp-root-project (concat yhc.target "-root")
                 :name (concat yhc.target "-root")
-                :file (concat "~/Develop/cedetws/" yhc.target "/Makefile")
+                :file (concat "~/dev/cedetws/" yhc.target "/Makefile")
                 :include-path '(
                                 ;;"../include"
                                )

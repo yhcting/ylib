@@ -11,16 +11,12 @@
  *
  */
 
-#ifndef _YTREe_h_
-#define _YTREe_h_
+#ifndef __YTREe_h__
+#define __YTREe_h__
 
 #include <malloc.h>
 
 #include "ytreel.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*============================
  * Types
@@ -312,10 +308,4 @@ ytree_child_size(const struct ytree_node* n) {
     return ytreel_child_size(&n->__link);
 }
 
-
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* _YTREe_h_ */
+#endif /* __YTREe_h__ */

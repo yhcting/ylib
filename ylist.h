@@ -6,16 +6,12 @@
  * Operation to the empty list is not defined. It's consumer's responsibility!
  */
 
-#ifndef _YLISt_h_
-#define _YLISt_h_
+#ifndef __YLISt_h__
+#define __YLISt_h__
 
 #include <malloc.h>
 
 #include "ylistl.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*============================
  * Types
@@ -297,8 +293,4 @@ ylist_walker_del(struct ylist_walker* w) {
     return n;
 }
 
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* _YLISt_h_ */
+#endif /* __YLISt_h__ */

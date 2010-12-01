@@ -8,15 +8,10 @@
  */
 
 
-#ifndef _YTREEl_h_
-#define _YTREEl_h_
+#ifndef __YTREEl_h__
+#define __YTREEl_h__
 
 #include "ylistl.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 /*================================
  * Define primitive operation of tree!
@@ -146,10 +141,4 @@ ytreel_child_size(const struct ytreel_link* l) {
     return ylistl_size(&l->_child);
 }
 
-
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* _YTREEl_h_ */
+#endif /* __YTREEl_h__ */

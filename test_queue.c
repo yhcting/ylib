@@ -1,8 +1,6 @@
 #include "yqueue.h"
 #include "common.h"
 
-#ifdef _YDBG
-
 #include <assert.h>
 
 extern int dmem_count();
@@ -30,4 +28,3 @@ void test_queue() {
 	yassert(sv == dmem_count());
 }
 
-#endif /* _YDBG */

@@ -1,8 +1,6 @@
 #include "ystack.h"
 #include "common.h"
 
-#ifdef _YDBG
-
 #include <assert.h>
 
 extern int dmem_count();
@@ -29,5 +27,3 @@ void test_stack() {
 	ystack_destroy(s);
 	yassert(sv == dmem_count());
 }
-
-#endif /* _YDBG */

@@ -1,8 +1,6 @@
 #include "common.h"
 #include "ylist.h"
 
-#ifdef _YDBG
-
 #include <assert.h>
 
 extern int dmem_count();
@@ -168,6 +166,3 @@ void test_list() {
 
 	yassert(mem_cnt_sv == dmem_count());
 }
-
-
-#endif /* _YDBG */

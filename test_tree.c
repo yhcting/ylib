@@ -1,8 +1,6 @@
 #include "ytree.h"
 #include "common.h"
 
-#ifdef _YDBG
-
 #include <assert.h>
 
 extern int dmem_count();
@@ -244,5 +242,3 @@ void test_tree() {
 	ytree_destroy(t);
 	yassert(sv == dmem_count());
 }
-
-#endif /* _YDBG */

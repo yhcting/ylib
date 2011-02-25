@@ -4,8 +4,6 @@
 #include "yhash.h"
 #include "common.h"
 
-#ifdef _YDBG
-
 #include <assert.h>
 
 extern int dmem_count();
@@ -49,4 +47,3 @@ test_hash() {
 	yassert(sv == dmem_count());
 }
 
-#endif /* _YDBG */

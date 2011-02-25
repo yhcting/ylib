@@ -3,8 +3,6 @@
 
 #include "ydef.h"
 
-#ifdef _YDBG
-
 static int  _mem_count = 0;
 
 void* dmalloc(unsigned int sz) {
@@ -39,5 +37,3 @@ int main() {
 	printf(">>>>>> TEST SUCCESS <<<<<<<\n");
 	return 0;
 }
-
-#endif /* _YDBG */

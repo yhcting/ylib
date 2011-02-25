@@ -20,14 +20,16 @@ OUTDIR=
 
 TARGET=$(OUTDIR)y
 LIB=lib$(TARGET).a
-PUB_HEADER=ycrc.h ydef.h ylist.h ylistl.h yqueue.h ystack.h ytree.h ytreel.h ytrie.h yhash.h ylib.h 
+PUB_HEADER=ycrc.h ydef.h ylist.h ylistl.h yqueue.h ystack.h ytree.h ytreel.h ytrie.h yhash.h ylib.h
 
 
 INCLUDES=
-SOURCES=crc.c  tree.c trie.c hash.c \
-	test_list.c test_main.c test_queue.c test_stack.c test_tree.c test_hash.c
+SOURCES=crc.c  tree.c trie.c hash.c
+TEST_SOURCES=test_main.c test_list.c test_queue.c test_stack.c test_tree.c test_hash.c
 OBJ=$(subst .c,.o, $(addprefix $(OUTDIR),$(SOURCES)))
+TEST_OBJ=$(subst .c,.o, $(addprefix $(OUTDIR),$(TEST_SOURCES)))
 DEP_FILES=$(subst .c,.P, $(addprefix $(DEPDIR),$(SOURCES)))
+DEP_FILES+=$(subst .c,.P, $(addprefix $(DEPDIR),$(TEST_SOURCES)))
 
 
 debug: $(TARGET)
@@ -40,7 +42,7 @@ OUTS_MAGIC := $(shell mkdir $(OUTDIR) > /dev/null 2>&1 || :)
 # simply ignore file which doesn't exist. (At first these files don't exist..)
 -include $(DEP_FILES)
 
-$(OUTDIR)%.o: %.c 
+$(OUTDIR)%.o: %.c
 	@echo '$(C_COMPILE) -o $@ -c $<'; \
 	$(C_COMPILE) $(C_DEPENDENCIES) -o $@ -c $<
 
@@ -51,12 +53,12 @@ $(LIB): $(OBJ)
 	chmod 0644 $@
 	cp $(PUB_HEADER) ../includes/
 
-$(TARGET): $(OBJ)
+$(TARGET): $(OBJ) $(TEST_OBJ)
 	@echo '$(C_LINK) -o $@ $^'; \
 	$(C_LINK) -o  $@ $^
 
 
-tags: 
+tags:
 
 
 clean:

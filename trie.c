@@ -48,7 +48,7 @@ struct _node {
 	 */
 	struct _node*  n[16];
 	void*          v;
-}
+};
 
 struct ytrie {
 	struct _node          rt;     /* root. sentinel */
@@ -98,7 +98,7 @@ _delete_empty_leaf(struct _node* n) {
 		if (n->n[i])
 			break;
 	if (i >= 16 /* Is this leaf? */
-	   && !n->v) { /* Doesn't this have 'value'? */
+	    && !n->v) { /* Doesn't this have 'value'? */
 		/* there is no 'value'. So, free callback is not required */
 		_free_node(n, NULL);
 		return 1; /* true */
@@ -227,7 +227,7 @@ _equal_internal(const struct _node* n0, const struct _node* n1,
 	if (n0->v && n1->v) {
 		if (0 == cmp(n0->v, n1->v))
 			return 0; /* NOT same */
-	} else if (n0->v || n1->v) {
+	} else if (n0->v || n1->v)
 		return 0; /* NOT same */
 
 	/* compare child nodes! */

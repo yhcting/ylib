@@ -19,9 +19,10 @@
  *================================*/
 
 struct ytreel_link {
-    struct ytreel_link*  _parent;     /**< parent link */
-    struct ylistl_link   _child;      /**< head of children list - see ylistl for details */
-    struct ylistl_link   _sibling;    /**< list link for siblings */
+	struct ytreel_link*  _parent;     /**< parent link */
+	/**< head of children list - see ylistl for details */
+	struct ylistl_link   _child;
+	struct ylistl_link   _sibling;    /**< list link for siblings */
 };
 
 
@@ -30,43 +31,43 @@ struct ytreel_link {
  * @type    : type of the struct @link is embedded in.
  * @member  : the name of @link with in the 'type' struct.
  */
-#define ytreel_item(link, type, member) \
+#define ytreel_item(link, type, member)		\
         container_of(link, type, member)
 
 static inline void
 ytreel_init_link(struct ytreel_link* link) {
-    link->_parent = link;    /* parent of root is itself */
-    ylistl_init_link(&link->_child);
-    ylistl_init_link(&link->_sibling);
+	link->_parent = link;    /* parent of root is itself */
+	ylistl_init_link(&link->_child);
+	ylistl_init_link(&link->_sibling);
 }
 
 static inline int
 ytreel_is_leaf(const struct ytreel_link* link) {
-    return ylistl_is_empty(&link->_child);
+	return ylistl_is_empty(&link->_child);
 }
 
 static inline void
 ytreel_add_next(struct ytreel_link* link, struct ytreel_link* lnew) {
-    ylistl_add_next(&link->_sibling, &lnew->_sibling);
-    lnew->_parent = link->_parent;
+	ylistl_add_next(&link->_sibling, &lnew->_sibling);
+	lnew->_parent = link->_parent;
 }
 
 static inline void
 ytreel_add_prev(struct ytreel_link* link, struct ytreel_link* lnew) {
-    ylistl_add_prev(&link->_sibling, &lnew->_sibling);
-    lnew->_parent = link->_parent;
+	ylistl_add_prev(&link->_sibling, &lnew->_sibling);
+	lnew->_parent = link->_parent;
 }
 
 static inline void
 ytreel_add_first_child(struct ytreel_link* link, struct ytreel_link* lnew) {
-    ylistl_add_next(&link->_child, &lnew->_sibling);
-    lnew->_parent = link;
+	ylistl_add_next(&link->_child, &lnew->_sibling);
+	lnew->_parent = link;
 }
 
 static inline void
 ytreel_add_last_child(struct ytreel_link* link, struct ytreel_link* lnew) {
-    ylistl_add_prev(&link->_child, &lnew->_sibling);
-    lnew->_parent = link;
+	ylistl_add_prev(&link->_child, &lnew->_sibling);
+	lnew->_parent = link;
 }
 
 /**
@@ -74,7 +75,7 @@ ytreel_add_last_child(struct ytreel_link* link, struct ytreel_link* lnew) {
  */
 static inline void
 ytreel_del(struct ytreel_link* link) {
-    ylistl_del(&link->_sibling);   /* separate from container tree link */
+	ylistl_del(&link->_sibling);   /* separate from container tree link */
 }
 
 /**
@@ -82,45 +83,45 @@ ytreel_del(struct ytreel_link* link) {
  */
 static inline void
 ytreel_replace(struct ytreel_link* old, struct ytreel_link* lnew) {
-    lnew->_parent = old->_parent;
-    ylistl_replace(&old->_sibling, &lnew->_sibling);
+	lnew->_parent = old->_parent;
+	ylistl_replace(&old->_sibling, &lnew->_sibling);
 }
 
 static inline struct ytreel_link*
 ytreel_next(const struct ytreel_link* l) {
-    return container_of(l->_sibling._next, struct ytreel_link, _sibling);
+	return container_of(l->_sibling._next, struct ytreel_link, _sibling);
 }
 
 static inline struct ytreel_link*
 ytreel_prev(const struct ytreel_link* l) {
-    return container_of(l->_sibling._prev, struct ytreel_link, _sibling);
+	return container_of(l->_sibling._prev, struct ytreel_link, _sibling);
 }
 
 static inline int
 ytreel_has_next(const struct ytreel_link* l) {
-    /*
-     * All links have parent except for pseudo node. 
-     * But pseudo node is inside blackbox.
-     * So, we can assume that @l is not pseudo node.
-     */
-    yassert(l->_parent != l);
-    return &l->_parent->_child != l->_sibling._next;
+	/*
+	 * All links have parent except for pseudo node.
+	 * But pseudo node is inside blackbox.
+	 * So, we can assume that @l is not pseudo node.
+	 */
+	yassert(l->_parent != l);
+	return &l->_parent->_child != l->_sibling._next;
 }
 
 static inline int
 ytreel_has_prev(const struct ytreel_link* l) {
-    yassert(l->_parent != l); /* see 'ytreel_has_next' */
-    return &l->_parent->_child != l->_sibling._prev;
+	yassert(l->_parent != l); /* see 'ytreel_has_next' */
+	return &l->_parent->_child != l->_sibling._prev;
 }
 
 static inline struct ytreel_link*
 ytreel_first_child(const struct ytreel_link* l) {
-    return container_of(l->_child._next, struct ytreel_link, _sibling);
+	return container_of(l->_child._next, struct ytreel_link, _sibling);
 }
 
 static inline struct ytreel_link*
 ytreel_last_child(const struct ytreel_link* l) {
-    return container_of(l->_child._prev, struct ytreel_link, _sibling);
+	return container_of(l->_child._prev, struct ytreel_link, _sibling);
 }
 
 /**
@@ -129,8 +130,8 @@ ytreel_last_child(const struct ytreel_link* l) {
  */
 static inline unsigned int
 ytreel_sibling_size(const struct ytreel_link* l) {
-    /* even if &l->sibling is not head of list, counting size is ok */
-    return ylistl_size(&l->_sibling);
+	/* even if &l->sibling is not head of list, counting size is ok */
+	return ylistl_size(&l->_sibling);
 }
 
 /**
@@ -138,7 +139,7 @@ ytreel_sibling_size(const struct ytreel_link* l) {
  */
 static inline unsigned int
 ytreel_child_size(const struct ytreel_link* l) {
-    return ylistl_size(&l->_child);
+	return ylistl_size(&l->_child);
 }
 
 #endif /* __YTREEl_h__ */

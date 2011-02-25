@@ -12,7 +12,7 @@
 #endif
 
 #ifndef swap
-#	define swap(x,y,tmp) do { tmp=x;x=y;y=tmp; } while(0)
+#	define swap(x,y,tmp) do { tmp=x;x=y;y=tmp; } while (0)
 #endif
 
 #ifndef min

@@ -7,20 +7,41 @@
  * Followings are just for information!.
  */
 #if 0
-static const int YCRC_4ITU  = 0x0000000C; /* CRC-4-ITU : X^4 + X + 1 */
-static const int YCRC_5ITU  = 0x00000015; /* CRC-5-ITU : X^5 + X^4 + X^2 + 1 */
-static const int YCRC_6ITU  = 0x00000030; /* CRC-6-ITU : X^6 + X + 1 */
-static const int YCRC_7     = 0x00000048; /* CRC-7 : X^7 + X^3 + 1 */
-static const int YCRC_8     = 0x000000AB; /* CRC-8 : X^8 + X^7 + X^6 + X^4 + X^2 + 1 */
-static const int YCRC_10    = 0x00000331; /* CRC-10 : X^10 + X^9 + X^5 + X^4 + X + 1 */
-static const int YCRC_12    = 0x00000F01; /* CRC-12: X^12+X^11+X^3+X^2+X+1 */
-static const int YCRC_15    = 0x00004CD1; /* CRC-15 : X^15 + X^14 + X^10 + X^8 + X^7 + X^4 + X^3 + 1 */
-static const int YCRC_16    = 0x0000A001; /* CRC-16: X^16+X^15+X^2+1 */
-static const int YCRC_CCITT = 0x00008408; /* CRC-CCITT: X^16+X^12+X^5+1 */
-static const int YCRC_24    = 0x00DF3261; /* CRC-24 : X^24 + X^23 + X^18 + X^17 + X^14 + X^11 + X^10 + X^7 + X^6 + X^5 + X^4 + X^3 + X + 1 */
-static const int YCRC_32    = 0xEDB88320; /* CRC-32: X^32+X^26+X^23+X^22+X^16+X^12+X^11+X^10+X^8+X^7+X^5+X^4+X^2+X+1 */
-/* ylib didn't support 64bit crc */
-/* static const UInt64 YCRC64_ISO = 0xD800000000000000; CRC-64-ISO : X^64 + X^4 + X^3 + X + 1 */
+/* CRC-4-ITU : X^4 + X + 1 */
+static const int YCRC_4ITU  = 0x0000000C;
+/* CRC-5-ITU : X^5 + X^4 + X^2 + 1 */
+static const int YCRC_5ITU  = 0x00000015;
+/* CRC-6-ITU : X^6 + X + 1 */
+static const int YCRC_6ITU  = 0x00000030;
+/* CRC-7 : X^7 + X^3 + 1 */
+static const int YCRC_7     = 0x00000048;
+/* CRC-8 : X^8 + X^7 + X^6 + X^4 + X^2 + 1 */
+static const int YCRC_8     = 0x000000AB;
+/* CRC-10 : X^10 + X^9 + X^5 + X^4 + X + 1 */
+static const int YCRC_10    = 0x00000331;
+/* CRC-12: X^12+X^11+X^3+X^2+X+1 */
+static const int YCRC_12    = 0x00000F01;
+/* CRC-15 : X^15 + X^14 + X^10 + X^8 + X^7 + X^4 + X^3 + 1 */
+static const int YCRC_15    = 0x00004CD1;
+/* CRC-16: X^16+X^15+X^2+1 */
+static const int YCRC_16    = 0x0000A001;
+/* CRC-CCITT: X^16+X^12+X^5+1 */
+static const int YCRC_CCITT = 0x00008408;
+/*
+ * CRC-24 : X^24 + X^23 + X^18 + X^17 + X^14 + X^11 + X^10
+ *            + X^7 + X^6 + X^5 + X^4 + X^3 + X + 1
+ */
+static const int YCRC_24    = 0x00DF3261;
+/*
+ * CRC-32: X^32 + X^26 + X^23 + X^22 + X^16
+ *   + X^12 + X^11 + X^10 + X^8 + X^7 + X^5 + X^4 + X^2 + X + 1
+ */
+static const int YCRC_32    = 0xEDB88320;
+/*
+ * ylib didn't support 64bit crc
+ * CRC-64-ISO : X^64 + X^4 + X^3 + X + 1
+ */
+/* static const UInt64 YCRC64_ISO = 0xD800000000000000; */
 #endif
 
 

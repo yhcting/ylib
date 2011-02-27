@@ -139,13 +139,15 @@ ylistl_replace(struct ylistl_link* old, struct ylistl_link* anew) {
         for ((pos) = container_of((head)->_next, type, member),		\
 		     (n) = container_of((pos)->member._next, type, member); \
 	     &(pos)->member != (head);					\
-	     (pos) = (n), (n) = container_of((pos)->member._next, type, member))
+	     (pos) = (n),						\
+		     (n) = container_of((pos)->member._next, type, member))
 
 #define ylistl_foreach_item_removal_safe_backward(pos, n, head, type, member) \
         for ((pos) = container_of((head)->_prev, type, member),		\
 		     (n) = container_of((pos)->member._prev, type, member); \
 	     &(pos)->member != (head);					\
-	     (pos) = (n), (n) = container_of((pos)->member._prev, type, member))
+	     (pos) = (n),						\
+		     (n) = container_of((pos)->member._prev, type, member))
 
 static inline unsigned int
 ylistl_size(const struct ylistl_link* head) {

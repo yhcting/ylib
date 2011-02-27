@@ -1,7 +1,8 @@
 /******************************************
  * Naming convention
  *      "__xxxx" : internal use only!
- *      "_xxxx"  : do not use directly if possible(means "BE CAREFUL when use this type interface")
+ *      "_xxxx"  : do not use directly if possible
+ *                 (means "BE CAREFUL when use this type interface")
  *      "xxxx"   : interface
  *
  ******************************************/

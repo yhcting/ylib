@@ -272,12 +272,16 @@ ytree_parent(const struct ytree_node* n) {
 
 static inline struct ytree_node*
 ytree_next(const struct ytree_node* n) {
-	return container_of(ytreel_next(&n->__link), struct ytree_node, __link);
+	return container_of(ytreel_next(&n->__link),
+			    struct ytree_node,
+			    __link);
 }
 
 static inline struct ytree_node*
 ytree_prev(const struct ytree_node* n) {
-	return container_of(ytreel_prev(&n->__link), struct ytree_node, __link);
+	return container_of(ytreel_prev(&n->__link),
+			    struct ytree_node,
+			    __link);
 }
 
 static inline int

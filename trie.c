@@ -432,7 +432,8 @@ ytrie_copy(struct ytrie* dst, const struct ytrie* src, void* user,
 		if (src->rt.n[i])
 			dst->rt.n[i] = _node_clone(src->rt.n[i], user, clonev);
 	}
-	return 0; /* return value of this function is reserved for future use */
+	/* return value of this function is reserved for future use */
+	return 0;
 }
 
 struct ytrie*

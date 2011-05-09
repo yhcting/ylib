@@ -4,6 +4,7 @@
 #include <memory.h>
 
 #include "ydef.h"
+#include "yret.h"
 
 /* DYNmaic Buffer */
 typedef struct ydynb {
@@ -40,16 +41,16 @@ ydynb_ptr(const struct ydynb* b) {
 /*
  * @return: 0 if success.
  */
-static inline int
+static inline enum yret
 ydynb_init(struct ydynb* b, unsigned int init_limit) {
 	b->sz = 0;
 	b->b = (unsigned char*)ymalloc(init_limit);
 	if (b->b) {
 		b->limit = init_limit;
-		return 0;
+		return YROk;
 	} else {
 		b->limit = 0;
-		return -1;
+		return YREOOM;
 	}
 }
 
@@ -71,7 +72,7 @@ ydynb_clean(struct ydynb* b) {
  * due to using memcpy, it cannot be static inline
  * @return: <0 if fails.
  */
-static inline int
+static inline enum yret
 ydynb_expand(struct ydynb* b) {
 	unsigned char* tmp = (unsigned char*)ymalloc(b->limit*2);
 	if (tmp) {
@@ -79,20 +80,20 @@ ydynb_expand(struct ydynb* b) {
 		yfree(b->b);
 		b->b = tmp;
 		b->limit *= 2;
-		return 0;
+		return YROk;
 	} else
-		return -1;
+		return YREOOM;
 }
 
 static inline int
 ydynb_secure(struct ydynb* b, unsigned int sz_required) {
 	while ( sz_required > ydynb_freesz(b)
-	       && !ydynb_expand(b) ) {}
+		&& (YROk == ydynb_expand(b)) ) {}
 	return sz_required <= ydynb_freesz(b);
 }
 
 
-static inline int
+static inline enum yret
 ydynb_shrink(struct ydynb* b, unsigned int sz_to) {
 	if ( b->limit > sz_to  && b->sz < sz_to ) {
 		unsigned char* tmp = (unsigned char*)ymalloc(sz_to);
@@ -102,19 +103,20 @@ ydynb_shrink(struct ydynb* b, unsigned int sz_to) {
 			yfree(b->b);
 			b->b = tmp;
 			b->limit = sz_to;
-			return 0;
+			return YROk;
 		}
 	}
-	return -1;
+	return YREInvalid_param;
 }
 
-static inline int
+static inline enum yret
 ydynb_append(struct ydynb* b, const unsigned char* d, unsigned int dsz) {
-	if (0 > ydynb_secure(b, dsz))
-		return -1;
+	enum yret r = ydynb_secure(b, dsz);
+	if (0 > r)
+		return r;
 	memcpy(ydynb_ptr(b), d, dsz);
 	b->sz += dsz;
-	return 0;
+	return YROk;
 }
 
 #endif /* __YDYNb_h__ */

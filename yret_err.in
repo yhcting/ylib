@@ -1,0 +1,22 @@
+/*
+ * Error values
+ */
+
+DEFRETVAL(YREOOM,
+	"Out Of Memory")
+
+DEFRETVAL(YREInvalid_param,
+	"Invalid parameter")
+
+/*
+ * Target interface is not implemented yet!.
+ */
+DEFRETVAL(YREVALNot_implemented,
+	"Not implemented yet")
+
+/*
+ * Processing is ended by interrupt.
+ * So, not completed yet!
+ */
+DEFRETVAL(YREVALInterrupted,
+	"Execution interrupted")

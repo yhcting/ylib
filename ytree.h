@@ -124,10 +124,10 @@ enum {
 	YTREE_WALKER_R2L_POST_OT
 };
 
-extern struct ytree_walker*
+EXPORT struct ytree_walker*
 ytree_walker_create(const struct ytree_node* top_node, int type);
 
-extern void
+EXPORT void
 ytree_walker_destroy(struct ytree_walker* w);
 
 static inline int

@@ -95,8 +95,7 @@ __ylist_last_link(const struct ylist* l) {
  */
 static inline struct ylist_node*
 ylist_create_node(void* item) {
-	struct ylist_node* n;
-	n = (struct ylist_node*)ymalloc(sizeof(struct ylist_node));
+	struct ylist_node* n = (struct ylist_node*)ymalloc(sizeof(*n));
 	n->__item = item;
 	return n;
 }
@@ -123,17 +122,13 @@ __ylist_init(struct ylist* l, void(*freecb)(void*)) {
 
 static inline struct ylist*
 ylist_create(void(*freecb)(void*)) {
-	struct ylist* l;
-	l = (struct ylist*)ymalloc(sizeof(struct ylist));
+	struct ylist* l = (struct ylist*)ymalloc(sizeof(*l));
 	__ylist_init(l, freecb);
 	return l;
 }
 
-/**
- * Free item too.
- */
 static inline void
-ylist_destroy(struct ylist* l) {
+ylist_reset(struct ylist* l) {
 	struct ylist_node *n, *p;
 	ylistl_foreach_item_removal_safe(p,
 					 n,
@@ -143,6 +138,14 @@ ylist_destroy(struct ylist* l) {
 		ylist_free_item(l, p->__item);
 		yfree(p);
 	}
+}
+
+/**
+ * Free item too.
+ */
+static inline void
+ylist_destroy(struct ylist* l) {
+	ylist_reset(l);
 	yfree(l);
 }
 
@@ -240,7 +243,7 @@ enum {
 static inline struct ylist_walker*
 ylist_walker_create(struct ylist* l, int type) {
 	struct ylist_walker* w =
-		(struct ylist_walker*)ymalloc(sizeof(struct ylist_walker));
+		(struct ylist_walker*)ymalloc(sizeof(*w));
 	w->__list = l;
 	w->__curr = &l->__head;
 	switch(type) {

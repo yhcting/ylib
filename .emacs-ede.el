@@ -7,7 +7,7 @@
     "Using make file in top directory"
     (interactive)
     (let ((cmd ""))
-        (set 'cmd (concat "cd " yhc.topdir "; make CFLAGS=-g DEFS=-D_YDBG debug"))
+        (set 'cmd (concat "cd " yhc.topdir "; make CFLAGS=-g DEFS=-DYDBG debug"))
         (compile cmd)))
 
 (defun yhc.compile.release ()

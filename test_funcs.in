@@ -3,8 +3,9 @@
  * Test function should be listed here!
  *=========================*/
 
-DECL_FUNC(test_list)
-DECL_FUNC(test_queue)
-DECL_FUNC(test_stack)
-DECL_FUNC(test_tree)
-DECL_FUNC(test_hash)
+TFUNC(test_list)
+TFUNC(test_queue)
+TFUNC(test_stack)
+TFUNC(test_tree)
+TFUNC(test_hash)
+TFUNC(test_mempool)

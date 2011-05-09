@@ -1,6 +1,7 @@
 #include "ydef.h"
 #include "ycrc.h"
 
+#include "common.h"
 
 /**
  * Most important part of CRC library is 'Performance'. Not flexibility!.
@@ -87,6 +88,13 @@ unsigned short
 ycrc16(unsigned short crc, const unsigned char* data, unsigned int len)
 {
 	const unsigned char* end = data + len;
+
+	if (!len || !data) {
+		yassert(0);
+		yretset(YRWNothing);
+		return crc;
+	}
+
 	unroll16(crc = (crc >> 8) ^ _crc16_table[(crc ^ (*data++)) & 0xff];,
 		 len,
 		 data < end);
@@ -186,6 +194,13 @@ unsigned int
 ycrc32(unsigned int crc, const unsigned char* data, unsigned int len)
 {
 	const unsigned char* end = data + len;
+
+	if (!len || !data) {
+		yassert(0);
+		yretset(YRWNothing);
+		return crc;
+	}
+
 	unroll16(crc = (crc >> 8) ^ _crc32_table[(crc ^ (*data++)) & 0xff];,
 		 len,
 		 data < end );

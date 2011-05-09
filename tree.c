@@ -136,7 +136,11 @@ struct ytree_walker*
 ytree_walker_create(const struct ytree_node* top_node, int type) {
 	struct _tree_walker_base* w = NULL;
 
-	yassert(top_node);
+	if (!top_node) {
+		yassert(0);
+		goto invalid_param;
+	}
+
 	switch(type) {
         case YTREE_WALKER_R2L_PRE_OT:
         case YTREE_WALKER_PRE_OT: {
@@ -205,18 +209,29 @@ ytree_walker_create(const struct ytree_node* top_node, int type) {
         } break;
 
         default:
-		yassert(FALSE);
-
+		yassert(0);
+		goto invalid_param;
 	}
+
+
 	w->type = type;
 	w->wb.__curr = NULL;
 
 	return (struct ytree_walker*)w;
+
+ invalid_param:
+	yretset(YREInvalid_param);
+	return NULL;
 }
 
 void
 ytree_walker_destroy(struct ytree_walker* w) {
-	yassert(w);
+
+	if (!w) {
+		yassert(0);
+		goto invalid_param;
+	}
+
 	switch(((struct _tree_walker_base*)w)->type) {
         case YTREE_WALKER_R2L_PRE_OT:
         case YTREE_WALKER_PRE_OT: {
@@ -235,9 +250,15 @@ ytree_walker_destroy(struct ytree_walker* w) {
 		; /* Nothing to do specially */
         } break;
         default:
-		yassert(FALSE);
+		yassert(0);
+		goto invalid_param;
 	}
 	yfree(w);
+	return;
+
+ invalid_param:
+	yretset(YREInvalid_param);
+	return;
 }
 
 

@@ -1,0 +1,8 @@
+/*
+ * Warning values
+ */
+DEFRETVAL(YRWNothing,
+	"nothing happenned..")
+
+DEFRETVAL(YRWOverwrite,
+	"existing value was overwritten")

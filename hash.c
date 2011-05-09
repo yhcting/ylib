@@ -5,6 +5,8 @@
 /* crc is used as hash function */
 #include "ycrc.h"
 
+#include "common.h"
+
 #define _MAX_HBITS 32
 #define _MIN_HBITS 4
 
@@ -43,7 +45,6 @@ static inline unsigned int
 _hv(const struct yhash* h, const struct _hn* n) {
 	return _hv_(h, n->hv32);
 }
-
 
 /* Modify hash space to 'bits'*/
 static struct yhash*
@@ -98,6 +99,12 @@ _hfind(const struct yhash* h, const unsigned char* key, unsigned int keysz) {
 	return (&n->lk == hd)? NULL: n;
 }
 
+static inline void
+_vdestroy(const struct yhash* h, void* v) {
+	if (h->fcb)
+		(*h->fcb)(v);
+}
+
 
 static struct _hn*
 _ncreate(const unsigned char* key, unsigned int keysz, void* v) {
@@ -113,12 +120,11 @@ _ncreate(const unsigned char* key, unsigned int keysz, void* v) {
 	return n;
 }
 
-static void
+static inline void
 _ndestroy(const struct yhash* h, struct _hn* n) {
 	yassert(n->key && n->keysz>0);
 	yfree(n->key);
-	if (h->fcb)
-		(*h->fcb)(n->v);
+	_vdestroy(h, n->v);
 	yfree(n);
 }
 
@@ -138,7 +144,7 @@ yhash_create(void(*fcb)(void*)) {
 	return h;
 }
 
-int
+enum yret
 yhash_destroy(struct yhash* h) {
 	int	     i;
 	struct _hn  *n, *tmp;
@@ -154,7 +160,7 @@ yhash_destroy(struct yhash* h) {
 	}
 	yfree(h->map);
 	yfree(h);
-	return 0;
+	return YROk;
 }
 
 unsigned int
@@ -166,14 +172,22 @@ struct yhash*
 yhash_add(struct yhash* h,
 	  const unsigned char* key, unsigned int keysz,
 	  void* v) {
-	struct _hn* n;
-	/* we need to expand hash map size if hash seems to be full */
-	if (h->sz > _hmapsz(h))
-		_hmodify(h, h->mapbits+1);
+	struct _hn* n = _hfind(h, key, keysz);
 
-	n = _ncreate(key, keysz, v);
-	ylistl_add_last(&h->map[_hv(h, n)], &n->lk);
-	h->sz++;
+	if (n) {
+		/* overwrite value */
+		_vdestroy(h, n->v);
+		n->v = v;
+		yretset(YRWOverwrite);
+	} else {
+		/* we need to expand hash map size if hash seems to be full */
+		if (h->sz > _hmapsz(h))
+			_hmodify(h, h->mapbits+1);
+		n = _ncreate(key, keysz, v);
+		ylistl_add_last(&h->map[_hv(h, n)], &n->lk);
+		h->sz++;
+	}
+
 	return h;
 }
 
@@ -187,6 +201,8 @@ yhash_del(struct yhash* h,
 		h->sz--;
 		if (h->sz < _hmapsz(h) / 4)
 			_hmodify(h, h->mapbits-1);
+	} else {
+		yretset(YRWNothing);
 	}
 	return h;
 }

@@ -26,19 +26,19 @@ test_hash() {
 		v = ymalloc(strlen(buf)+1);
 		strcpy(v, buf);
 		/* key and value is same */
-		yhash_add(h, buf, strlen(buf)+1, v);
+		yhash_add(h, (unsigned char*)buf, strlen(buf) + 1, v);
 		yassert(i+1 == yhash_sz(h));
 	}
 
 	for (i=256; i<512; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-		v = yhash_find(h, buf, strlen(buf)+1);
+		v = yhash_find(h, (unsigned char*)buf, strlen(buf)+1);
 		yassert(v && 0 == strcmp(v, buf));
 	}
 
 	for (i=1023; i>=0; i--) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-		yhash_del(h, buf, strlen(buf)+1);
+		yhash_del(h, (unsigned char*)buf, strlen(buf)+1);
 		yassert(i == yhash_sz(h));
 	}
 

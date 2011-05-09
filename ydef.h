@@ -1,14 +1,28 @@
-/******************************************
+/******************************************************************************
+ *
  * Naming convention
  *      "__xxxx" : internal use only!
  *      "_xxxx"  : do not use directly if possible
  *                 (means "BE CAREFUL when use this type interface")
  *      "xxxx"   : interface
+ *      "xxxx_"  : core sub-function of function "xxxx".
+ *                 This can be extended to "xxxx__", "xxxx___" and so on.
  *
- ******************************************/
+ *****************************************************************************/
 
 #ifndef __YDEf_h__
 #define __YDEf_h__
+
+/*
+ *
+ */
+
+/*
+ * TODO :
+ *    adjust visibility
+ *     (Use default visibility in temporal)
+ */
+#define EXPORT __attribute__ ((visibility ("default")))
 
 /* if compiler doesn't support 'inline' directive, we should enable below */
 /* #define inline */
@@ -56,8 +70,10 @@
 	}				\
 }
 
+#define YDBG
+
 /* For debugging */
-#ifdef _YDBG
+#ifdef YDBG
 
 #       include <malloc.h>
 #       include <assert.h>
@@ -69,7 +85,7 @@
     extern void* dmalloc(unsigned int);
     extern void  dfree(void*);
 
-#else /* _YDBG */
+#else /* YDBG */
 
 #       include <malloc.h>
 
@@ -77,6 +93,6 @@
 #       define yfree(x)     free(x)
 #       define yassert(x)   do {} while (0)
 
-#endif /* _YDBG */
+#endif /* YDBG */
 
 #endif /* __YDEf_h__ */

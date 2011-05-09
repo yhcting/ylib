@@ -2,6 +2,7 @@
 #define __COMMOn_h__
 
 #include "ydef.h"
+#include "yret.h"
 
 /*=======================================
  * Macros

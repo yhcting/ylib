@@ -221,7 +221,6 @@ void test_tree() {
 
 	int sv = dmem_count();
 	struct ytree*      t;
-	struct ytree_node* n;
 
 	t = ytree_create(NULL);
 	_build_test_tree(t);

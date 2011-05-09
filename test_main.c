@@ -18,15 +18,15 @@ void dfree(void* p) {
 int dmem_count() { return _mem_count; }
 
 
-#define DECL_FUNC(x)    extern void x ();
-#       include "test_funcs.h"
-#undef DECL_FUNC
+#define TFUNC(x)    extern void x ();
+#       include "test_funcs.in"
+#undef TFUNC
 
-#define DECL_FUNC(x)    x,
+#define TFUNC(x)    x,
 static void(*_test_funcs[])() = {
-#       include "test_funcs.h"
+#       include "test_funcs.in"
 };
-#undef DECL_FUNC
+#undef TFUNC
 
 
 int main() {

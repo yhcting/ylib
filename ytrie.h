@@ -27,6 +27,8 @@
 #ifndef __YTRIe_h__
 #define __YTRIe_h__
 
+#include <stdint.h>
+
 #define YTRIE_MAX_KEY_LEN  1024
 
 struct ytrie;
@@ -37,13 +39,13 @@ struct ytrie;
  */
 extern void**
 ytrie_getref(struct ytrie* t,
-	     const unsigned char* key, unsigned int sz);
+	     const uint8_t* key, uint32_t sz);
 
 /**
  * get element
  */
 extern void*
-ytrie_get(struct ytrie* t, const unsigned char* key, unsigned int sz);
+ytrie_get(struct ytrie* t, const uint8_t* key, uint32_t sz);
 
 
 /**
@@ -54,17 +56,17 @@ ytrie_get(struct ytrie* t, const unsigned char* key, unsigned int sz);
  */
 extern int
 ytrie_walk(struct ytrie* t, void* user,
-	   const unsigned char* from, unsigned int fromsz,
+	   const uint8_t* from, uint32_t fromsz,
 	   /* return 1 for keep going, 0 for stop and don't do anymore */
-	   int(cb)(void*, const unsigned char*, unsigned int, void*));
+	   int(cb)(void*, const uint8_t*, uint32_t, void*));
 
 /**
  * insert element
  */
 extern int
 ytrie_insert(struct ytrie* t,
-	     const unsigned char* key,
-	     unsigned int sz,
+	     const uint8_t* key,
+	     uint32_t sz,
 	     void* v);
 
 /**
@@ -89,7 +91,7 @@ ytrie_destroy(struct ytrie*);
  * delete node.
  */
 extern int
-ytrie_delete(struct ytrie*, const unsigned char* key, unsigned int sz);
+ytrie_delete(struct ytrie*, const uint8_t* key, uint32_t sz);
 
 /**
  * get free callback of trie
@@ -128,7 +130,7 @@ ytrie_clone(const struct ytrie*,
  */
 extern int
 ytrie_auto_complete(struct ytrie*,
-		    const unsigned char* start_with, unsigned int sz,
-		    unsigned char* buf, unsigned int bufsz);
+		    const uint8_t* start_with, uint32_t sz,
+		    uint8_t* buf, uint32_t bufsz);
 
 #endif /* __YTRIe_h__ */

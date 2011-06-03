@@ -131,7 +131,7 @@ _delete_empty_leaf(struct _node* n) {
  * @return : see '_delete_key(...)'
  */
 static inline int
-_delete_empty_byte_leaf(struct _node* n, unsigned char c) {
+_delete_empty_byte_leaf(struct _node* n, uint8_t c) {
 	register int  fi = c>>4;
 	register int  bi = c&0x0f;
 	if (_delete_empty_leaf(n->n[fi]->n[bi])) {
@@ -157,8 +157,8 @@ _delete_empty_byte_leaf(struct _node* n, unsigned char c) {
  *     -1: cannot find node(symbol is not in trie)
  */
 static int
-_delete_key(struct _node* n, const unsigned char* p,
-            unsigned int sz, void(*fcb)(void*)) {
+_delete_key(struct _node* n, const uint8_t* p,
+            uint32_t sz, void(*fcb)(void*)) {
 	register int         fi = *p>>4;
 	register int         bi = *p&0x0f;
 	if (sz>0) {
@@ -217,11 +217,11 @@ _delete_key(struct _node* n, const unsigned char* p,
  */
 static struct _node*
 _get_node(struct ytrie* t,
-          const unsigned char* key, unsigned int sz,
+          const uint8_t* key, uint32_t sz,
           int bcreate) {
-	register struct _node*             n = &t->rt;
-	register const unsigned char* p = key;
-	register const unsigned char* pend = p+sz;
+	register struct _node*     n = &t->rt;
+	register const uint8_t*    p = key;
+	register const uint8_t*    pend = p+sz;
 	register int                  fi, bi; /* front index */
 
 	if (bcreate) {
@@ -281,11 +281,11 @@ _node_clone(const struct _node* n,
  */
 static int
 _walk_internal(void* user, struct _node* n,
-               int(cb)(void*, const unsigned char*, unsigned int,void*),
+               int(cb)(void*, const uint8_t*, uint32_t,void*),
 	       /* bsz: excluding space for trailing 0 */
-               unsigned char* buf, unsigned int bsz,
-               unsigned int bitoffset) {
-	register unsigned int i;
+               uint8_t* buf, uint32_t bsz,
+               uint32_t bitoffset) {
+	register uint32_t i;
 
 	if (n->v) {
 		/* value should exists at byte-based-node */
@@ -300,7 +300,7 @@ _walk_internal(void* user, struct _node* n,
 		if (n->n[i]) {
 			int   r;
 			if (buf) {
-				unsigned char* p =  buf + (bitoffset>>3);
+				uint8_t* p =  buf + (bitoffset>>3);
 				/* check that buffer is remained enough */
 				if (bitoffset>>3 == bsz)
 					/* not enough buffer.. */
@@ -337,7 +337,7 @@ _walk_internal(void* user, struct _node* n,
 
 void**
 ytrie_getref(struct ytrie* t,
-	     const unsigned char* key, unsigned int sz) {
+	     const uint8_t* key, uint32_t sz) {
 	struct _node* n;
 	yassert(key);
 	if (0 == sz)
@@ -347,16 +347,16 @@ ytrie_getref(struct ytrie* t,
 }
 
 void*
-ytrie_get(struct ytrie* t, const unsigned char* key, unsigned int sz) {
+ytrie_get(struct ytrie* t, const uint8_t* key, uint32_t sz) {
 	void** pv = ytrie_getref(t, key, sz);
 	return pv? *pv: NULL;
 }
 
 int
 ytrie_walk(struct ytrie* t, void* user,
-	   const unsigned char* from, unsigned int fromsz,
+	   const uint8_t* from, uint32_t fromsz,
 	   /* return 1 for keep going, 0 for stop and don't do anymore */
-	   int(cb)(void*, const unsigned char*, unsigned int, void*)) {
+	   int(cb)(void*, const uint8_t*, uint32_t, void*)) {
 	char             buf[YTRIE_MAX_KEY_LEN + 1];
 	struct _node*    n = _get_node(t, from, fromsz, FALSE);
 
@@ -365,7 +365,7 @@ ytrie_walk(struct ytrie* t, void* user,
 		return _walk_internal(user,
 				      n,
 				      cb,
-				      (unsigned char*)buf,
+				      (uint8_t*)buf,
 				      YTRIE_MAX_KEY_LEN,
 				      0);
 	else
@@ -374,8 +374,8 @@ ytrie_walk(struct ytrie* t, void* user,
 
 int
 ytrie_insert(struct ytrie* t,
-	     const unsigned char* key,
-	     unsigned int sz, void* v) {
+	     const uint8_t* key,
+	     uint32_t sz, void* v) {
 	struct _node*  n;
 
 	yassert(t && key);
@@ -424,7 +424,7 @@ ytrie_destroy(struct ytrie* t) {
 
 
 int
-ytrie_delete(struct ytrie* t, const unsigned char* key, unsigned int sz) {
+ytrie_delete(struct ytrie* t, const uint8_t* key, uint32_t sz) {
 	yassert(t && key);
 	switch(_delete_key(&t->rt, key, sz, t->fcb)) {
         case 1:
@@ -468,17 +468,17 @@ ytrie_clone(const struct ytrie* t,
 
 int
 ytrie_auto_complete(struct ytrie* t,
-		    const unsigned char* start_with, unsigned int sz,
-		    unsigned char* buf, unsigned int bufsz) {
+		    const uint8_t* start_with, uint32_t sz,
+		    uint8_t* buf, uint32_t bufsz) {
 #define YTRIEBranch 0
 #define YTRIELeaf   1
 #define YTRIEFail   2
 
-	int                   ret = -1;
-	register struct _node*     n;
-	register unsigned int i;
-	unsigned int          j, cnt, bi;
-	unsigned char         c;
+	int                      ret = -1;
+	register struct _node*   n;
+	register uint32_t        i;
+	uint32_t                 j, cnt, bi;
+	uint8_t                  c;
 
 	yassert(t && start_with && buf);
 

@@ -22,22 +22,22 @@
 #ifndef __YCRc_h__
 #define __YCRc_h__
 
+#include <stdint.h>
+
 /**
- * Assumption : sizeof(unsigned short) == 16
- * @crc     : prevvious crc value
+ * @crc     : previous crc value
  * @buffer  : data pointer
  * @len     : number of bytes in the buffer.
  */
-EXPORT unsigned short
-ycrc16(unsigned short crc, const unsigned char* data, unsigned int len);
+EXPORT uint16_t
+ycrc16(uint16_t crc, const uint8_t* data, uint32_t len);
 
 
 /**
- * Assumption : sizeof(unsigned int) == 32
  * See above 'ycrc16' for details.
  */
-EXPORT unsigned int
-ycrc32(unsigned int crc, const unsigned char* data, unsigned int len);
+EXPORT uint32_t
+ycrc32(uint32_t crc, const uint8_t* data, uint32_t len);
 
 
 #endif /* __YCRc_h__ */

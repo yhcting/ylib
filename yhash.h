@@ -23,6 +23,8 @@
 #ifndef __YHASh_h__
 #define __YHASh_h__
 
+#include <stdint.h>
+
 #include "yret.h"
 
 struct yhash;
@@ -43,7 +45,7 @@ yhash_destroy(struct yhash* h);
 /**
  * @return : number of elements in hash.
  */
-EXPORT unsigned int
+EXPORT uint32_t
 yhash_sz(struct yhash* h);
 
 /**
@@ -52,7 +54,7 @@ yhash_sz(struct yhash* h);
  */
 EXPORT struct yhash*
 yhash_add(struct yhash* h,
-	  const unsigned char* key, unsigned int keysz,
+	  const uint8_t* key, uint32_t keysz,
 	  void* v);
 
 /**
@@ -62,13 +64,13 @@ yhash_add(struct yhash* h,
  */
 EXPORT struct yhash*
 yhash_del(struct yhash* h,
-	  const unsigned char* key, unsigned int keysz);
+	  const uint8_t* key, uint32_t keysz);
 
 /**
  * @return : NULL if fails.
  */
 EXPORT void*
 yhash_find(struct yhash* h,
-	   const unsigned char* key, unsigned int keysz);
+	   const uint8_t* key, uint32_t keysz);
 
 #endif /* __YHASh_h__ */

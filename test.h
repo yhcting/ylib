@@ -18,48 +18,16 @@
  *    along with this program.	If not, see <http://www.gnu.org/licenses/>.
  *****************************************************************************/
 
+#ifndef __TESt_h__
+#define __TESt_h__
 
-#include <stdio.h>
-#include <malloc.h>
+extern int dmem_count();
+extern void dregister_tstfn(void (*fn)());
 
-#include "ydef.h"
-#include "ylistl.h"
+#define TESTFN(fn)						\
+	static void __tst_##fn() __attribute__ ((constructor));	\
+	static void __tst_##fn() {				\
+		dregister_tstfn(&fn);				\
+	}
 
-struct _tstfn {
-	void                (*fn)();
-	struct ylistl_link    lk;
-};
-
-static YLISTL_DECL_HEAD(_tstfnl);
-static int  _mem_count = 0;
-
-void
-dregister_tstfn(void (*fn)()) {
-	/* malloc should be used instead of dmalloc */
-	struct _tstfn* n = malloc(sizeof(*n));
-	n->fn = fn;
-	ylistl_add_last(&_tstfnl, &n->lk);
-}
-
-
-void* dmalloc(unsigned int sz) {
-	_mem_count++;
-	return malloc(sz);
-}
-
-void dfree(void* p) {
-	_mem_count--;
-	free(p);
-}
-
-int dmem_count() { return _mem_count; }
-
-
-int main() {
-	struct _tstfn*    p;
-	ylistl_foreach_item(p, &_tstfnl, struct _tstfn, lk)
-		(*p->fn)();
-
-	printf(">>>>>> TEST SUCCESS <<<<<<<\n");
-	return 0;
-}
+#endif /* __TESt_h__ */

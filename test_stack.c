@@ -21,15 +21,18 @@
 
 #include "ystack.h"
 #include "common.h"
+#include "test.h"
 
 #include <assert.h>
 
-extern int dmem_count();
 
-void test_stack() {
+static void
+_test_stack() {
 	int* pi;
 	int sv = dmem_count();
 	struct ystack*  s = ystack_create(NULL);
+
+	printf("== Testing stack ==\n");
 
 	pi = (int*)ymalloc(sizeof(int));
 	*pi = 0;
@@ -48,3 +51,5 @@ void test_stack() {
 	ystack_destroy(s);
 	yassert(sv == dmem_count());
 }
+
+TESTFN(_test_stack)

@@ -21,15 +21,18 @@
 
 #include "yqueue.h"
 #include "common.h"
+#include "test.h"
 
 #include <assert.h>
 
-extern int dmem_count();
 
-void test_queue() {
+static void
+_test_queue() {
 	int* pi;
 	int sv = dmem_count();
 	struct yqueue* q = yqueue_create(NULL);
+
+	printf("== Testing queue ==\n");
 
 	pi = (int*)ymalloc(sizeof(int));
 	*pi = 0;
@@ -49,3 +52,4 @@ void test_queue() {
 	yassert(sv == dmem_count());
 }
 
+TESTFN(_test_queue)

@@ -24,10 +24,10 @@
 
 #include "yhash.h"
 #include "common.h"
+#include "test.h"
 
 #include <assert.h>
 
-extern int dmem_count();
 
 static void
 _free(void* v) {
@@ -110,9 +110,11 @@ _test_hash_address() {
 	yassert(sv == dmem_count());
 }
 
-void
-test_hash() {
+static void
+_test_hash() {
+	printf("== Testing hash ==\n");
 	_test_hash_normal();
 	_test_hash_address();
 }
 
+TESTFN(_test_hash)

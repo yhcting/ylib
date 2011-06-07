@@ -21,12 +21,9 @@
 
 #include "ytree.h"
 #include "common.h"
+#include "test.h"
 
 #include <assert.h>
-
-extern int dmem_count();
-
-
 
 #define _assign(ptr, type, val)				\
 	do {						\
@@ -223,7 +220,8 @@ _verify_test_tree(const struct ytree* t) {
 
 #undef _item
 
-void test_tree() {
+static void
+_test_tree() {
 	/* pre-order traversal*/
 	static const char __preot[]
 		= {'F', 'B', 'A', 'D', 'C', 'E', 'G', 'I', 'H'};
@@ -242,6 +240,8 @@ void test_tree() {
 
 	int sv = dmem_count();
 	struct ytree*      t;
+
+	printf("== Testing tree ==\n");
 
 	t = ytree_create(NULL);
 	_build_test_tree(t);
@@ -262,3 +262,5 @@ void test_tree() {
 	ytree_destroy(t);
 	yassert(sv == dmem_count());
 }
+
+TESTFN(_test_tree)

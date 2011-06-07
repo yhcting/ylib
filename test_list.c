@@ -21,17 +21,17 @@
 
 #include "common.h"
 #include "ylist.h"
+#include "test.h"
 
 #include <assert.h>
-
-extern int dmem_count();
 
 struct _dummy{
 	int     id;
 	int*    mem;
 } ;
 
-void _free_dummycb(void* arg) {
+static void
+_free_dummycb(void* arg) {
 	if (NULL != arg) {
 		struct _dummy* dummy = (struct _dummy*)arg;
 		if (NULL != dummy->mem)
@@ -44,12 +44,15 @@ void _free_dummycb(void* arg) {
 /**
  * Linked list test.
  */
-void test_list() {
+static void
+_test_list() {
 	int             mem_cnt_sv;
 	int             i;
 	int*            p;
 	struct ylist*   lst;
 	struct ylist_walker*   w;
+
+	printf("== Testing list ==\n");
 
 	mem_cnt_sv = dmem_count();
 
@@ -187,3 +190,5 @@ void test_list() {
 
 	yassert(mem_cnt_sv == dmem_count());
 }
+
+TESTFN(_test_list)

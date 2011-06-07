@@ -26,16 +26,20 @@
 
 #include "ymempool.h"
 #include "common.h"
+#include "test.h"
 
 #include <assert.h>
 
 #define _TESTSZ    (1*1024)
 
-void
-test_mempool() {
+static void
+_test_mempool() {
 	int         i, j, k;
 	struct ymp* mp;
 	int*        b[_TESTSZ];
+
+	printf("== Testing mempool ==\n");
+
 	mp = ymp_create(1, sizeof(int));
 
 	/*
@@ -149,3 +153,5 @@ test_mempool() {
 #undef __MAGICV
 
 }
+
+TESTFN(_test_mempool)

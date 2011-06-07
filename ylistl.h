@@ -42,6 +42,8 @@
  * Double Linked List
  *======================================*/
 
+#define YLISTL_DECL_HEAD(hd) struct ylistl_link hd = {&hd, &hd}
+
 /**
  * If possible DO NOT access struct directly!.
  */

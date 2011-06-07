@@ -50,6 +50,13 @@ yhash_sz(struct yhash* h);
 
 /**
  * @v	   : user value(item)
+ * @key    : hash key
+ * @keysz  : size of hash key
+ *           NOTE!
+ *               0 == keysz hash special meaning.
+ *               '0 == keysz' means, value of key itself - not pointed one -
+ *               is key value.
+ *               This is useful when hashing memory address.
  * @return : return hash @h - self.
  */
 EXPORT struct yhash*

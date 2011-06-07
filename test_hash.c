@@ -34,12 +34,16 @@ _free(void* v) {
 	yfree(v);
 }
 
-void
-test_hash() {
+static void
+_test_hash_normal() {
 	int           sv = dmem_count();
 	int           i;
 	char          buf[4096];
 	char*         v;
+
+	/*
+	 * Test normal hash.
+	 */
 	struct yhash* h = yhash_create(&_free);
 
 	for (i=0; i<1024; i++) {
@@ -47,24 +51,68 @@ test_hash() {
 		v = ymalloc(strlen(buf)+1);
 		strcpy(v, buf);
 		/* key and value is same */
-		yhash_add(h, (unsigned char*)buf, strlen(buf) + 1, v);
+		yhash_add(h, (uint8_t*)buf, strlen(buf) + 1, v);
 		yassert(i+1 == yhash_sz(h));
 	}
 
 	for (i=256; i<512; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-		v = yhash_find(h, (unsigned char*)buf, strlen(buf)+1);
+		v = yhash_find(h, (uint8_t*)buf, strlen(buf)+1);
 		yassert(v && 0 == strcmp(v, buf));
 	}
 
 	for (i=1023; i>=0; i--) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-		yhash_del(h, (unsigned char*)buf, strlen(buf)+1);
+		yhash_del(h, (uint8_t*)buf, strlen(buf)+1);
 		yassert(i == yhash_sz(h));
 	}
 
 	yhash_destroy(h);
 
 	yassert(sv == dmem_count());
+}
+
+static void
+_test_hash_address() {
+	int           sv = dmem_count();
+	int           i;
+	char          buf[4096];
+	char*         ptsv[1024];
+	char*         v;
+	/*
+	 * Test address hash.
+	 */
+	struct yhash* h = yhash_create(&_free);
+
+	for (i=0; i<1024; i++) {
+		snprintf(buf, sizeof(buf), "this is key %d", i);
+		v = ymalloc(strlen(buf)+1);
+		strcpy(v, buf);
+		/* key and value is same */
+		yhash_add(h, (uint8_t*)v, 0, v);
+		ptsv[i] = v;
+		yassert(i+1 == yhash_sz(h));
+	}
+
+	for (i=256; i<512; i++) {
+		snprintf(buf, sizeof(buf), "this is key %d", i);
+		v = yhash_find(h, (uint8_t*)ptsv[i], 0);
+		yassert(v && 0 == strcmp(v, buf));
+	}
+
+	for (i=1023; i>=0; i--) {
+		yhash_del(h, (uint8_t*)ptsv[i], 0);
+		yassert(i == yhash_sz(h));
+	}
+
+	yhash_destroy(h);
+
+	yassert(sv == dmem_count());
+}
+
+void
+test_hash() {
+	_test_hash_normal();
+	_test_hash_address();
 }
 

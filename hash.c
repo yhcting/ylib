@@ -67,6 +67,18 @@ _hv(const struct yhash* h, const struct _hn* n) {
 	return _hv_(h, n->hv32);
 }
 
+static inline uint32_t
+_hv32(const uint8_t* key, uint32_t keysz) {
+	if (keysz)
+		return ycrc32(0, key, keysz);
+	else
+		/*
+		 * special case
+		 * To improve portability, 'uint64_t' is used.
+		 */
+		return (uint32_t)((uintptr_t)key & (uintptr_t)0xffffffff);
+}
+
 /* Modify hash space to 'bits'*/
 static struct yhash*
 _hmodify(struct yhash* h, uint32_t bits) {
@@ -109,13 +121,22 @@ _hmodify(struct yhash* h, uint32_t bits) {
 static struct _hn*
 _hfind(const struct yhash* h, const uint8_t* key, uint32_t keysz) {
 	struct _hn*	     n;
-	uint32_t	     hv32 = ycrc32(0, key, keysz);
+	uint32_t	     hv32 = _hv32(key, keysz);
 	struct ylistl_link*  hd = &h->map[_hv_(h, hv32)];
-	ylistl_foreach_item(n, hd, struct _hn, lk) {
-		if (keysz == n->keysz
-		    && n->hv32 == hv32
-		    && 0 == memcmp(key, n->key, keysz))
-			break;
+	if (keysz) {
+		ylistl_foreach_item(n, hd, struct _hn, lk)
+			if (keysz == n->keysz
+			    && n->hv32 == hv32
+			    && 0 == memcmp(key, n->key, keysz))
+				break;
+	} else {
+		/*
+		 * special case : 'n->key' value itself is key.
+		 */
+		ylistl_foreach_item(n, hd, struct _hn, lk)
+			if (keysz == n->keysz
+			    && key == n->key)
+				break;
 	}
 	return (&n->lk == hd)? NULL: n;
 }
@@ -131,11 +152,14 @@ static struct _hn*
 _ncreate(const uint8_t* key, uint32_t keysz, void* v) {
 	struct _hn* n = ymalloc(sizeof(*n));
 	yassert(n);
-	n->key = ymalloc(keysz);
-	yassert(n->key);
-	memcpy(n->key, key, keysz);
+	if (keysz) {
+		n->key = ymalloc(keysz);
+		yassert(n->key);
+		memcpy(n->key, key, keysz);
+	} else
+		n->key = (uint8_t*)key;
 	n->keysz = keysz;
-	n->hv32 = ycrc32(0, key, keysz);
+	n->hv32 = _hv32(key, keysz);
 	n->v = v;
 	ylistl_init_link(&n->lk);
 	return n;
@@ -143,8 +167,8 @@ _ncreate(const uint8_t* key, uint32_t keysz, void* v) {
 
 static inline void
 _ndestroy(const struct yhash* h, struct _hn* n) {
-	yassert(n->key && n->keysz>0);
-	yfree(n->key);
+	if (n->keysz)
+		yfree(n->key);
 	_vdestroy(h, n->v);
 	yfree(n);
 }

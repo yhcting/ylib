@@ -26,7 +26,7 @@
 #include "ylistl.h"
 
 struct _tstfn {
-	void                (*fn)();
+	void                (*fn)(void);
 	struct ylistl_link    lk;
 };
 
@@ -34,7 +34,7 @@ static YLISTL_DECL_HEAD(_tstfnl);
 static int  _mem_count = 0;
 
 void
-dregister_tstfn(void (*fn)()) {
+dregister_tstfn(void (*fn)(void)) {
 	/* malloc should be used instead of dmalloc */
 	struct _tstfn* n = malloc(sizeof(*n));
 	n->fn = fn;
@@ -52,7 +52,7 @@ void dfree(void* p) {
 	free(p);
 }
 
-int dmem_count() { return _mem_count; }
+int dmem_count(void) { return _mem_count; }
 
 
 int main() {

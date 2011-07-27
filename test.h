@@ -21,13 +21,13 @@
 #ifndef __TESt_h__
 #define __TESt_h__
 
-extern int dmem_count();
-extern void dregister_tstfn(void (*fn)());
+extern int dmem_count(void);
+extern void dregister_tstfn(void (*fn)(void));
 
-#define TESTFN(fn)						\
-	static void __tst_##fn() __attribute__ ((constructor));	\
-	static void __tst_##fn() {				\
-		dregister_tstfn(&fn);				\
+#define TESTFN(fn)							\
+	static void __tst_##fn(void) __attribute__ ((constructor));	\
+	static void __tst_##fn(void) {					\
+		dregister_tstfn(&fn);					\
 	}
 
 #endif /* __TESt_h__ */

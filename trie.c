@@ -77,7 +77,7 @@ struct ytrie {
 };
 
 static inline struct _node*
-_alloc_node() {
+_alloc_node(void) {
 	struct _node* n = ymalloc(sizeof(struct _node));
 	if (!n)
 		/*

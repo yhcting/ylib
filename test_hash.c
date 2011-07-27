@@ -35,7 +35,7 @@ _free(void* v) {
 }
 
 static void
-_test_hash_normal() {
+_test_hash_normal(void) {
 	int           sv = dmem_count();
 	int           i;
 	char          buf[4096];
@@ -73,7 +73,7 @@ _test_hash_normal() {
 }
 
 static void
-_test_hash_address() {
+_test_hash_address(void) {
 	int           sv = dmem_count();
 	int           i;
 	char          buf[4096];
@@ -111,7 +111,7 @@ _test_hash_address() {
 }
 
 static void
-_test_hash() {
+_test_hash(void) {
 	printf("== Testing hash ==\n");
 	_test_hash_normal();
 	_test_hash_address();

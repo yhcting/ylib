@@ -221,7 +221,7 @@ _verify_test_tree(const struct ytree* t) {
 #undef _item
 
 static void
-_test_tree() {
+_test_tree(void) {
 	/* pre-order traversal*/
 	static const char __preot[]
 		= {'F', 'B', 'A', 'D', 'C', 'E', 'G', 'I', 'H'};

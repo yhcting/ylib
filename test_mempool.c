@@ -33,7 +33,7 @@
 #define _TESTSZ    (1*1024)
 
 static void
-_test_mempool() {
+_test_mempool(void) {
 	int         i, j, k;
 	struct ymp* mp;
 	int*        b[_TESTSZ];

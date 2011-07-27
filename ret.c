@@ -48,7 +48,7 @@ void
 yretset(enum yret err) { _last_ret = err; }
 
 enum yret
-yretget() { return _last_ret; }
+yretget(void) { return _last_ret; }
 
 const char*
 yretstring(enum yret r) {

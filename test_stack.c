@@ -27,7 +27,7 @@
 
 
 static void
-_test_stack() {
+_test_stack(void) {
 	int* pi;
 	int sv = dmem_count();
 	struct ystack*  s = ystack_create(NULL);

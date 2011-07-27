@@ -45,7 +45,7 @@ _free_dummycb(void* arg) {
  * Linked list test.
  */
 static void
-_test_list() {
+_test_list(void) {
 	int             mem_cnt_sv;
 	int             i;
 	int*            p;

@@ -27,7 +27,7 @@
 
 
 static void
-_test_queue() {
+_test_queue(void) {
 	int* pi;
 	int sv = dmem_count();
 	struct yqueue* q = yqueue_create(NULL);

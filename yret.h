@@ -61,7 +61,7 @@ yretset(enum yret ret);
  * get last warning or error
  */
 EXPORT enum yret
-yretget();
+yretget(void);
 
 EXPORT const char*
 yretstring(enum yret);

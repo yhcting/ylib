@@ -119,7 +119,9 @@ struct _blk {
 };
 
 struct ymp {
+#ifndef CONFIG_MEMPOOL_DYNAMIC
 	unsigned char**   grp;    /* groups of blocks */
+#endif
 	int               grpsz;  /* size of grp - number of element in group*/
 	int               nrgrp;  /* number of group allocated */
 	struct _blk***    fbp;    /* Free Block Pointer group */
@@ -175,18 +177,10 @@ _blksz(struct ymp* mp) {
  */
 static inline struct _blk*
 _fbpblk(struct ymp* mp, int i) {
-	return *(mp->fbp[i / mp->grpsz] + i % mp->grpsz);
+	struct _blk* b = *(mp->fbp[i / mp->grpsz] + i % mp->grpsz);
+	yassert(b->i == i);
+	return b;
 }
-
-/*
- * @i    : index of memory block pool.
- */
-static inline struct _blk*
-_blk(struct ymp* mp, int i) {
-	return (struct _blk*)(mp->grp[i / mp->grpsz]
-			      + i % mp->grpsz * _blksz(mp));
-}
-
 
 static inline int
 _is_freeblk(struct ymp* mp, struct _blk* b) {
@@ -204,6 +198,7 @@ _is_usedblk(struct ymp* mp, struct _blk* b) {
 static inline void
 _setfbp(struct ymp* mp, int i, struct _blk* b) {
 	*(mp->fbp[i / mp->grpsz] + i % mp->grpsz) = b;
+	b->i = i;
 }
 
 static inline int
@@ -214,6 +209,100 @@ _sz(struct ymp* mp) {
 static inline int
 _usedsz(struct ymp* mp) {
 	return mp->fbi;
+}
+
+/*
+ * Policy
+ */
+static inline int
+_need_shrink(struct ymp* mp) {
+	return (mp->fbi * 2 / mp->grpsz < mp->nrgrp);
+}
+
+#ifdef CONFIG_MEMPOOL_DYNAMIC
+
+/*
+ * expand memory pool by 1 group
+ */
+static void
+_expand(struct ymp* mp) {
+	int             i;
+	struct _blk***  newfbp;
+	int             blksz;
+
+	/* pre-calulate frequently used value */
+	blksz = _blksz(mp);
+
+	newfbp = ymalloc(sizeof(*newfbp) * (mp->nrgrp + 1));
+	yassert(newfbp);
+
+	/* allocate new fbp group */
+	newfbp[mp->nrgrp] = ymalloc(sizeof(**newfbp) * mp->grpsz);
+	yassert(newfbp[mp->nrgrp]);
+
+	/* initialize fbp & block group */
+	for (i = 0; i < mp->grpsz; i++) {
+		newfbp[mp->nrgrp][i]
+			= (struct _blk*)ymalloc(_blksz(mp));
+		newfbp[mp->nrgrp][i]->i = _sz(mp) + i;
+	}
+
+	/* keep previous values */
+	memcpy(newfbp, mp->fbp, mp->nrgrp * sizeof(*newfbp));
+
+	/* update mp structure */
+	yfree(mp->fbp);
+	mp->fbp = newfbp;
+	mp->nrgrp++;
+}
+
+static void
+_shrink(struct ymp* mp, int margin) {
+	int from, i, j;
+	/* start index of empty group */
+	from = (mp->fbi - 1) / mp->grpsz + 1 + margin;
+	if (from > mp->nrgrp)
+		from = mp->nrgrp;
+	for (i = from; i < mp->nrgrp; i++) {
+		for (j = 0; j < mp->grpsz; j++)
+			yfree(mp->fbp[i][j]);
+		yfree(mp->fbp[i]);
+	}
+	mp->nrgrp = from;
+}
+
+#else /* CONFIG_MEMPOOL_DYNAMIC */
+
+static inline void
+_shrink(struct ymp* mp, int margin) { }
+
+/*
+ * @i    : index of memory block pool.
+ */
+static inline struct _blk*
+_blk(struct ymp* mp, int i) {
+	return (struct _blk*)(mp->grp[i / mp->grpsz]
+			      + i % mp->grpsz * _blksz(mp));
+}
+
+static inline void
+_fbpdump(struct ymp* mp) {
+	int i;
+	printf("sz : %d, fbi : %d\n", _sz(mp), mp->fbi);
+	for (i = 0; i < _sz(mp); i++) {
+		printf("fbp[%d] -> %p (i:%d)\n",
+		       i, _fbpblk(mp, i), _fbpblk(mp, i)->i);
+	}
+}
+
+static inline void
+_blkdump(struct ymp* mp) {
+	int i;
+	printf("sz : %d, fbi : %d\n", _sz(mp), mp->fbi);
+	for (i = 0; i < _sz(mp); i++) {
+		printf("blk(%d:%p) : i(%d)\n",
+		       i, _blk(mp, i), _blk(mp, i)->i);
+	}
 }
 
 /*
@@ -244,8 +333,8 @@ _expand(struct ymp* mp) {
 	/* initialize fbp & block group */
 	for (i = 0; i < mp->grpsz; i++) {
 		newfbp[mp->nrgrp][i]
-			= (struct _blk*)newgrp[mp->nrgrp] + i * blksz;
-		newfbp[mp->nrgrp][i]->i = mp->nrgrp * mp->grpsz + i;
+			= (struct _blk*)(newgrp[mp->nrgrp] + i * blksz);
+		newfbp[mp->nrgrp][i]->i = _sz(mp) + i;
 	}
 
 	/* keep previous values */
@@ -260,99 +349,7 @@ _expand(struct ymp* mp) {
 	mp->nrgrp++;
 }
 
-#define _find_next_blk(func)			\
-	int          i;				\
-	struct _blk* b;				\
-	for (i = *idx; i < _sz(mp); i++) {	\
-		b = _blk(mp, i);		\
-		if (func(mp, b)) {		\
-			*idx = i + 1;		\
-			return b;		\
-		}				\
-	}					\
-	return NULL;
-
-static struct _blk*
-_next_used(struct ymp* mp, int* idx /* inout */) {
-	_find_next_blk(_is_usedblk);
-}
-
-static struct _blk*
-_next_free(struct ymp* mp, int* idx /* inout */) {
-	_find_next_blk(_is_freeblk);
-}
-
-#undef _find_next_blk
-
-/*
- * Policy is not checked here.
- * This is pure implementation.
- * (Performance is not considered yet.)
- *
- * Algorithm
- * ---------
- *
- * block pool
- *
- * index:0            index:_usedsz()
- *     |                  |
- *     v                  v
- *    +--+-----+---+-----+--+-----+---+------
- *    |  | ... | F | ... |  | ... | U |
- *    +--+-----+---+-----+--+-----+---+-----
- *               ^       |          ^
- *               |       |          |
- *               +--------- switch -+
- *                       |
- *                       |
- *                       |-> start to search used block from here
- *                       |   (fragmented block)
- *
- */
-static void
-_defragment(struct ymp* mp) {
-	int          bi1, bi2;
-	struct _blk *b1, *b2;
-
-	bi1 = 0;
-	/* find first fragmented used block */
-	bi2 = _usedsz(mp);
-	while ( NULL != (b2 = _next_used(mp, &bi2))) {
-		b1 = _next_free(mp, &bi1);
-		yassert(bi1 <= _usedsz(mp));
-		/* switch block */
-		memcpy(b1, b2, _blksz(mp));
-		_setfbp(mp, b1->i, b2);
-		_setfbp(mp, b2->i, b1);
-	}
-}
-
-static void
-_shrink(struct ymp* mp) {
-	int     from, /* shrink from - index */
-		i;
-
-	_defragment(mp);
-
-	/*
-	 * Try to free all free block strip.
-	 * 'mp->fbi' itself indicates 'Free block'.
-	 * So, '-1' is applied.
-	 * '+1' for free-block-strip.
-	 */
-	from = (mp->fbi - 1) / mp->grpsz + 1;
-	for (i = from; i < mp->nrgrp; i++) {
-		/*
-		 * we don't need to shrink mp->fbp/mp->grp buffer itself.
-		 * this is not big deal in terms of memory usage.
-		 * so, free only allocated fbp strip.
-		 */
-		yfree(mp->fbp[i]);
-		yfree(mp->grp[i]);
-	}
-	/* number of group is shrinked */
-	mp->nrgrp = from;
-}
+#endif /* CONFIG_MEMPOOL_DYNAMIC */
 
 /******************************************************************************
  * Interface Functions
@@ -364,7 +361,9 @@ ymp_create(int grpsz, int elemsz) {
 
 	yassert(grpsz > 0 && elemsz > 0);
 	mp = ymalloc(sizeof(*mp));
+#ifndef CONFIG_MEMPOOL_DYNAMIC
 	mp->grp = ymalloc(sizeof(*mp->grp));
+#endif
 	mp->grpsz = grpsz;
 	mp->nrgrp = 0;
 	mp->fbp = ymalloc(sizeof(*mp->fbp));
@@ -382,10 +381,22 @@ void
 ymp_destroy(struct ymp* mp) {
 	int i;
 	_destroy_lock(mp);
+#ifdef CONFIG_MEMPOOL_DYNAMIC
+	for (i = 0; i < mp->nrgrp; i++) {
+		int j;
+		for (j = 0; j < mp->grpsz; j++)
+			yfree(mp->fbp[i][j]);
+		yfree(mp->fbp[i]);
+	}
 	yfree(mp->fbp);
-	for (i = 0; i < mp->nrgrp; i++)
+#else
+	for (i = 0; i < mp->nrgrp; i++) {
+		yfree(mp->fbp[i]);
 		yfree(mp->grp[i]);
+	}
+	yfree(mp->fbp);
 	yfree(mp->grp);
+#endif
 	yfree(mp);
 }
 
@@ -401,6 +412,8 @@ ymp_get(struct ymp* mp) {
 		_expand(mp);
 
 	b = _fbpblk(mp, mp->fbi);
+	yassert(b->i == mp->fbi);
+
 	mp->fbi++;
 	_unlock(mp);
 
@@ -414,44 +427,54 @@ void
 ymp_put(struct ymp* mp, void* block) {
 	struct _blk* b;
 	struct _blk* ub; /* used block */
-	int    ti;
+	int          ti;
 
 	b = container_of(block, struct _blk, d);
 	_lock(mp);
-	yassert(mp->fbi > 0);
+	yassert(mp->fbi > 0
+		&& b->i < mp->fbi);
+
 	mp->fbi--;
 	ub = _fbpblk(mp, mp->fbi);
 
 	/* swap free block pointer */
-	ti = b->i; b->i = ub->i; ub->i = ti;
+	ti = b->i;
+	_setfbp(mp, ub->i, b);
+	_setfbp(mp, ti, ub);
 
-	_setfbp(mp, ub->i, ub);
-	_setfbp(mp, b->i, b);
+	if (_need_shrink(mp))
+		_shrink(mp, 1);
+
 	_unlock(mp);
 }
 
 enum yret
-ymp_shrink(struct ymp* mp) {
+ymp_shrink(struct ymp* mp, int margin) {
 	_lock(mp);
-	_shrink(mp);
+	_shrink(mp, margin);
 	_unlock(mp);
 	return YROk;
 }
-
 
 enum yret
 ymp_stop_shrink(struct ymp* mp) {
 	return YREVALNot_implemented;
 }
 
-/*
- * return number of element size
- */
 int
 ymp_sz(struct ymp* mp) {
 	int sz;
 	_lock(mp);
 	sz = _sz(mp);
+	_unlock(mp);
+	return sz;
+}
+
+int
+ymp_usedsz(struct ymp* mp) {
+	int sz;
+	_lock(mp);
+	sz = _usedsz(mp);
 	_unlock(mp);
 	return sz;
 }

@@ -29,10 +29,7 @@
 static void
 _test_stack(void) {
 	int* pi;
-	int sv = dmem_count();
 	struct ystack*  s = ystack_create(NULL);
-
-	printf("== Testing stack ==\n");
 
 	pi = (int*)ymalloc(sizeof(int));
 	*pi = 0;
@@ -49,7 +46,6 @@ _test_stack(void) {
 	yfree(pi);
 
 	ystack_destroy(s);
-	yassert(sv == dmem_count());
 }
 
-TESTFN(_test_stack)
+TESTFN(_test_stack, stack)

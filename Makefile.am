@@ -9,7 +9,7 @@ pkglib_LTLIBRARIES = liby.la
 liby_la_SOURCES = \
 	crc.c tree.c trie.c hash.c ret.c mempool.c
 
-noinst_PROGRAMS = y
+bin_PROGRAMS = y
 y_SOURCES = \
 	test_main.c test_list.c test_queue.c test_stack.c test_tree.c \
 	test_hash.c test_mempool.c

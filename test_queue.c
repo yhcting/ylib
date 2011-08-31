@@ -29,10 +29,7 @@
 static void
 _test_queue(void) {
 	int* pi;
-	int sv = dmem_count();
 	struct yqueue* q = yqueue_create(NULL);
-
-	printf("== Testing queue ==\n");
 
 	pi = (int*)ymalloc(sizeof(int));
 	*pi = 0;
@@ -49,7 +46,6 @@ _test_queue(void) {
 	yfree(pi);
 
 	yqueue_destroy(q);
-	yassert(sv == dmem_count());
 }
 
-TESTFN(_test_queue)
+TESTFN(_test_queue, queue)

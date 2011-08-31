@@ -46,15 +46,10 @@ _free_dummycb(void* arg) {
  */
 static void
 _test_list(void) {
-	int             mem_cnt_sv;
 	int             i;
 	int*            p;
 	struct ylist*   lst;
 	struct ylist_walker*   w;
-
-	printf("== Testing list ==\n");
-
-	mem_cnt_sv = dmem_count();
 
 	lst = ylist_create(NULL);
 	ylist_destroy(lst);
@@ -187,8 +182,6 @@ _test_list(void) {
 
 		ylist_destroy(lst);
 	}
-
-	yassert(mem_cnt_sv == dmem_count());
 }
 
-TESTFN(_test_list)
+TESTFN(_test_list, list)

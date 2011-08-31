@@ -27,6 +27,7 @@
 
 struct _tstfn {
 	void                (*fn)(void);
+	const char*           modname;
 	struct ylistl_link    lk;
 };
 
@@ -34,10 +35,11 @@ static YLISTL_DECL_HEAD(_tstfnl);
 static int  _mem_count = 0;
 
 void
-dregister_tstfn(void (*fn)(void)) {
+dregister_tstfn(void (*fn)(void), const char* mod) {
 	/* malloc should be used instead of dmalloc */
 	struct _tstfn* n = malloc(sizeof(*n));
 	n->fn = fn;
+	n->modname = mod;
 	ylistl_add_last(&_tstfnl, &n->lk);
 }
 
@@ -56,10 +58,22 @@ int dmem_count(void) { return _mem_count; }
 
 
 int main() {
+	int               sv;
 	struct _tstfn*    p;
-	ylistl_foreach_item(p, &_tstfnl, struct _tstfn, lk)
+	ylistl_foreach_item(p, &_tstfnl, struct _tstfn, lk) {
+		printf("<< Test [%s] >>\n", p->modname);
+		sv = dmem_count();
 		(*p->fn)();
+		if (sv != dmem_count()) {
+			printf("Unbalanced memory at [%s]!\n"
+			       "    balance : %d\n",
+			       p->modname,
+			       dmem_count() - sv);
+			yassert(0);
+		}
+		printf(" => PASSED\n");
+	}
 
-	printf(">>>>>> TEST SUCCESS <<<<<<<\n");
+	printf(">>>>>> TEST PASSED <<<<<<<\n");
 	return 0;
 }

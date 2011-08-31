@@ -30,7 +30,8 @@
 
 #include <assert.h>
 
-#define _TESTSZ    (1*1024)
+#define _TESTSZ    (1024)
+#define _TESTGRPSZ (7)
 
 static void
 _test_mempool(void) {
@@ -38,9 +39,7 @@ _test_mempool(void) {
 	struct ymp* mp;
 	int*        b[_TESTSZ];
 
-	printf("== Testing mempool ==\n");
-
-	mp = ymp_create(1, sizeof(int));
+	mp = ymp_create(_TESTGRPSZ, sizeof(int));
 
 	/*
 	 * Normal Test...
@@ -93,7 +92,7 @@ _test_mempool(void) {
 #define __MAGICV     0x12345678
 #define __POISONV    0xdeaddead /* poision value */
 
-	mp = ymp_create(1, sizeof(int));
+	mp = ymp_create(_TESTGRPSZ, sizeof(int));
 
 	/* initialize */
 	for (i = 0; i < _TESTSZ; i++) {
@@ -135,7 +134,7 @@ _test_mempool(void) {
 	}
 
 	/* call shrink here! */
-	ymp_shrink(mp);
+	ymp_shrink(mp, 0);
 	{ /* just scope */
 		int nr = 0;
 		/* verify values */
@@ -145,13 +144,12 @@ _test_mempool(void) {
 				assert(__MAGICV == *b[i]);
 			}
 		}
-		assert(nr == ymp_sz(mp));
+		assert(nr == ymp_usedsz(mp));
 	} /* just scope */
 	ymp_destroy(mp);
 
 #undef __POISONV
 #undef __MAGICV
-
 }
 
-TESTFN(_test_mempool)
+TESTFN(_test_mempool, mempool)

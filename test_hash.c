@@ -36,7 +36,6 @@ _free(void* v) {
 
 static void
 _test_hash_normal(void) {
-	int           sv = dmem_count();
 	int           i;
 	char          buf[4096];
 	char*         v;
@@ -68,13 +67,10 @@ _test_hash_normal(void) {
 	}
 
 	yhash_destroy(h);
-
-	yassert(sv == dmem_count());
 }
 
 static void
 _test_hash_address(void) {
-	int           sv = dmem_count();
 	int           i;
 	char          buf[4096];
 	char*         ptsv[1024];
@@ -106,15 +102,12 @@ _test_hash_address(void) {
 	}
 
 	yhash_destroy(h);
-
-	yassert(sv == dmem_count());
 }
 
 static void
 _test_hash(void) {
-	printf("== Testing hash ==\n");
 	_test_hash_normal();
 	_test_hash_address();
 }
 
-TESTFN(_test_hash)
+TESTFN(_test_hash, hash)

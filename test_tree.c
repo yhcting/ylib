@@ -238,10 +238,7 @@ _test_tree(void) {
 	static const char __r2lpostot[]
 		= {'H', 'I', 'G', 'E', 'C', 'D', 'A', 'B', 'F'};
 
-	int sv = dmem_count();
 	struct ytree*      t;
-
-	printf("== Testing tree ==\n");
 
 	t = ytree_create(NULL);
 	_build_test_tree(t);
@@ -260,7 +257,6 @@ _test_tree(void) {
 	yassert(!ytree_is_empty(t));
 
 	ytree_destroy(t);
-	yassert(sv == dmem_count());
 }
 
-TESTFN(_test_tree)
+TESTFN(_test_tree, tree)

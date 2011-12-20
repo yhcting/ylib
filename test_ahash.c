@@ -22,55 +22,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "yhash.h"
+#include "yahash.h"
 #include "common.h"
 #include "test.h"
 
 #include <assert.h>
 
-
 static void
-_free(void* v) {
-	yfree(v);
-}
-
-static void
-_test_hash_normal(void) {
-	int           i;
-	char          buf[4096];
-	char*         v;
-
-	/*
-	 * Test normal hash.
-	 */
-	struct yhash* h = yhash_create(&_free);
-
-	for (i = 0; i < 1024; i++) {
-		snprintf(buf, sizeof(buf), "this is key %d", i);
-		v = ymalloc(strlen(buf)+1);
-		strcpy(v, buf);
-		/* key and value is same */
-		yhash_add(h, (uint8_t*)buf, strlen(buf) + 1, v);
-		yassert(i+1 == yhash_sz(h));
-	}
-
-	for (i = 256; i < 512; i++) {
-		snprintf(buf, sizeof(buf), "this is key %d", i);
-		v = yhash_find(h, (uint8_t*)buf, strlen(buf)+1);
-		yassert(v && 0 == strcmp(v, buf));
-	}
-
-	for (i = 1023; i >= 0; i--) {
-		snprintf(buf, sizeof(buf), "this is key %d", i);
-		yhash_del(h, (uint8_t*)buf, strlen(buf)+1);
-		yassert(i == yhash_sz(h));
-	}
-
-	yhash_destroy(h);
-}
-
-static void
-_test_hash_address(void) {
+_test_ahash(void) {
 	int           i;
 	char          buf[4096];
 	char*         ptsv[1024];
@@ -78,36 +37,31 @@ _test_hash_address(void) {
 	/*
 	 * Test address hash.
 	 */
-	struct yhash* h = yhash_create(&_free);
+	struct yahash* h = yahash_create();
 
 	for (i = 0; i < 1024; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
 		v = ymalloc(strlen(buf)+1);
 		strcpy(v, buf);
 		/* key and value is same */
-		yhash_add(h, (uint8_t*)v, 0, v);
+		yahash_add(h, v);
 		ptsv[i] = v;
-		yassert(i+1 == yhash_sz(h));
+		yassert(i+1 == yahash_sz(h));
 	}
 
 	for (i = 256; i < 512; i++) {
-		snprintf(buf, sizeof(buf), "this is key %d", i);
-		v = yhash_find(h, (uint8_t*)ptsv[i], 0);
-		yassert(v && 0 == strcmp(v, buf));
+		yassert(yahash_check(h, ptsv[i]));
 	}
 
 	for (i = 1023; i >= 0; i--) {
-		yhash_del(h, (uint8_t*)ptsv[i], 0);
-		yassert(i == yhash_sz(h));
+		yahash_del(h, ptsv[i]);
+		yassert(i == yahash_sz(h));
 	}
 
-	yhash_destroy(h);
+	for (i = 0; i < 1024; i++)
+		yfree(ptsv[i]);
+
+	yahash_destroy(h);
 }
 
-static void
-_test_hash(void) {
-	_test_hash_normal();
-	_test_hash_address();
-}
-
-TESTFN(_test_hash, hash)
+TESTFN(_test_ahash, ahash)

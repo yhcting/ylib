@@ -39,7 +39,7 @@ _test_mempool(void) {
 	struct ymp* mp;
 	int*        b[_TESTSZ];
 
-	mp = ymp_create(_TESTGRPSZ, sizeof(int));
+	mp = ymp_create(_TESTGRPSZ, sizeof(int), 0);
 
 	/*
 	 * Normal Test...
@@ -92,7 +92,7 @@ _test_mempool(void) {
 #define __MAGICV     0x12345678
 #define __POISONV    0xdeaddead /* poision value */
 
-	mp = ymp_create(_TESTGRPSZ, sizeof(int));
+	mp = ymp_create(_TESTGRPSZ, sizeof(int), YMP_mt_safe);
 
 	/* initialize */
 	for (i = 0; i < _TESTSZ; i++) {

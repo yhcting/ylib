@@ -25,6 +25,8 @@
 #include <pthread.h>
 #include <stdio.h>
 
+#include "ymempool.h"
+
 /*
  * fbp memory strip (FbpMS)
  * ------------------------
@@ -127,34 +129,42 @@ struct ymp {
 	struct _blk***    fbp;    /* Free Block Pointer group */
 	int               esz;    /* Element SiZe */
 	int               fbi;    /* Free Block Index */
+	int               opt;    /* option */
 	pthread_mutex_t   m;      /* Mutex for MT safety */
 };
-
 
 /******************************************************************************
  * Intenal functions
  *****************************************************************************/
+static inline int
+_opt_is_mt_safe(struct ymp* mp) {
+	return mp->opt & YMP_mt_safe;
+}
 
 static inline void
 _init_lock(struct ymp* mp) {
-	pthread_mutex_init(&mp->m, NULL);
+	if (_opt_is_mt_safe(mp))
+		pthread_mutex_init(&mp->m, NULL);
 }
 
 static inline void
 _lock(struct ymp* mp) {
-	if (pthread_mutex_lock(&mp->m))
-		yassert(0);
+	if (_opt_is_mt_safe(mp))
+		if (pthread_mutex_lock(&mp->m))
+			yassert(0);
 }
 
 static inline void
 _unlock(struct ymp* mp) {
-	if (pthread_mutex_unlock(&mp->m))
-		yassert(0);
+	if (_opt_is_mt_safe(mp))
+		if (pthread_mutex_unlock(&mp->m))
+			yassert(0);
 }
 
 static inline void
 _destroy_lock(struct ymp* mp) {
-	pthread_mutex_destroy(&mp->m);
+	if (_opt_is_mt_safe(mp))
+		pthread_mutex_destroy(&mp->m);
 }
 
 static inline int
@@ -228,10 +238,6 @@ static void
 _expand(struct ymp* mp) {
 	int             i;
 	struct _blk***  newfbp;
-	int             blksz;
-
-	/* pre-calulate frequently used value */
-	blksz = _blksz(mp);
 
 	newfbp = ymalloc(sizeof(*newfbp) * (mp->nrgrp + 1));
 	yassert(newfbp);
@@ -356,7 +362,7 @@ _expand(struct ymp* mp) {
  *****************************************************************************/
 
 struct ymp*
-ymp_create(int grpsz, int elemsz) {
+ymp_create(int grpsz, int elemsz, int opt) {
 	struct ymp* mp;
 
 	yassert(grpsz > 0 && elemsz > 0);
@@ -369,6 +375,7 @@ ymp_create(int grpsz, int elemsz) {
 	mp->fbp = ymalloc(sizeof(*mp->fbp));
 	mp->esz = elemsz;
 	mp->fbi = 0;
+	mp->opt = opt;
 	_init_lock(mp);
 
 	/* allocate 1-block-group for initial state */

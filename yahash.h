@@ -19,65 +19,54 @@
  *****************************************************************************/
 
 
+/*
+ * Special version of hash to support memory address hashing efficiently.
+ * Key = memory address. Value = Don't care.
+ */
 
-#ifndef __YHASh_h__
-#define __YHASh_h__
+#ifndef __YAHASh_h__
+#define __YAHASh_h__
 
 #include <stdint.h>
 
 #include "yret.h"
 
-struct yhash;
+struct yahash;
 
 /**
- * @fcb : callback to free user value(item)
- *	  (NULL means, item doesn't need to be freed.)
  */
-EXPORT struct yhash*
-yhash_create(void(*fcb)(void*));
+EXPORT struct yahash*
+yahash_create(void);
 
 /**
  * @return : reserved for future use.
  */
 EXPORT enum yret
-yhash_destroy(struct yhash* h);
+yahash_destroy(struct yahash* h);
 
 /**
  * @return : number of elements in hash.
  */
 EXPORT uint32_t
-yhash_sz(const struct yhash* h);
+yahash_sz(const struct yahash* h);
 
 /**
- * @v	   : user value(item)
- * @key    : hash key
- * @keysz  : size of hash key
- *           NOTE!
- *               0 == keysz hash special meaning.
- *               '0 == keysz' means, value of key itself - not pointed one -
- *               is key value.
- *               This is useful when hashing memory address.
  * @return : return hash @h - self.
  */
-EXPORT struct yhash*
-yhash_add(struct yhash* h,
-	  const uint8_t* key, uint32_t keysz,
-	  void* v);
+EXPORT struct yahash*
+yahash_add(struct yahash* h, void* addr);
 
 /**
  * If these is no matched item, nothing happened.
- * @v	   : user value(item)
  * @return : return hash @h - self.
  */
-EXPORT struct yhash*
-yhash_del(struct yhash* h,
-	  const uint8_t* key, uint32_t keysz);
+EXPORT struct yahash*
+yahash_del(struct yahash* h, void* addr);
 
 /**
- * @return : NULL if fails.
+ * @return : 0 (not in hash) 1 (already in hash)
  */
-EXPORT void*
-yhash_find(const struct yhash* h,
-	   const uint8_t* key, uint32_t keysz);
+EXPORT int
+yahash_check(const struct yahash* h, void* addr);
 
-#endif /* __YHASh_h__ */
+#endif /* __YAHASh_h__ */

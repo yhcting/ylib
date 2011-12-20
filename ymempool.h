@@ -30,6 +30,13 @@
 #include "yret.h"
 
 /*
+ * Options
+ */
+enum {
+	YMP_mt_safe = 0x1,
+};
+
+/*
  * mp : Memory Pool
  */
 struct ymp;
@@ -41,7 +48,7 @@ struct ymp;
  * elemsz : element size (in bytes)
  */
 EXPORT struct ymp*
-ymp_create(int grpsz, int elemsz);
+ymp_create(int grpsz, int elemsz, int opt);
 
 EXPORT void
 ymp_destroy(struct ymp* mp);

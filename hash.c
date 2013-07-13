@@ -20,6 +20,7 @@
 
 
 #include <memory.h>
+#include <string.h>
 
 #include "yhash.h"
 #include "ylistl.h"

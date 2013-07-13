@@ -455,6 +455,7 @@ ymp_put(struct ymp* mp, void* block) {
 	_unlock(mp);
 }
 
+#ifdef CONFIG_MEMPOOL_DYNAMIC
 enum yret
 ymp_shrink(struct ymp* mp, int margin) {
 	_lock(mp);
@@ -467,6 +468,7 @@ enum yret
 ymp_stop_shrink(struct ymp* mp) {
 	return YREVALNot_implemented;
 }
+#endif /* CONFIG_MEMPOOL_DYNAMIC */
 
 int
 ymp_sz(struct ymp* mp) {

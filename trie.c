@@ -67,18 +67,18 @@ struct _node {
 	 *   And this is memory-burden.
 	 *  4bits-way (16 pointers-way) is good choice, in my opinion.)
 	 */
-	struct _node*  n[16];
-	void*          v;
+	struct _node *n[16];
+	void         *v;
 };
 
 struct ytrie {
 	struct _node          rt;     /* root. sentinel */
-	void           (*fcb)(void*); /* callback for free value */
+	void           (*fcb)(void *); /* callback for free value */
 };
 
-static inline struct _node*
+static inline struct _node *
 _alloc_node(void) {
-	struct _node* n = ymalloc(sizeof(struct _node));
+	struct _node *n = ymalloc(sizeof(struct _node));
 	if (!n)
 		/*
 		 * if allocing such a small size of memory fails,
@@ -91,7 +91,7 @@ _alloc_node(void) {
 }
 
 static inline void
-_free_node(struct _node* n, void(*fcb)(void*) ) {
+_free_node(struct _node *n, void(*fcb)(void *) ) {
 	if (n->v)
 		if (fcb)
 			(*fcb)(n->v);
@@ -99,7 +99,7 @@ _free_node(struct _node* n, void(*fcb)(void*) ) {
 }
 
 static inline void
-_delete_node(struct _node* n, void(*fcb)(void*) ) {
+_delete_node(struct _node *n, void(*fcb)(void *) ) {
 	register int i;
 	for (i=0; i<16; i++)
 		if (n->n[i])
@@ -108,7 +108,7 @@ _delete_node(struct _node* n, void(*fcb)(void*) ) {
 }
 
 static inline int
-_delete_empty_leaf(struct _node* n) {
+_delete_empty_leaf(struct _node *n) {
 	register int i;
 	/*
 	 * Check followings
@@ -131,7 +131,7 @@ _delete_empty_leaf(struct _node* n) {
  * @return : see '_delete_key(...)'
  */
 static inline int
-_delete_empty_byte_leaf(struct _node* n, uint8_t c) {
+_delete_empty_byte_leaf(struct _node *n, uint8_t c) {
 	register int  fi = c>>4;
 	register int  bi = c&0x0f;
 	if (_delete_empty_leaf(n->n[fi]->n[bi])) {
@@ -157,8 +157,8 @@ _delete_empty_byte_leaf(struct _node* n, uint8_t c) {
  *     -1: cannot find node(symbol is not in trie)
  */
 static int
-_delete_key(struct _node* n, const uint8_t* p,
-            uint32_t sz, void(*fcb)(void*)) {
+_delete_key(struct _node *n, const uint8_t *p,
+            uint32_t sz, void(*fcb)(void *)) {
 	register int         fi = *p>>4;
 	register int         bi = *p&0x0f;
 	if (sz>0) {
@@ -190,7 +190,7 @@ _delete_key(struct _node* n, const uint8_t* p,
 
 /**
  * @c:     (char)     character
- * @n:     (struct _node*) node to move down
+ * @n:     (struct _node *) node to move down
  * @fi:    (int)      variable to store front index
  * @bi:    (int)      variable to store back index
  * @felse: <code>     code in 'else' brace of front node
@@ -215,14 +215,14 @@ _delete_key(struct _node* n, const uint8_t* p,
  * @return: back node of last character of symbol.
  *          If fails to get, NULL is returned.
  */
-static struct _node*
-_get_node(struct ytrie* t,
-          const uint8_t* key, uint32_t sz,
+static struct _node *
+_get_node(struct ytrie *t,
+          const uint8_t *key, uint32_t sz,
           int bcreate) {
-	register struct _node*     n = &t->rt;
-	register const uint8_t*    p = key;
-	register const uint8_t*    pend = p+sz;
-	register int                  fi, bi; /* front index */
+	register struct _node  *n = &t->rt;
+	register const uint8_t *p = key;
+	register const uint8_t *pend = p+sz;
+	register int            fi, bi; /* front index */
 
 	if (bcreate) {
 		while (p<pend) {
@@ -242,8 +242,8 @@ _get_node(struct ytrie* t,
 }
 
 static int
-_equal_internal(const struct _node* n0, const struct _node* n1,
-		int(*cmp)(const void*, const void*)) {
+_equal_internal(const struct _node *n0, const struct _node *n1,
+		int(*cmp)(const void *, const void *)) {
 	register int i;
 	if (n0->v && n1->v) {
 		if (0 == cmp(n0->v, n1->v))
@@ -262,12 +262,12 @@ _equal_internal(const struct _node* n0, const struct _node* n1,
 	return 1; /* n0 and n1 is same */
 }
 
-static struct _node*
-_node_clone(const struct _node* n,
-	    void* user,
-	    void*(*clonev)(void*, const void*)) {
+static struct _node *
+_node_clone(const struct _node *n,
+	    void *user,
+	    void *(*clonev)(void *, const void *)) {
 	register int i;
-	struct _node* r = _alloc_node();
+	struct _node *r = _alloc_node();
 	if (n->v)
 		r->v = clonev(user, n->v);
 	for (i=0; i<16; i++)
@@ -280,10 +280,10 @@ _node_clone(const struct _node* n,
  * @return: see '_walk_node'
  */
 static int
-_walk_internal(void* user, struct _node* n,
-               int(cb)(void*, const uint8_t*, uint32_t,void*),
+_walk_internal(void *user, struct _node *n,
+               int(cb)(void *, const uint8_t *, uint32_t,void *),
 	       /* bsz: excluding space for trailing 0 */
-               uint8_t* buf, uint32_t bsz,
+               uint8_t *buf, uint32_t bsz,
                uint32_t bitoffset) {
 	register uint32_t i;
 
@@ -300,7 +300,7 @@ _walk_internal(void* user, struct _node* n,
 		if (n->n[i]) {
 			int   r;
 			if (buf) {
-				uint8_t* p =  buf + (bitoffset>>3);
+				uint8_t *p =  buf + (bitoffset>>3);
 				/* check that buffer is remained enough */
 				if (bitoffset>>3 == bsz)
 					/* not enough buffer.. */
@@ -335,10 +335,10 @@ _walk_internal(void* user, struct _node* n,
 	return 1;
 }
 
-void**
-ytrie_getref(struct ytrie* t,
-	     const uint8_t* key, uint32_t sz) {
-	struct _node* n;
+void **
+ytrie_getref(struct ytrie *t,
+	     const uint8_t *key, uint32_t sz) {
+	struct _node *n;
 	yassert(key);
 	if (0 == sz)
 		return NULL; /* 0 length string */
@@ -346,26 +346,26 @@ ytrie_getref(struct ytrie* t,
 	return n? &n->v: NULL;
 }
 
-void*
-ytrie_get(struct ytrie* t, const uint8_t* key, uint32_t sz) {
-	void** pv = ytrie_getref(t, key, sz);
+void *
+ytrie_get(struct ytrie *t, const uint8_t *key, uint32_t sz) {
+	void ** pv = ytrie_getref(t, key, sz);
 	return pv? *pv: NULL;
 }
 
 int
-ytrie_walk(struct ytrie* t, void* user,
-	   const uint8_t* from, uint32_t fromsz,
+ytrie_walk(struct ytrie *t, void *user,
+	   const uint8_t *from, uint32_t fromsz,
 	   /* return 1 for keep going, 0 for stop and don't do anymore */
-	   int(cb)(void*, const uint8_t*, uint32_t, void*)) {
-	char             buf[YTRIE_MAX_KEY_LEN + 1];
-	struct _node*    n = _get_node(t, from, fromsz, FALSE);
+	   int(cb)(void *, const uint8_t *, uint32_t, void *)) {
+	char          buf[YTRIE_MAX_KEY_LEN + 1];
+	struct _node *n = _get_node(t, from, fromsz, FALSE);
 
 	yassert(t && from);
 	if (n)
 		return _walk_internal(user,
 				      n,
 				      cb,
-				      (uint8_t*)buf,
+				      (uint8_t *)buf,
 				      YTRIE_MAX_KEY_LEN,
 				      0);
 	else
@@ -373,10 +373,10 @@ ytrie_walk(struct ytrie* t, void* user,
 }
 
 int
-ytrie_insert(struct ytrie* t,
-	     const uint8_t* key,
-	     uint32_t sz, void* v) {
-	struct _node*  n;
+ytrie_insert(struct ytrie *t,
+	     const uint8_t *key,
+	     uint32_t sz, void *v) {
+	struct _node * n;
 
 	yassert(t && key);
 	if (0 == sz)
@@ -396,9 +396,9 @@ ytrie_insert(struct ytrie* t,
 	}
 }
 
-struct ytrie*
-ytrie_create(void(*fcb)(void*)) {
-	struct ytrie* t = ymalloc(sizeof(struct ytrie));
+struct ytrie *
+ytrie_create(void(*fcb)(void *)) {
+	struct ytrie *t = ymalloc(sizeof(struct ytrie));
 	yassert(t);
 	memset(t, 0, sizeof(*t));
 	t->fcb = fcb;
@@ -406,7 +406,7 @@ ytrie_create(void(*fcb)(void*)) {
 }
 
 void
-ytrie_clean(struct ytrie* t) {
+ytrie_clean(struct ytrie *t) {
 	register int i;
 	for (i=0; i<16; i++) {
 		if (t->rt.n[i]) {
@@ -417,14 +417,14 @@ ytrie_clean(struct ytrie* t) {
 }
 
 void
-ytrie_destroy(struct ytrie* t) {
+ytrie_destroy(struct ytrie *t) {
 	ytrie_clean(t);
 	yfree(t);
 }
 
 
 int
-ytrie_delete(struct ytrie* t, const uint8_t* key, uint32_t sz) {
+ytrie_delete(struct ytrie *t, const uint8_t *key, uint32_t sz) {
 	yassert(t && key);
 	switch(_delete_key(&t->rt, key, sz, t->fcb)) {
         case 1:
@@ -433,19 +433,19 @@ ytrie_delete(struct ytrie* t, const uint8_t* key, uint32_t sz) {
 	}
 }
 
-void(*ytrie_fcb(const struct ytrie* t))(void*) {
+void(*ytrie_fcb(const struct ytrie *t))(void *) {
 	return t->fcb;
 }
 
 int
-ytrie_equal(const struct ytrie* t0, const struct ytrie* t1,
-	    int(*cmp)(const void*, const void*)) {
+ytrie_equal(const struct ytrie *t0, const struct ytrie *t1,
+	    int(*cmp)(const void *, const void *)) {
 	return _equal_internal(&t0->rt, &t1->rt, cmp);
 }
 
 int
-ytrie_copy(struct ytrie* dst, const struct ytrie* src, void* user,
-	   void*(*clonev)(void*,const void*)) {
+ytrie_copy(struct ytrie *dst, const struct ytrie *src, void *user,
+	   void *(*clonev)(void *,const void *)) {
 	register int i;
 	ytrie_clean(dst);
 	dst->fcb = src->fcb;
@@ -457,25 +457,25 @@ ytrie_copy(struct ytrie* dst, const struct ytrie* src, void* user,
 	return 0;
 }
 
-struct ytrie*
-ytrie_clone(const struct ytrie* t,
-	    void* user,
-	    void*(*clonev)(void*, const void*)) {
-	struct ytrie*    r = ytrie_create(t->fcb);
+struct ytrie *
+ytrie_clone(const struct ytrie *t,
+	    void *user,
+	    void *(*clonev)(void *, const void *)) {
+	struct ytrie *   r = ytrie_create(t->fcb);
 	ytrie_copy(r, t, user, clonev);
 	return r;
 }
 
 int
-ytrie_auto_complete(struct ytrie* t,
-		    const uint8_t* start_with, uint32_t sz,
-		    uint8_t* buf, uint32_t bufsz) {
+ytrie_auto_complete(struct ytrie *t,
+		    const uint8_t *start_with, uint32_t sz,
+		    uint8_t *buf, uint32_t bufsz) {
 #define YTRIEBranch 0
 #define YTRIELeaf   1
 #define YTRIEFail   2
 
 	int                      ret = -1;
-	register struct _node*   n;
+	register struct _node   *n;
 	register uint32_t        i;
 	uint32_t                 j, cnt, bi;
 	uint8_t                  c;

@@ -22,7 +22,7 @@
 #define __TESt_h__
 
 extern int dmem_count(void);
-extern void dregister_tstfn(void (*fn)(void), const char* mod);
+extern void dregister_tstfn(void (*fn)(void), const char *mod);
 
 #define TESTFN(fn, mod)							\
 	static void __tst_##fn(void) __attribute__ ((constructor));	\

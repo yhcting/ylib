@@ -1,5 +1,5 @@
 /*****************************************************************************
- *    Copyright (C) 2011 Younghyung Cho. <yhcting77@gmail.com>
+ *    Copyright (C) 2012 Younghyung Cho. <yhcting77@gmail.com>
  *
  *    This file is part of ylib
  *
@@ -17,27 +17,32 @@
  *    You should have received a copy of the GNU General Public License
  *    along with this program.	If not, see <http://www.gnu.org/licenses/>.
  *****************************************************************************/
+#include "common.h"
+#include "ylist.h"
+#include "test.h"
 
-
-#ifndef __YCRc_h__
-#define __YCRc_h__
-
-#include <stdint.h>
-
-/**
- * @crc     : previous crc value
- * @buffer  : data pointer
- * @len     : number of bytes in the buffer.
- */
-EXPORT uint16_t
-ycrc16(uint16_t crc, const uint8_t *data, uint32_t len);
-
+#include <assert.h>
 
 /**
- * See above 'ycrc16' for details.
+ * Linked list test.
  */
-EXPORT uint32_t
-ycrc32(uint32_t crc, const uint8_t *data, uint32_t len);
+static void
+test_bitops(void) {
+	unsigned long x = 0xabcffcda;
+	yassert(0xc == bits(x, 8, 4));
+	yassert(0xa == bits(x, 0, 4));
+	yassert(0xa == bits(x, 28, 4));
+	yassert(0xabcf0cda == clear_bits(x, 12, 4));
+	yassert(0xabcffcd0 == clear_bits(x, 0, 4));
+	yassert(0xabcffcd1 == set_bits(x, 0, 4, 1));
+	yassert(0xabcf1cda == set_bits(x, 12, 4, 1));
+	yassert(test_bit(x, 1));
+	yassert(test_bit(x, 3));
+	yassert(0xabcffcdb == set_bit(x, 0));
+	yassert(0xabcffcda == set_bit(x, 13));
+	yassert(0xabcfecda == clear_bit(x, 12));
+	yassert(0xabcffcda == clear_bit(x, 26));
+}
 
+TESTFN(test_bitops, bitopts)
 
-#endif /* __YCRc_h__ */

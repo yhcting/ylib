@@ -33,20 +33,20 @@ struct yhash;
  * @fcb : callback to free user value(item)
  *	  (NULL means, item doesn't need to be freed.)
  */
-EXPORT struct yhash*
-yhash_create(void(*fcb)(void*));
+EXPORT struct yhash *
+yhash_create(void(*fcb)(void *));
 
 /**
  * @return : reserved for future use.
  */
 EXPORT enum yret
-yhash_destroy(struct yhash* h);
+yhash_destroy(struct yhash *h);
 
 /**
  * @return : number of elements in hash.
  */
 EXPORT uint32_t
-yhash_sz(const struct yhash* h);
+yhash_sz(const struct yhash *h);
 
 /**
  * @v	   : user value(item)
@@ -59,25 +59,25 @@ yhash_sz(const struct yhash* h);
  *               This is useful when hashing memory address.
  * @return : return hash @h - self.
  */
-EXPORT struct yhash*
-yhash_add(struct yhash* h,
-	  const uint8_t* key, uint32_t keysz,
-	  void* v);
+EXPORT struct yhash *
+yhash_add(struct yhash *h,
+	  const uint8_t *key, uint32_t keysz,
+	  void *v);
 
 /**
  * If these is no matched item, nothing happened.
  * @v	   : user value(item)
  * @return : return hash @h - self.
  */
-EXPORT struct yhash*
-yhash_del(struct yhash* h,
-	  const uint8_t* key, uint32_t keysz);
+EXPORT struct yhash *
+yhash_del(struct yhash *h,
+	  const uint8_t *key, uint32_t keysz);
 
 /**
  * @return : NULL if fails.
  */
-EXPORT void*
-yhash_find(const struct yhash* h,
-	   const uint8_t* key, uint32_t keysz);
+EXPORT void *
+yhash_find(const struct yhash *h,
+	   const uint8_t *key, uint32_t keysz);
 
 #endif /* __YHASh_h__ */

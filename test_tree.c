@@ -27,7 +27,7 @@
 
 #define _assign(ptr, type, val)				\
 	do {						\
-		(ptr) = (type*)ymalloc(sizeof(type));	\
+		(ptr) = (type *)ymalloc(sizeof(type));	\
 		*(ptr) = (val);				\
 	} while (0)
 
@@ -42,8 +42,8 @@
  *             C   E   H
  */
 static void
-_build_test_tree(struct ytree* t) {
-	char*           c;
+_build_test_tree(struct ytree *t) {
+	char *c;
 	struct ytree_node *n, *p;
 
 	/* Build test tree */
@@ -98,9 +98,9 @@ _build_test_tree(struct ytree* t) {
 
 
 static void
-_test_walker(const struct ytree* t, int type, const char* referseq) {
-	struct ytree_walker* w;
-	const struct ytree_node* n;
+_test_walker(const struct ytree *t, int type, const char *referseq) {
+	struct ytree_walker *w;
+	const struct ytree_node *n;
 	int i = 0;
 	w = ytree_walker_create(ytree_root(t), type);
 	while (ytree_walker_has_next(w)) {
@@ -115,9 +115,9 @@ _test_walker(const struct ytree* t, int type, const char* referseq) {
  * Test tree operation
  */
 static void
-_test_operation(struct ytree* t) {
-	struct ytree_node* n;
-	struct ytree_node* s; /* sub */
+_test_operation(struct ytree *t) {
+	struct ytree_node *n;
+	struct ytree_node *s; /* sub */
 
 	/* Find 'D' */
 	n = ytree_root(t); /* F */
@@ -181,9 +181,9 @@ _test_operation(struct ytree* t) {
 
 
 static void
-_verify_test_tree(const struct ytree* t) {
-	struct ytree_node* n;
-	struct ytree_node* nsv;
+_verify_test_tree(const struct ytree *t) {
+	struct ytree_node *n;
+	struct ytree_node *nsv;
 
 	n = ytree_root(t);
 	yassert(n);
@@ -238,11 +238,11 @@ _test_tree(void) {
 	static const char __r2lpostot[]
 		= {'H', 'I', 'G', 'E', 'C', 'D', 'A', 'B', 'F'};
 
-	struct ytree*      t;
+	struct ytree *t;
 
 	t = ytree_create(NULL);
-	_build_test_tree(t);
 
+	_build_test_tree(t);
 	_verify_test_tree(t);
 
 	_test_walker(t, YTREE_WALKER_PRE_OT, __preot);
@@ -250,13 +250,11 @@ _test_tree(void) {
 	_test_walker(t, YTREE_WALKER_POST_OT, __postot);
 	_test_walker(t, YTREE_WALKER_R2L_PRE_OT, __r2lpreot);
 	_test_walker(t, YTREE_WALKER_R2L_POST_OT, __r2lpostot);
-
 	_test_operation(t);
 
-
 	yassert(!ytree_is_empty(t));
-
 	ytree_destroy(t);
 }
 
 TESTFN(_test_tree, tree)
+

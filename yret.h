@@ -63,7 +63,7 @@ yretset(enum yret ret);
 EXPORT enum yret
 yretget(void);
 
-EXPORT const char*
+EXPORT const char *
 yretstring(enum yret);
 
 

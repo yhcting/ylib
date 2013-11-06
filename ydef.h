@@ -47,6 +47,13 @@
  */
 #define EXPORT __attribute__ ((visibility ("default")))
 
+
+/*****************************************************************************
+ *
+ * Basic macros
+ *
+ *****************************************************************************/
+
 /* if compiler doesn't support 'inline' directive, we should enable below */
 /* #define inline */
 
@@ -71,27 +78,25 @@
 	((type*)(((char*)(ptr)) - offset_of(type, member)))
 #endif
 
-#define unroll16( expr, count, cond)	\
-	switch( (count) & 0xf ) {	\
-        case 0: while (cond){		\
-			expr;		\
-	case 15: expr;			\
-	case 14: expr;			\
-	case 13: expr;			\
-	case 12: expr;			\
-	case 11: expr;			\
-	case 10: expr;			\
-	case 9: expr;			\
-	case 8: expr;			\
-	case 7: expr;			\
-	case 6: expr;			\
-	case 5: expr;			\
-	case 4: expr;			\
-	case 3: expr;			\
-	case 2: expr;			\
-	case 1: expr;			\
-	}				\
-}
+/**************
+ * GCC Specific
+ **************/
+#ifndef likely
+#       define likely(x)	__builtin_expect(!!(x), 1)
+#endif
+
+#ifndef unlikely
+#       define unlikely(x)	__builtin_expect(!!(x), 0)
+#endif
+
+#define barrier()       __asm__ __volatile__("": : :"memory")
+
+
+/*****************************************************************************
+ *
+ * Debugging
+ *
+ *****************************************************************************/
 
 #define YDBG
 

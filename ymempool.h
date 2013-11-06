@@ -47,23 +47,23 @@ struct ymp;
  * grpsz  : elem group size size in pool (number of element)
  * elemsz : element size (in bytes)
  */
-EXPORT struct ymp*
+EXPORT struct ymp *
 ymp_create(int grpsz, int elemsz, int opt);
 
 EXPORT void
-ymp_destroy(struct ymp* mp);
+ymp_destroy(struct ymp *mp);
 
 /*
  * get one block from pool.
  */
-EXPORT void*
-ymp_get(struct ymp* mp);
+EXPORT void *
+ymp_get(struct ymp *mp);
 
 /*
  * return block to pool.
  */
 EXPORT void
-ymp_put(struct ymp* mp, void* block);
+ymp_put(struct ymp *mp, void *block);
 
 
 #ifdef CONFIG_MEMPOOL_DYNAMIC
@@ -72,13 +72,13 @@ ymp_put(struct ymp* mp, void* block);
  * this is NOT implemented yet!!
  */
 EXPORT enum yret
-ymp_stop_shrink(struct ymp*);
+ymp_stop_shrink(struct ymp *);
 
 /*
  * shrink memory pool.
  */
 EXPORT enum yret
-ymp_shrink(struct ymp*, int margin);
+ymp_shrink(struct ymp *, int margin);
 
 #else /* CONFIG_MEMPOOL_DYNAMIC */
 /*
@@ -86,13 +86,13 @@ ymp_shrink(struct ymp*, int margin);
  */
 
 static inline enum yret
-ymp_stop_shrink(struct ymp* mp) { return YRWNothing; }
+ymp_stop_shrink(struct ymp *mp) { return YRWNothing; }
 
 /*
  * shrink memory pool.
  */
 static inline enum yret
-ymp_shrink(struct ymp* mp, int margin) { return YRWNothing; }
+ymp_shrink(struct ymp *mp, int margin) { return YRWNothing; }
 
 #endif /* CONFIG_MEMPOOL_DYNAMIC */
 
@@ -100,12 +100,12 @@ ymp_shrink(struct ymp* mp, int margin) { return YRWNothing; }
  * return number of element
  */
 EXPORT int
-ymp_sz(struct ymp* mp);
+ymp_sz(struct ymp *mp);
 
 /*
  * return number of used element
  */
 EXPORT int
-ymp_usedsz(struct ymp* mp);
+ymp_usedsz(struct ymp *mp);
 
 #endif /* __YMEMPOOl_h__ */

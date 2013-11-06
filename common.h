@@ -25,16 +25,17 @@
 #include "ydef.h"
 #include "yret.h"
 
-/*=======================================
- * Macros
- *=======================================*/
-
+/*****************************************************************************
+ *
+ * General Macros
+ *
+ *****************************************************************************/
 #ifndef abs
 #	define abs(x) (((x)>0)?(x):-(x))
 #endif
 
 #ifndef swap
-#	define swap(x,y,tmp) do { tmp=x;x=y;y=tmp; } while (0)
+#	define swap(x,y,tmp) do { (tmp)=(x);(x)=(y);(y)=(tmp); } while (0)
 #endif
 
 #ifndef min
@@ -44,5 +45,64 @@
 #ifndef max
 #	define max(x,y) (((x)<(y))?y:x)
 #endif
+
+/*****************************************************************************
+ *
+ * Bit operations
+ *     - Not fully tested yet.
+ *
+ *****************************************************************************/
+#define bits(x, offset, bitsz) \
+	(((x) >> (offset)) & ((1LL << (bitsz)) - 1))
+
+#define bit(x, offset) bits(x, offset, 1)
+
+#define clear_bits(x, offset, bitsz) \
+	((x) & ~(((1LL << (bitsz)) - 1) << (offset)))
+/*
+ * replace bits from 'offset' to 'offset' + 'bitsz' of 'x' with bits
+ *   from 0 to 'bitsz' of 'v'.
+ */
+#define set_bits(x, offset, bitsz, v) \
+	(clear_bits(x, offset, bitsz)			\
+	 | ((((1LL << (bitsz)) - 1) & (v)) << (offset)))
+
+#define test_bit(x, bit) \
+	(((x) >> (bit)) & 1LL)
+
+#define set_bit(x, bit) \
+	((x) | (1LL << (bit)))
+
+#define clear_bit(x, bit) \
+	((x) & ~(1LL << (bit)))
+
+
+/*****************************************************************************
+ *
+ * Others
+ *
+ *****************************************************************************/
+
+#define unroll16( expr, count, cond)	\
+	switch( (count) & 0xf ) {	\
+        case 0: while (cond){		\
+			expr;		\
+	case 15: expr;			\
+	case 14: expr;			\
+	case 13: expr;			\
+	case 12: expr;			\
+	case 11: expr;			\
+	case 10: expr;			\
+	case 9: expr;			\
+	case 8: expr;			\
+	case 7: expr;			\
+	case 6: expr;			\
+	case 5: expr;			\
+	case 4: expr;			\
+	case 3: expr;			\
+	case 2: expr;			\
+	case 1: expr;			\
+	}				\
+}
 
 #endif /* __COMMOn_h__ */

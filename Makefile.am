@@ -12,5 +12,5 @@ liby_la_SOURCES = \
 bin_PROGRAMS = y
 y_SOURCES = \
 	test_main.c test_list.c test_queue.c test_stack.c test_tree.c \
-	test_hash.c test_ahash.c test_mempool.c
+	test_hash.c test_ahash.c test_mempool.c test_bitops.c
 y_LDADD = liby.la

@@ -37,15 +37,15 @@ struct ytrie;
  * get pointer of element.
  * (To replace element directly! - Only for performance reason.)
  */
-extern void**
-ytrie_getref(struct ytrie* t,
-	     const uint8_t* key, uint32_t sz);
+extern void **
+ytrie_getref(struct ytrie *t,
+	     const uint8_t *key, uint32_t sz);
 
 /**
  * get element
  */
 extern void*
-ytrie_get(struct ytrie* t, const uint8_t* key, uint32_t sz);
+ytrie_get(struct ytrie *t, const uint8_t *key, uint32_t sz);
 
 
 /**
@@ -55,71 +55,71 @@ ytrie_get(struct ytrie* t, const uint8_t* key, uint32_t sz);
  *	 But if @cb returns 0, walker stops and 'ytrie_walk' is done.
  */
 extern int
-ytrie_walk(struct ytrie* t, void* user,
-	   const uint8_t* from, uint32_t fromsz,
+ytrie_walk(struct ytrie *t, void *user,
+	   const uint8_t *from, uint32_t fromsz,
 	   /* return 1 for keep going, 0 for stop and don't do anymore */
-	   int(cb)(void*, const uint8_t*, uint32_t, void*));
+	   int(*cb)(void *, const uint8_t *, uint32_t, void *));
 
 /**
  * insert element
  */
 extern int
-ytrie_insert(struct ytrie* t,
-	     const uint8_t* key,
+ytrie_insert(struct ytrie *t,
+	     const uint8_t *key,
 	     uint32_t sz,
-	     void* v);
+	     void *v);
 
 /**
  * @fcb : callback to free element.
  */
-extern struct ytrie*
-ytrie_create(void(*fcb)(void*));
+extern struct ytrie *
+ytrie_create(void(*fcb)(void *));
 
 /**
  * just clean contents of trie.
  */
 extern void
-ytrie_clean(struct ytrie*);
+ytrie_clean(struct ytrie *);
 
 /**
  * trie itself is destroyed
  */
 extern void
-ytrie_destroy(struct ytrie*);
+ytrie_destroy(struct ytrie *);
 
 /**
  * delete node.
  */
 extern int
-ytrie_delete(struct ytrie*, const uint8_t* key, uint32_t sz);
+ytrie_delete(struct ytrie *, const uint8_t *key, uint32_t sz);
 
 /**
  * get free callback of trie
  */
 extern void(*
-ytrie_fcb(const struct ytrie*))(void*);
+ytrie_fcb(const struct ytrie *))(void *);
 
 /**
  * @cmp : callback to compare element.
  *	  (return value should be follows the one of 'strcmp')
  */
 extern int
-ytrie_equal(const struct ytrie*, const struct ytrie*,
-	    int(*cmp)(const void*, const void*));
+ytrie_equal(const struct ytrie *, const struct ytrie *,
+	    int(*cmp)(const void *, const void *));
 
 /**
  * copy trie - deep copy
  */
 extern int
-ytrie_copy(struct ytrie* dst, const struct ytrie* src, void* user,
-	   void*(*clonev)(void*,const void*));
+ytrie_copy(struct ytrie *dst, const struct ytrie *src, void *user,
+	   void *(*clonev)(void *,const void *));
 
 /**
  * @clonev : callback function that clones element.
  */
-extern struct ytrie*
-ytrie_clone(const struct ytrie*,
-	    void* user, void*(*clonev)(void*, const void*));
+extern struct ytrie *
+ytrie_clone(const struct ytrie *,
+	    void *user, void *(*clonev)(void *, const void *));
 
 /**
  * @return
@@ -129,8 +129,8 @@ ytrie_clone(const struct ytrie*,
  *    2 : fails. (ex. there is no candidates)
  */
 extern int
-ytrie_auto_complete(struct ytrie*,
-		    const uint8_t* start_with, uint32_t sz,
-		    uint8_t* buf, uint32_t bufsz);
+ytrie_auto_complete(struct ytrie *,
+		    const uint8_t *start_with, uint32_t sz,
+		    uint8_t *buf, uint32_t bufsz);
 
 #endif /* __YTRIe_h__ */

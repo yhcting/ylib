@@ -36,13 +36,13 @@ struct _hn {
 };
 
 struct yahash {
-	struct ylistl_link*   map;
+	struct ylistl_link   *map;
 	uint32_t	      sz;	   /* hash size */
 	uint8_t	              mapbits;	   /* bits of map table = 1<<mapbits */
 };
 
 static inline uint32_t
-_hmapsz(const struct yahash* h) {
+_hmapsz(const struct yahash *h) {
 	return (1 << h->mapbits);
 }
 
@@ -52,21 +52,21 @@ _hv__(uint32_t mapbits, uintptr_t hv) {
 }
 
 static inline uint32_t
-_hv_(const struct yahash* h, uintptr_t hv) {
+_hv_(const struct yahash *h, uintptr_t hv) {
 	return _hv__(h->mapbits, hv);
 }
 
 static inline uint32_t
-_hv(const struct yahash* h, const struct _hn* n) {
+_hv(const struct yahash *h, const struct _hn *n) {
 	return _hv_(h, n->a);
 }
 
 /* Modify hash space to 'bits'*/
-static struct yahash*
-_hmodify(struct yahash* h, uint32_t bits) {
+static struct yahash *
+_hmodify(struct yahash *h, uint32_t bits) {
 	int		    i;
 	struct _hn	   *n, *tmp;
-	struct ylistl_link* oldmap;
+	struct ylistl_link *oldmap;
 	uint32_t	    oldmapsz;
 
 	if (bits < _MIN_HBITS)
@@ -100,10 +100,10 @@ _hmodify(struct yahash* h, uint32_t bits) {
 	return h;
 }
 
-static struct _hn*
-_hfind(const struct yahash* h, uintptr_t a) {
-	struct _hn*	     n;
-	struct ylistl_link*  hd = &h->map[_hv_(h, a)];
+static struct _hn *
+_hfind(const struct yahash *h, uintptr_t a) {
+	struct _hn          *n;
+	struct ylistl_link  *hd = &h->map[_hv_(h, a)];
 
 	ylistl_foreach_item(n, hd, struct _hn, lk)
 		if (n->a == a)
@@ -112,9 +112,9 @@ _hfind(const struct yahash* h, uintptr_t a) {
 	return (&n->lk == hd)? NULL: n;
 }
 
-static struct _hn*
+static struct _hn *
 _ncreate(uintptr_t a) {
-	struct _hn* n = ymalloc(sizeof(*n));
+	struct _hn *n = ymalloc(sizeof(*n));
 	yassert(n);
 	n->a = a;
 	ylistl_init_link(&n->lk);
@@ -122,14 +122,14 @@ _ncreate(uintptr_t a) {
 }
 
 static inline void
-_ndestroy(const struct yahash* h, struct _hn* n) {
+_ndestroy(const struct yahash *h, struct _hn *n) {
 	yfree(n);
 }
 
-struct yahash*
+struct yahash *
 yahash_create(void) {
 	int	       i;
-	struct yahash* h = ymalloc(sizeof(*h));
+	struct yahash *h = ymalloc(sizeof(*h));
 	yassert(h);
 	h->sz = 0;
 	h->mapbits = _MIN_HBITS;
@@ -142,7 +142,7 @@ yahash_create(void) {
 }
 
 enum yret
-yahash_destroy(struct yahash* h) {
+yahash_destroy(struct yahash *h) {
 	int	     i;
 	struct _hn  *n, *tmp;
 	for (i=0; i<_hmapsz(h); i++) {
@@ -161,14 +161,14 @@ yahash_destroy(struct yahash* h) {
 }
 
 uint32_t
-yahash_sz(const struct yahash* h) {
+yahash_sz(const struct yahash *h) {
 	return h->sz;
 }
 
-struct yahash*
-yahash_add(struct yahash* h, void* p) {
+struct yahash *
+yahash_add(struct yahash *h, void *p) {
 	uintptr_t   a = (uintptr_t)p;
-	struct _hn* n = _hfind(h, a);
+	struct _hn *n = _hfind(h, a);
 
 	if (n)
 		/* overwrite value */
@@ -185,10 +185,10 @@ yahash_add(struct yahash* h, void* p) {
 	return h;
 }
 
-struct yahash*
-yahash_del(struct yahash* h, void* p) {
+struct yahash *
+yahash_del(struct yahash *h, void *p) {
 	uintptr_t   a = (uintptr_t)p;
-	struct _hn* n = _hfind(h, a);
+	struct _hn *n = _hfind(h, a);
 	if (n) {
 		ylistl_del(&n->lk);
 		_ndestroy(h, n);
@@ -202,7 +202,7 @@ yahash_del(struct yahash* h, void* p) {
 }
 
 int
-yahash_check(const struct yahash* h, void* p) {
-	struct _hn* n = _hfind(h, (uintptr_t)p);
+yahash_check(const struct yahash *h, void *p) {
+	struct _hn *n = _hfind(h, (uintptr_t)p);
 	return n? TRUE: FALSE;
 }

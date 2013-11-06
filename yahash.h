@@ -35,38 +35,38 @@ struct yahash;
 
 /**
  */
-EXPORT struct yahash*
+EXPORT struct yahash *
 yahash_create(void);
 
 /**
  * @return : reserved for future use.
  */
 EXPORT enum yret
-yahash_destroy(struct yahash* h);
+yahash_destroy(struct yahash *h);
 
 /**
  * @return : number of elements in hash.
  */
 EXPORT uint32_t
-yahash_sz(const struct yahash* h);
+yahash_sz(const struct yahash *h);
 
 /**
  * @return : return hash @h - self.
  */
-EXPORT struct yahash*
-yahash_add(struct yahash* h, void* addr);
+EXPORT struct yahash *
+yahash_add(struct yahash *h, void *addr);
 
 /**
  * If these is no matched item, nothing happened.
  * @return : return hash @h - self.
  */
-EXPORT struct yahash*
-yahash_del(struct yahash* h, void* addr);
+EXPORT struct yahash *
+yahash_del(struct yahash *h, void *addr);
 
 /**
  * @return : 0 (not in hash) 1 (already in hash)
  */
 EXPORT int
-yahash_check(const struct yahash* h, void* addr);
+yahash_check(const struct yahash *h, void *addr);
 
 #endif /* __YAHASh_h__ */

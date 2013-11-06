@@ -34,31 +34,31 @@
 typedef struct ydynb {
 	uint32_t  limit;
 	uint32_t  sz;
-	uint8_t*  b;
+	uint8_t  *b;
 };
 
 static inline uint32_t
-ydynb_limit(const struct ydynb* b) {
+ydynb_limit(const struct ydynb *b) {
 	return b->limit;
 }
 
 static inline uint32_t
-ydynb_freesz(const struct ydynb* b) {
+ydynb_freesz(const struct ydynb *b) {
 	return b->limit - b->sz;
 }
 
 static inline uint32_t
-ydynb_sz(const struct ydynb* b) {
+ydynb_sz(const struct ydynb *b) {
 	return b->sz;
 }
 
-static inline uint8_t*
-ydynb_buf(const struct ydynb* b) {
+static inline uint8_t *
+ydynb_buf(const struct ydynb *b) {
 	return b->b;
 }
 
-static inline uint8_t*
-ydynb_ptr(const struct ydynb* b) {
+static inline uint8_t *
+ydynb_ptr(const struct ydynb *b) {
 	return b->b + b->sz;
 }
 
@@ -66,9 +66,9 @@ ydynb_ptr(const struct ydynb* b) {
  * @return: 0 if success.
  */
 static inline enum yret
-ydynb_init(struct ydynb* b, uint32_t init_limit) {
+ydynb_init(struct ydynb *b, uint32_t init_limit) {
 	b->sz = 0;
-	b->b = (uint8_t*)ymalloc(init_limit);
+	b->b = (uint8_t *)ymalloc(init_limit);
 	if (b->b) {
 		b->limit = init_limit;
 		return YROk;
@@ -79,12 +79,12 @@ ydynb_init(struct ydynb* b, uint32_t init_limit) {
 }
 
 static inline void
-ydynb_reset(struct ydynb* b) {
+ydynb_reset(struct ydynb *b) {
 	b->sz = 0;
 }
 
 static inline void
-ydynb_clean(struct ydynb* b) {
+ydynb_clean(struct ydynb *b) {
 	if (b->b)
 		yfree(b->b);
 	b->b = NULL;
@@ -97,8 +97,8 @@ ydynb_clean(struct ydynb* b) {
  * @return: <0 if fails.
  */
 static inline enum yret
-ydynb_expand(struct ydynb* b) {
-	uint8_t* tmp = (uint8_t*)ymalloc(b->limit*2);
+ydynb_expand(struct ydynb *b) {
+	uint8_t *tmp = (uint8_t *)ymalloc(b->limit*2);
 	if (tmp) {
 		memcpy(tmp, b->b, b->sz);
 		yfree(b->b);
@@ -110,7 +110,7 @@ ydynb_expand(struct ydynb* b) {
 }
 
 static inline int
-ydynb_secure(struct ydynb* b, uint32_t sz_required) {
+ydynb_secure(struct ydynb *b, uint32_t sz_required) {
 	while ( sz_required > ydynb_freesz(b)
 		&& (YROk == ydynb_expand(b)) ) {}
 	return sz_required <= ydynb_freesz(b);
@@ -118,9 +118,9 @@ ydynb_secure(struct ydynb* b, uint32_t sz_required) {
 
 
 static inline enum yret
-ydynb_shrink(struct ydynb* b, uint32_t sz_to) {
+ydynb_shrink(struct ydynb *b, uint32_t sz_to) {
 	if ( b->limit > sz_to  && b->sz < sz_to ) {
-		uint8_t* tmp = (uint8_t*)ymalloc(sz_to);
+		uint8_t *tmp = (uint8_t *)ymalloc(sz_to);
 		if (tmp) {
 			yassert(b->b);
 			memcpy(tmp, b->b, b->sz);
@@ -134,7 +134,7 @@ ydynb_shrink(struct ydynb* b, uint32_t sz_to) {
 }
 
 static inline enum yret
-ydynb_append(struct ydynb* b, const uint8_t* d, uint32_t dsz) {
+ydynb_append(struct ydynb *b, const uint8_t *d, uint32_t dsz) {
 	enum yret r = ydynb_secure(b, dsz);
 	if (0 > r)
 		return r;

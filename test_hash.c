@@ -36,9 +36,12 @@ _free(void* v) {
 
 static void
 _test_hash_normal(void) {
-	int           i;
-	char          buf[4096];
-	char*         v;
+	int    i;
+	char   buf[4096];
+	char  *v;
+	uint32_t r;
+	const uint8_t *keys[4096];
+	uint32_t keyssz[4096];
 
 	/*
 	 * Test normal hash.
@@ -54,6 +57,19 @@ _test_hash_normal(void) {
 		yassert(i+1 == yhash_sz(h));
 	}
 
+	r = yhash_keys(h, keys, keyssz, 10);
+	yassert(10 == r);
+	for (i = 0; i < r; i++)
+		yassert(keyssz[i] == ((uint32_t)strlen((char *)keys[i]) + 1));
+	/*
+	for (i = 0; i < r; i++)
+		printf("%s\n", keys[i]);
+	*/
+	r = yhash_keys(h, keys, keyssz, 4096);
+	yassert(1024 == r);
+	for (i = 0; i < r; i++)
+		yassert(keyssz[i] == ((uint32_t)strlen((char *)keys[i]) + 1));
+
 	for (i = 256; i < 512; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
 		v = yhash_find(h, (uint8_t*)buf, strlen(buf)+1);
@@ -65,6 +81,8 @@ _test_hash_normal(void) {
 		yhash_del(h, (uint8_t*)buf, strlen(buf)+1);
 		yassert(i == yhash_sz(h));
 	}
+	r = yhash_keys(h, keys, keyssz, 10);
+	yassert(0 == r);
 
 	yhash_destroy(h);
 }

@@ -49,6 +49,23 @@ EXPORT uint32_t
 yhash_sz(const struct yhash *h);
 
 /**
+ * @keysbuf: Buffer to contain pointer of key.
+ *           'shallow copy' of key is stored at buffer.
+ *           So, DO NOT free 'key' pointer.
+ * @keysszbuf: Buffer to contain each key's length.
+ *             So, size should be same with @keysbuf.
+ *             if NULL, this is ignored.
+ * @return : number keys assigned to @keysbuf
+ *           return value == @bufsz means @keysbuf is not enough large to
+ *             contains all keys in the hash.
+ */
+EXPORT uint32_t
+yhash_keys(const struct yhash *h,
+	   const uint8_t **keysbuf, /* in/out */
+	   uint32_t *keysszbuf, /* in/out */
+	   uint32_t bufsz);
+
+/**
  * @v	   : user value(item)
  * @key    : hash key
  * @keysz  : size of hash key

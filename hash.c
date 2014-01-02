@@ -184,7 +184,7 @@ yhash_create(void(*fcb)(void *)) {
 	h->map = (struct ylistl_link*)ymalloc(sizeof(struct ylistl_link)
 					      * _hmapsz(h));
 	yassert(h->map);
-	for (i=0; i<_hmapsz(h); i++)
+	for (i = 0; i < _hmapsz(h); i++)
 		ylistl_init_link(&h->map[i]);
 	h->fcb = fcb;
 	return h;
@@ -194,7 +194,7 @@ enum yret
 yhash_destroy(struct yhash *h) {
 	int	     i;
 	struct _hn  *n, *tmp;
-	for (i=0; i<_hmapsz(h); i++) {
+	for (i = 0; i < _hmapsz(h); i++) {
 		ylistl_foreach_item_removal_safe(n,
 						 tmp,
 						 &h->map[i],
@@ -213,6 +213,32 @@ uint32_t
 yhash_sz(const struct yhash *h) {
 	return h->sz;
 }
+
+uint32_t
+yhash_keys(const struct yhash *h,
+	   const uint8_t **keysbuf,
+	   uint32_t *keysszbuf,
+	   uint32_t bufsz) {
+	uint32_t    r, i;
+	struct _hn *n;
+	r = 0;
+	for (i = 0; i < _hmapsz(h); i++) {
+		ylistl_foreach_item(n,
+				    &h->map[i],
+				    struct _hn,
+				    lk) {
+			if (r < bufsz) {
+				keysbuf[r] = n->key;
+				if (keysszbuf)
+					keysszbuf[r] = n->keysz;
+				++r;
+			} else
+				return r;
+		}
+	}
+	return r;
+}
+
 
 struct yhash *
 yhash_add(struct yhash *h,

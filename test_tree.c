@@ -25,7 +25,7 @@
 
 #include <assert.h>
 
-#define _assign(ptr, type, val)				\
+#define assign(ptr, type, val)				\
 	do {						\
 		(ptr) = (type *)ymalloc(sizeof(type));	\
 		*(ptr) = (val);				\
@@ -42,70 +42,70 @@
  *             C   E   H
  */
 static void
-_build_test_tree(struct ytree *t) {
+build_test_tree(struct ytree *t) {
 	char *c;
 	struct ytree_node *n, *p;
 
 	/* Build test tree */
-	_assign(c, char, 'F');
+	assign(c, char, 'F');
 	p = ytree_create_node(c);
 	ytree_add_to_empty(t, p);
 
-	_assign(c, char, 'B');
+	assign(c, char, 'B');
 	n = ytree_create_node(c);
 	ytree_add_last_child(p, n);
 
 	p = n;
-	_assign(c, char, 'A');
+	assign(c, char, 'A');
 	n = ytree_create_node(c);
 	ytree_add_last_child(p, n);
 
-	_assign(c, char, 'D');
+	assign(c, char, 'D');
 	n = ytree_create_node(c);
 	ytree_add_last_child(p, n);
 
 	p = n;
-	_assign(c, char, 'C');
+	assign(c, char, 'C');
 	n = ytree_create_node(c);
 	ytree_add_last_child(p, n);
 
-	_assign(c, char, 'E');
+	assign(c, char, 'E');
 	n = ytree_create_node(c);
 	ytree_add_last_child(p, n);
 
 
 	p = ytree_root(t);
-	_assign(c, char, 'G');
+	assign(c, char, 'G');
 	n = ytree_create_node(c);
 	ytree_add_last_child(p, n);
 
 	p = n;
-	_assign(c, char, 'I');
+	assign(c, char, 'I');
 	n = ytree_create_node(c);
 	ytree_add_last_child(p, n);
 
 
 	p = n;
-	_assign(c, char, 'H');
+	assign(c, char, 'H');
 	n = ytree_create_node(c);
 	ytree_add_last_child(p, n);
 }
 
-#undef _assign
+#undef assign
 
 
-#define _item(n) ytree_item(char, n)
+#define item(n) ytree_item(char, n)
 
 
 static void
-_test_walker(const struct ytree *t, int type, const char *referseq) {
+test_walker(const struct ytree *t, int type, const char *referseq) {
 	struct ytree_walker *w;
-	const struct ytree_node *n;
+	const struct ytree_node *n __attribute__((unused));
 	int i = 0;
 	w = ytree_walker_create(ytree_root(t), type);
 	while (ytree_walker_has_next(w)) {
 		n = w->next(w);
-		yassert(referseq[i] == _item(n));
+		yassert(referseq[i] == item(n));
 		i++;
 	}
 	ytree_walker_destroy(w);
@@ -115,7 +115,7 @@ _test_walker(const struct ytree *t, int type, const char *referseq) {
  * Test tree operation
  */
 static void
-_test_operation(struct ytree *t) {
+test_operation(struct ytree *t) {
 	struct ytree_node *n;
 	struct ytree_node *s; /* sub */
 
@@ -143,7 +143,7 @@ _test_operation(struct ytree *t) {
 	{ /* Just scope */
 		static const char __vseq[]
 			= { 'F', 'B', 'G', 'A', 'D', 'I', 'C', 'E', 'H' };
-		_test_walker(t, YTREE_WALKER_LEVEL_OT, __vseq);
+		test_walker(t, YTREE_WALKER_LEVEL_OT, __vseq);
 	}
 
 	s = ytree_last_child(n); /* I */
@@ -162,7 +162,7 @@ _test_operation(struct ytree *t) {
 	{ /* Just scope */
 		static const char __vseq[]
 			= { 'F', 'B', 'G', 'I', 'A', 'D', 'H', 'C', 'E' };
-		_test_walker(t, YTREE_WALKER_LEVEL_OT, __vseq);
+		test_walker(t, YTREE_WALKER_LEVEL_OT, __vseq);
 	}
 
 	/* Try to remove root */
@@ -174,87 +174,87 @@ _test_operation(struct ytree *t) {
 	{ /* Just scope */
 		static const char __vseq[]
 			= { 'F', 'B', 'G', 'I', 'A', 'D', 'H', 'C', 'E' };
-		_test_walker(t, YTREE_WALKER_LEVEL_OT, __vseq);
+		test_walker(t, YTREE_WALKER_LEVEL_OT, __vseq);
 	}
 
 }
 
 
 static void
-_verify_test_tree(const struct ytree *t) {
+verify_test_tree(const struct ytree *t) {
 	struct ytree_node *n;
 	struct ytree_node *nsv;
 
 	n = ytree_root(t);
 	yassert(n);
-	yassert('F' == _item(n));
+	yassert('F' == item(n));
 	/* root should not have sibling! */
 	nsv = ytree_next(n);
 	yassert(1 == ytree_sibling_size(n));
 
 	nsv = n = ytree_first_child(n);
-	yassert('B' == _item(n));
+	yassert('B' == item(n));
 	n = ytree_next(n);
-	yassert('G' == _item(n));
+	yassert('G' == item(n));
 	n = nsv;
 
 	n = ytree_first_child(n);
-	yassert('A' == _item(n));
+	yassert('A' == item(n));
 	n = ytree_next(n);
-	yassert('D' == _item(n));
+	yassert('D' == item(n));
 
 	n = ytree_last_child(n);
-	yassert('E' == _item(n));
+	yassert('E' == item(n));
 	n = ytree_prev(n);
-	yassert('C' == _item(n));
+	yassert('C' == item(n));
 
 	n = nsv;
 	n = ytree_next(n);
-	yassert('G' == _item(n));
+	yassert('G' == item(n));
 	n = ytree_last_child(n);
-	yassert('I' == _item(n));
+	yassert('I' == item(n));
 	n = ytree_last_child(n);
-	yassert('H' == _item(n));
+	yassert('H' == item(n));
 
 }
 
-#undef _item
+#undef item
 
 static void
-_test_tree(void) {
+test_tree(void) {
 	/* pre-order traversal*/
-	static const char __preot[]
+	static const char preot[]
 		= {'F', 'B', 'A', 'D', 'C', 'E', 'G', 'I', 'H'};
 	/* level-order traversal */
-	static const char __levelot[]
+	static const char levelot[]
 		= {'F', 'B', 'G', 'A', 'D', 'I', 'C', 'E', 'H'};
 	/* post-order traversal */
-	static const char __postot[]
+	static const char postot[]
 		= {'A', 'C', 'E', 'D', 'B', 'H', 'I', 'G', 'F'};
 	/* reverse pre-order traversal - traverse right to left */
-	static const char __r2lpreot[]
+	static const char r2lpreot[]
 		= {'F', 'G', 'I', 'H', 'B', 'D', 'E', 'C', 'A'};
 	/* reverse post-order traversal - traverse right to left */
-	static const char __r2lpostot[]
+	static const char r2lpostot[]
 		= {'H', 'I', 'G', 'E', 'C', 'D', 'A', 'B', 'F'};
 
 	struct ytree *t;
 
 	t = ytree_create(NULL);
 
-	_build_test_tree(t);
-	_verify_test_tree(t);
+	build_test_tree(t);
+	verify_test_tree(t);
 
-	_test_walker(t, YTREE_WALKER_PRE_OT, __preot);
-	_test_walker(t, YTREE_WALKER_LEVEL_OT, __levelot);
-	_test_walker(t, YTREE_WALKER_POST_OT, __postot);
-	_test_walker(t, YTREE_WALKER_R2L_PRE_OT, __r2lpreot);
-	_test_walker(t, YTREE_WALKER_R2L_POST_OT, __r2lpostot);
-	_test_operation(t);
+	test_walker(t, YTREE_WALKER_PRE_OT, preot);
+	test_walker(t, YTREE_WALKER_LEVEL_OT, levelot);
+	test_walker(t, YTREE_WALKER_POST_OT, postot);
+	test_walker(t, YTREE_WALKER_R2L_PRE_OT, r2lpreot);
+	test_walker(t, YTREE_WALKER_R2L_POST_OT, r2lpostot);
+	test_operation(t);
 
 	yassert(!ytree_is_empty(t));
 	ytree_destroy(t);
 }
 
-TESTFN(_test_tree, tree)
+TESTFN(test_tree, tree)
 

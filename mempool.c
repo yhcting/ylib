@@ -35,7 +35,7 @@
  *
  *                fbp
  *             +-------+
- *             |   F   | <- index [mp_sz()-1]
+ *             |   F   | <- index [sz()-1]
  *             +-------+
  *             |   F   |
  *             +-------+
@@ -89,11 +89,11 @@
  *
  */
 
-struct _dummy {
+struct dummy {
 	void *dummy;
 };
 
-struct _blk {
+struct blk {
 	/*
 	 * 'i' is required to tracking used block.
 	 * If sw don't need to track used block,
@@ -117,107 +117,107 @@ struct _blk {
 	 * And usually, this is aligned by sizeof(void*)
 	 */
 	int           i; /* index of free block pointer */
-	struct _dummy d;
+	struct dummy  d;
 };
 
 struct ymp {
 #ifndef CONFIG_MEMPOOL_DYNAMIC
-	unsigned char   **grp;    /* groups of blocks */
+	unsigned char **grp;    /* groups of blocks */
 #endif
-	int               grpsz;  /* size of grp - number of element in group*/
-	int               nrgrp;  /* number of group allocated */
-	struct _blk    ***fbp;    /* Free Block Pointer group */
-	int               esz;    /* Element SiZe */
-	int               fbi;    /* Free Block Index */
-	int               opt;    /* option */
-	pthread_mutex_t   m;      /* Mutex for MT safety */
+	int             grpsz;  /* size of grp - number of element in group*/
+	int             nrgrp;  /* number of group allocated */
+	struct blk   ***fbp;    /* Free Block Pointer group */
+	int             esz;    /* Element SiZe */
+	int             fbi;    /* Free Block Index */
+	int             opt;    /* option */
+	pthread_mutex_t m;      /* Mutex for MT safety */
 };
 
 /******************************************************************************
  * Intenal functions
  *****************************************************************************/
 static inline int
-_opt_is_mt_safe(struct ymp *mp) {
+opt_is_mt_safe(struct ymp *mp) {
 	return mp->opt & YMP_mt_safe;
 }
 
 static inline void
-_init_lock(struct ymp *mp) {
-	if (_opt_is_mt_safe(mp))
+init_lock(struct ymp *mp) {
+	if (opt_is_mt_safe(mp))
 		pthread_mutex_init(&mp->m, NULL);
 }
 
 static inline void
-_lock(struct ymp *mp) {
-	if (_opt_is_mt_safe(mp))
+lock(struct ymp *mp) {
+	if (opt_is_mt_safe(mp))
 		if (pthread_mutex_lock(&mp->m))
 			yassert(0);
 }
 
 static inline void
-_unlock(struct ymp *mp) {
-	if (_opt_is_mt_safe(mp))
+unlock(struct ymp *mp) {
+	if (opt_is_mt_safe(mp))
 		if (pthread_mutex_unlock(&mp->m))
 			yassert(0);
 }
 
 static inline void
-_destroy_lock(struct ymp *mp) {
-	if (_opt_is_mt_safe(mp))
+destroy_lock(struct ymp *mp) {
+	if (opt_is_mt_safe(mp))
 		pthread_mutex_destroy(&mp->m);
 }
 
 static inline int
-_align_adjust(struct ymp *mp) {
-	return sizeof(void*) - (mp->esz % sizeof(void*));
+align_adjust(struct ymp *mp) {
+	return sizeof(void *) - (mp->esz % sizeof(void *));
 }
 
 static inline int
-_esz(struct ymp *mp) {
-	return mp->esz + _align_adjust(mp);
+esz(struct ymp *mp) {
+	return mp->esz + align_adjust(mp);
 }
 
 static inline int
-_blksz(struct ymp *mp) {
-	return sizeof(struct _blk) - sizeof(struct _dummy) + _esz(mp);
+blksz(struct ymp *mp) {
+	return sizeof(struct blk) - sizeof(struct dummy) + esz(mp);
 }
 
 /*
  * @i    : index of fbp (ex. fbi)
  */
-static inline struct _blk *
-_fbpblk(struct ymp *mp, int i) {
-	struct _blk *b = *(mp->fbp[i / mp->grpsz] + i % mp->grpsz);
+static inline struct blk *
+fbpblk(struct ymp *mp, int i) {
+	struct blk *b = *(mp->fbp[i / mp->grpsz] + i % mp->grpsz);
 	yassert(b->i == i);
 	return b;
 }
 
 static inline int
-_is_freeblk(struct ymp *mp, struct _blk *b) {
+is_freeblk(struct ymp *mp, struct blk *b) {
 	return (mp->fbi <= b->i);
 }
 
 static inline int
-_is_usedblk(struct ymp *mp, struct _blk *b) {
-	return !_is_freeblk(mp, b);
+is_usedblk(struct ymp *mp, struct blk *b) {
+	return !is_freeblk(mp, b);
 }
 
 /*
  * @i    : index of fbp (ex. fbi)
  */
 static inline void
-_setfbp(struct ymp *mp, int i, struct _blk *b) {
+setfbp(struct ymp *mp, int i, struct blk *b) {
 	*(mp->fbp[i / mp->grpsz] + i % mp->grpsz) = b;
 	b->i = i;
 }
 
 static inline int
-_sz(struct ymp *mp) {
+sz(struct ymp *mp) {
 	return mp->nrgrp * mp->grpsz;
 }
 
 static inline int
-_usedsz(struct ymp *mp) {
+usedsz(struct ymp *mp) {
 	return mp->fbi;
 }
 
@@ -225,7 +225,7 @@ _usedsz(struct ymp *mp) {
  * Policy
  */
 static inline int
-_need_shrink(struct ymp *mp) {
+need_shrink(struct ymp *mp) {
 	return (mp->fbi * 2 / mp->grpsz < mp->nrgrp);
 }
 
@@ -235,9 +235,9 @@ _need_shrink(struct ymp *mp) {
  * expand memory pool by 1 group
  */
 static void
-_expand(struct ymp *mp) {
-	int             i;
-	struct _blk  ***newfbp;
+expand(struct ymp *mp) {
+	int            i;
+	struct blk  ***newfbp;
 
 	newfbp = ymalloc(sizeof(*newfbp) * (mp->nrgrp + 1));
 	yassert(newfbp);
@@ -249,8 +249,8 @@ _expand(struct ymp *mp) {
 	/* initialize fbp & block group */
 	for (i = 0; i < mp->grpsz; i++) {
 		newfbp[mp->nrgrp][i]
-			= (struct _blk *)ymalloc(_blksz(mp));
-		newfbp[mp->nrgrp][i]->i = _sz(mp) + i;
+			= (struct blk *)ymalloc(blksz(mp));
+		newfbp[mp->nrgrp][i]->i = sz(mp) + i;
 	}
 
 	/* keep previous values */
@@ -263,7 +263,7 @@ _expand(struct ymp *mp) {
 }
 
 static void
-_shrink(struct ymp *mp, int margin) {
+shrink(struct ymp *mp, int margin) {
 	int from, i, j;
 	/* start index of empty group */
 	from = (mp->fbi - 1) / mp->grpsz + 1 + margin;
@@ -280,34 +280,34 @@ _shrink(struct ymp *mp, int margin) {
 #else /* CONFIG_MEMPOOL_DYNAMIC */
 
 static inline void
-_shrink(struct ymp *mp, int margin) { }
+shrink(struct ymp *mp, int margin) { }
 
 /*
  * @i    : index of memory block pool.
  */
-static inline struct _blk *
-_blk(struct ymp *mp, int i) {
-	return (struct _blk *)(mp->grp[i / mp->grpsz]
-			      + i % mp->grpsz * _blksz(mp));
+static inline struct blk *
+blk(struct ymp *mp, int i) {
+	return (struct blk *)(mp->grp[i / mp->grpsz]
+			      + i % mp->grpsz * blksz(mp));
 }
 
 static inline void
-_fbpdump(struct ymp *mp) {
+fbpdump(struct ymp *mp) {
 	int i;
-	printf("sz : %d, fbi : %d\n", _sz(mp), mp->fbi);
-	for (i = 0; i < _sz(mp); i++) {
+	printf("sz : %d, fbi : %d\n", sz(mp), mp->fbi);
+	for (i = 0; i < sz(mp); i++) {
 		printf("fbp[%d] -> %p (i:%d)\n",
-		       i, _fbpblk(mp, i), _fbpblk(mp, i)->i);
+		       i, fbpblk(mp, i), fbpblk(mp, i)->i);
 	}
 }
 
 static inline void
-_blkdump(struct ymp *mp) {
+blkdump(struct ymp *mp) {
 	int i;
-	printf("sz : %d, fbi : %d\n", _sz(mp), mp->fbi);
-	for (i = 0; i < _sz(mp); i++) {
+	printf("sz : %d, fbi : %d\n", sz(mp), mp->fbi);
+	for (i = 0; i < sz(mp); i++) {
 		printf("blk(%d:%p) : i(%d)\n",
-		       i, _blk(mp, i), _blk(mp, i)->i);
+		       i, blk(mp, i), blk(mp, i)->i);
 	}
 }
 
@@ -315,14 +315,14 @@ _blkdump(struct ymp *mp) {
  * expand memory pool by 1 group
  */
 static void
-_expand(struct ymp *mp) {
+expand(struct ymp *mp) {
 	int             i;
 	unsigned char **newgrp;
-	struct _blk  ***newfbp;
-	int             blksz;
+	struct blk   ***newfbp;
+	int             bsz;
 
 	/* pre-calulate frequently used value */
-	blksz = _blksz(mp);
+	bsz = blksz(mp);
 
 	newgrp = ymalloc(sizeof(*newgrp) * (mp->nrgrp + 1));
 	newfbp = ymalloc(sizeof(*newfbp) * (mp->nrgrp + 1));
@@ -333,14 +333,14 @@ _expand(struct ymp *mp) {
 	/* allocate new block group */
 	newgrp[mp->nrgrp] = ymalloc(sizeof(**newgrp)
 				    * mp->grpsz
-				    * blksz);
+				    * bsz);
 	yassert(newfbp[mp->nrgrp] && newgrp[mp->nrgrp]);
 
 	/* initialize fbp & block group */
 	for (i = 0; i < mp->grpsz; i++) {
 		newfbp[mp->nrgrp][i]
-			= (struct _blk *)(newgrp[mp->nrgrp] + i * blksz);
-		newfbp[mp->nrgrp][i]->i = _sz(mp) + i;
+			= (struct blk *)(newgrp[mp->nrgrp] + i * bsz);
+		newfbp[mp->nrgrp][i]->i = sz(mp) + i;
 	}
 
 	/* keep previous values */
@@ -376,10 +376,10 @@ ymp_create(int grpsz, int elemsz, int opt) {
 	mp->esz = elemsz;
 	mp->fbi = 0;
 	mp->opt = opt;
-	_init_lock(mp);
+	init_lock(mp);
 
 	/* allocate 1-block-group for initial state */
-	_expand(mp);
+	expand(mp);
 
 	return mp;
 }
@@ -387,7 +387,7 @@ ymp_create(int grpsz, int elemsz, int opt) {
 void
 ymp_destroy(struct ymp *mp) {
 	int i;
-	_destroy_lock(mp);
+	destroy_lock(mp);
 #ifdef CONFIG_MEMPOOL_DYNAMIC
 	for (i = 0; i < mp->nrgrp; i++) {
 		int j;
@@ -412,17 +412,17 @@ ymp_destroy(struct ymp *mp) {
  */
 void*
 ymp_get(struct ymp *mp) {
-	struct _blk *b;
+	struct blk *b;
 
-	_lock(mp);
-	if (mp->fbi >= _sz(mp))
-		_expand(mp);
+	lock(mp);
+	if (mp->fbi >= sz(mp))
+		expand(mp);
 
-	b = _fbpblk(mp, mp->fbi);
+	b = fbpblk(mp, mp->fbi);
 	yassert(b->i == mp->fbi);
 
 	mp->fbi++;
-	_unlock(mp);
+	unlock(mp);
 
 	return (void*)(&b->d);
 }
@@ -432,58 +432,58 @@ ymp_get(struct ymp *mp) {
  */
 void
 ymp_put(struct ymp *mp, void *block) {
-	struct _blk *b;
-	struct _blk *ub; /* used block */
+	struct blk *b;
+	struct blk *ub; /* used block */
 	int          ti;
 
-	b = container_of(block, struct _blk, d);
-	_lock(mp);
+	b = container_of(block, struct blk, d);
+	lock(mp);
 	yassert(mp->fbi > 0
 		&& b->i < mp->fbi);
 
 	mp->fbi--;
-	ub = _fbpblk(mp, mp->fbi);
+	ub = fbpblk(mp, mp->fbi);
 
 	/* swap free block pointer */
 	ti = b->i;
-	_setfbp(mp, ub->i, b);
-	_setfbp(mp, ti, ub);
+	setfbp(mp, ub->i, b);
+	setfbp(mp, ti, ub);
 
-	if (_need_shrink(mp))
-		_shrink(mp, 1);
+	if (need_shrink(mp))
+		shrink(mp, 1);
 
-	_unlock(mp);
+	unlock(mp);
 }
 
 #ifdef CONFIG_MEMPOOL_DYNAMIC
-enum yret
+int
 ymp_shrink(struct ymp *mp, int margin) {
-	_lock(mp);
-	_shrink(mp, margin);
-	_unlock(mp);
-	return YROk;
+	lock(mp);
+	shrink(mp, margin);
+	unlock(mp);
+	return 0;
 }
 
-enum yret
+int
 ymp_stop_shrink(struct ymp *mp) {
-	return YREVALNot_implemented;
+	return -1;
 }
 #endif /* CONFIG_MEMPOOL_DYNAMIC */
 
 int
 ymp_sz(struct ymp *mp) {
-	int sz;
-	_lock(mp);
-	sz = _sz(mp);
-	_unlock(mp);
-	return sz;
+	int s;
+	lock(mp);
+	s = sz(mp);
+	unlock(mp);
+	return s;
 }
 
 int
 ymp_usedsz(struct ymp *mp) {
-	int sz;
-	_lock(mp);
-	sz = _usedsz(mp);
-	_unlock(mp);
-	return sz;
+	int s;
+	lock(mp);
+	s = usedsz(mp);
+	unlock(mp);
+	return s;
 }

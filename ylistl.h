@@ -1,5 +1,6 @@
 /*****************************************************************************
- *    Copyright (C) 2011 Younghyung Cho. <yhcting77@gmail.com>
+ *    Copyright (C) 2011, 2012, 2013, 2014
+ *    Younghyung Cho. <yhcting77@gmail.com>
  *
  *    This file is part of ylib
  *
@@ -127,12 +128,12 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
  * @head    : head of list (&struct ylistl_link)
  */
 #define ylistl_foreach_removal_safe(pos, n, head)	\
-        for ((pos) = (head), (n) = (pos)->next;	\
+        for ((pos) = (head), (n) = (pos)->next;		\
 	     (pos) != (head);				\
 	     (pos) = (n), (n) = (pos)->next)
 
 #define ylistl_foreach_removal_safe_backward(pos, n, head)	\
-        for ((pos) = (head), (n) = (pos)->prev;		\
+        for ((pos) = (head), (n) = (pos)->prev;			\
 	     (pos) != (head);					\
 	     (pos) = (n), (n) = (pos)->prev)
 /**

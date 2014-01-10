@@ -25,42 +25,46 @@
 #include "ydef.h"
 #include "ylistl.h"
 
-struct _tstfn {
-	void                (*fn)(void);
-	const char*           modname;
-	struct ylistl_link    lk;
+struct tstfn {
+	void             (*fn)(void);
+	const char        *modname;
+	struct ylistl_link lk;
 };
 
 static YLISTL_DECL_HEAD(_tstfnl);
 static int  _mem_count = 0;
 
 void
-dregister_tstfn(void (*fn)(void), const char* mod) {
+dregister_tstfn(void (*fn)(void), const char *mod) {
 	/* malloc should be used instead of dmalloc */
-	struct _tstfn* n = malloc(sizeof(*n));
+	struct tstfn* n = malloc(sizeof(*n));
 	n->fn = fn;
 	n->modname = mod;
 	ylistl_add_last(&_tstfnl, &n->lk);
 }
 
 
-void* dmalloc(unsigned int sz) {
+void *
+dmalloc(unsigned int sz) {
 	_mem_count++;
 	return malloc(sz);
 }
 
-void dfree(void* p) {
+void
+dfree(void *p) {
 	_mem_count--;
 	free(p);
 }
 
-int dmem_count(void) { return _mem_count; }
-
+int
+dmem_count(void) {
+	return _mem_count;
+}
 
 int main() {
-	int               sv;
-	struct _tstfn*    p;
-	ylistl_foreach_item(p, &_tstfnl, struct _tstfn, lk) {
+	int           sv;
+	struct tstfn *p;
+	ylistl_foreach_item(p, &_tstfnl, struct tstfn, lk) {
 		printf("<< Test [%s] >>\n", p->modname);
 		sv = dmem_count();
 		(*p->fn)();

@@ -737,6 +737,7 @@ with_gnu_ld
 with_sysroot
 enable_libtool_lock
 with_dynamic_mempool
+with_debug
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1397,6 +1398,8 @@ Optional Packages:
 	    very slow for shrinking pool."
 	  DMP is "slow for allocating block - expanding pool requires lots of malloc call -,
 	    fast for shirinking pool.
+  --with-debug
+        build with debugging feature. Test can be used with this arguement.
 
 Some influential environment variables:
   CC          C compiler command
@@ -12100,6 +12103,15 @@ done
 if test "${with_dynamic_mempool+set}" = set; then :
   withval=$with_dynamic_mempool;
 $as_echo "#define CONFIG_MEMPOOL_DYNAMIC 1" >>confdefs.h
+
+fi
+
+
+
+# Check whether --with-debug was given.
+if test "${with_debug+set}" = set; then :
+  withval=$with_debug;
+$as_echo "#define CONFIG_DEBUG 1" >>confdefs.h
 
 fi
 

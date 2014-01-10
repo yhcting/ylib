@@ -27,15 +27,15 @@
 
 
 static void
-_test_queue(void) {
-	int* pi;
-	struct yqueue* q = yqueue_create(NULL);
+test_queue(void) {
+	int *pi;
+	struct yqueue *q = yqueue_create(NULL);
 
-	pi = (int*)ymalloc(sizeof(int));
+	pi = (int *)ymalloc(sizeof(*pi));
 	*pi = 0;
 	yqueue_en(q, pi);
 	yassert(1 == yqueue_size(q));
-	pi = (int*)ymalloc(sizeof(int));
+	pi = (int *)ymalloc(sizeof(*pi));
 	*pi = 1;
 	yqueue_en(q, pi);
 	yassert(2 == yqueue_size(q));
@@ -48,4 +48,4 @@ _test_queue(void) {
 	yqueue_destroy(q);
 }
 
-TESTFN(_test_queue, queue)
+TESTFN(test_queue, queue)

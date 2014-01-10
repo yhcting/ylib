@@ -69,6 +69,14 @@ AC_ARG_WITH(dynamic-mempool,
 	   [Dynamic mempool is used instead of static mempool.])],
 [])
 
+AC_ARG_WITH(debug,
+[  --with-debug
+        build with debugging feature. Test can be used with this arguement.],
+[AC_DEFINE([CONFIG_DEBUG],
+	   [1],
+	   [Debug is enabled.])],
+[])
+
 AM_CFLAGS="-Wall -Werror"
 AC_SUBST([AM_CFLAGS])
 

@@ -1,5 +1,6 @@
 /*****************************************************************************
- *    Copyright (C) 2011 Younghyung Cho. <yhcting77@gmail.com>
+ *    Copyright (C) 2011, 2012, 2013, 2014
+ *    Younghyung Cho. <yhcting77@gmail.com>
  *
  *    This file is part of ylib
  *
@@ -30,12 +31,12 @@
 
 
 static void
-_free(void* v) {
+vfree(void *v) {
 	yfree(v);
 }
 
 static void
-_test_hash_normal(void) {
+test_hash_normal(void) {
 	int    i;
 	char   buf[4096];
 	char  *v;
@@ -46,14 +47,14 @@ _test_hash_normal(void) {
 	/*
 	 * Test normal hash.
 	 */
-	struct yhash* h = yhash_create(&_free);
+	struct yhash *h = yhash_create(&vfree);
 
 	for (i = 0; i < 1024; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
 		v = ymalloc(strlen(buf)+1);
 		strcpy(v, buf);
 		/* key and value is same */
-		yhash_add(h, (uint8_t*)buf, strlen(buf) + 1, v);
+		yhash_add(h, (uint8_t *)buf, strlen(buf) + 1, v);
 		yassert(i+1 == yhash_sz(h));
 	}
 
@@ -72,13 +73,13 @@ _test_hash_normal(void) {
 
 	for (i = 256; i < 512; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-		v = yhash_find(h, (uint8_t*)buf, strlen(buf)+1);
+		v = yhash_find(h, (uint8_t *)buf, strlen(buf)+1);
 		yassert(v && 0 == strcmp(v, buf));
 	}
 
 	for (i = 1023; i >= 0; i--) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-		yhash_del(h, (uint8_t*)buf, strlen(buf)+1);
+		yhash_del(h, (uint8_t *)buf, strlen(buf)+1);
 		yassert(i == yhash_sz(h));
 	}
 	r = yhash_keys(h, keys, keyssz, 10);
@@ -88,34 +89,34 @@ _test_hash_normal(void) {
 }
 
 static void
-_test_hash_address(void) {
-	int           i;
-	char          buf[4096];
-	char*         ptsv[1024];
-	char*         v;
+test_hash_address(void) {
+	int   i;
+	char  buf[4096];
+	char *ptsv[1024];
+	char *v;
 	/*
 	 * Test address hash.
 	 */
-	struct yhash* h = yhash_create(&_free);
+	struct yhash *h = yhash_create(&vfree);
 
 	for (i = 0; i < 1024; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
 		v = ymalloc(strlen(buf)+1);
 		strcpy(v, buf);
 		/* key and value is same */
-		yhash_add(h, (uint8_t*)v, 0, v);
+		yhash_add(h, (uint8_t *)v, 0, v);
 		ptsv[i] = v;
 		yassert(i+1 == yhash_sz(h));
 	}
 
 	for (i = 256; i < 512; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-		v = yhash_find(h, (uint8_t*)ptsv[i], 0);
+		v = yhash_find(h, (uint8_t *)ptsv[i], 0);
 		yassert(v && 0 == strcmp(v, buf));
 	}
 
 	for (i = 1023; i >= 0; i--) {
-		yhash_del(h, (uint8_t*)ptsv[i], 0);
+		yhash_del(h, (uint8_t *)ptsv[i], 0);
 		yassert(i == yhash_sz(h));
 	}
 
@@ -123,9 +124,9 @@ _test_hash_address(void) {
 }
 
 static void
-_test_hash(void) {
-	_test_hash_normal();
-	_test_hash_address();
+test_hash(void) {
+	test_hash_normal();
+	test_hash_address();
 }
 
-TESTFN(_test_hash, hash)
+TESTFN(test_hash, hash)

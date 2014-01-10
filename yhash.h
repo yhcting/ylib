@@ -1,5 +1,6 @@
 /*****************************************************************************
- *    Copyright (C) 2011 Younghyung Cho. <yhcting77@gmail.com>
+ *    Copyright (C) 2011, 2012, 2013, 2014
+ *    Younghyung Cho. <yhcting77@gmail.com>
  *
  *    This file is part of ylib
  *
@@ -24,8 +25,7 @@
 #define __YHASh_h__
 
 #include <stdint.h>
-
-#include "yret.h"
+#include <ydef.h>
 
 struct yhash;
 
@@ -34,12 +34,12 @@ struct yhash;
  *	  (NULL means, item doesn't need to be freed.)
  */
 EXPORT struct yhash *
-yhash_create(void(*fcb)(void *));
+yhash_create(void (*fcb)(void *));
 
 /**
  * @return : reserved for future use.
  */
-EXPORT enum yret
+EXPORT int
 yhash_destroy(struct yhash *h);
 
 /**
@@ -74,9 +74,10 @@ yhash_keys(const struct yhash *h,
  *               '0 == keysz' means, value of key itself - not pointed one -
  *               is key value.
  *               This is useful when hashing memory address.
- * @return : return hash @h - self.
+ * @return : -1 for error
+ *           otherwise # of newly added item. (0 means overwritten).
  */
-EXPORT struct yhash *
+int
 yhash_add(struct yhash *h,
 	  const uint8_t *key, uint32_t keysz,
 	  void *v);
@@ -84,9 +85,9 @@ yhash_add(struct yhash *h,
 /**
  * If these is no matched item, nothing happened.
  * @v	   : user value(item)
- * @return : return hash @h - self.
+ * @return : -1 for error otherwise # of deleted. (0 means nothing to delete)
  */
-EXPORT struct yhash *
+EXPORT int
 yhash_del(struct yhash *h,
 	  const uint8_t *key, uint32_t keysz);
 

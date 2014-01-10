@@ -3,6 +3,9 @@
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
 
+/* Debug is enabled. */
+#undef CONFIG_DEBUG
+
 /* Dynamic mempool is used instead of static mempool. */
 #undef CONFIG_MEMPOOL_DYNAMIC
 

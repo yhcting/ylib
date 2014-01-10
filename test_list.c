@@ -25,16 +25,16 @@
 
 #include <assert.h>
 
-struct _dummy{
-	int     id;
-	int*    mem;
-} ;
+struct dummy {
+	int  id;
+	int *mem;
+};
 
 static void
-_free_dummycb(void* arg) {
-	if (NULL != arg) {
-		struct _dummy* dummy = (struct _dummy*)arg;
-		if (NULL != dummy->mem)
+free_dummycb(void *arg) {
+	if (arg) {
+		struct dummy *dummy = (struct dummy *)arg;
+		if (dummy->mem)
 			yfree(dummy->mem);
 		yfree(dummy);
 	}
@@ -45,23 +45,23 @@ _free_dummycb(void* arg) {
  * Linked list test.
  */
 static void
-_test_list(void) {
-	int             i;
-	int*            p;
-	struct ylist*   lst;
-	struct ylist_walker*   w;
+test_list(void) {
+	int  i;
+	int *p;
+	struct ylist *lst;
+	struct ylist_walker *w;
 
 	lst = ylist_create(NULL);
 	ylist_destroy(lst);
 
 	lst = ylist_create(NULL);
-	p = (int*)ymalloc(sizeof(int));
+	p = (int *)ymalloc(sizeof(*p));
 	*p = 0;
 	ylist_add_last(lst, ylist_create_node(p));
 
 	w = ylist_walker_create(lst, YLIST_WALKER_FORWARD);
 	yassert(ylist_walker_has_next(w));
-	p = (int*)ylist_walker_next_forward(w);
+	p = (int *)ylist_walker_next_forward(w);
 	yassert(0 == *p);
 	yassert(!ylist_walker_has_next(w));
 	ylist_walker_destroy(w);
@@ -72,8 +72,8 @@ _test_list(void) {
 	yassert(0 == ylist_size(lst));
 	ylist_walker_destroy(w);
 
-	for (i=0; i<10; i++) {
-		p = (int*)ymalloc(sizeof(int));
+	for (i = 0; i < 10; i++) {
+		p = (int *)ymalloc(*p);
 		*p = i;
 		ylist_add_last(lst, ylist_create_node(p));
 	}
@@ -102,7 +102,7 @@ _test_list(void) {
 	w = ylist_walker_create(lst, YLIST_WALKER_FORWARD);
 	while (ylist_walker_has_next(w)) {
 		p = ylist_walker_next_forward(w);
-		if (*p%2) {
+		if (*p % 2) {
 			ylist_free_item(ylist_walker_list(w), p);
 			ylist_free_node(ylist_walker_del(w));
 		}
@@ -114,7 +114,7 @@ _test_list(void) {
 	while (ylist_walker_has_next(w)) {
 		p = ylist_walker_next_forward(w);
 		yassert(i == *p);
-		i+=2;
+		i += 2;
 	}
 	ylist_walker_destroy(w);
 	ylist_destroy(lst);
@@ -122,7 +122,7 @@ _test_list(void) {
 
 	/* remove even numbers - head is removed. */
 	for (i=0; i<10; i++) {
-		p = (int*)ymalloc(sizeof(int));
+		p = (int *)ymalloc(sizeof(*p));
 		*p = i;
 		ylist_add_last(lst, ylist_create_node(p));
 	}
@@ -130,7 +130,7 @@ _test_list(void) {
 	w = ylist_walker_create(lst, YLIST_WALKER_FORWARD);
 	while (ylist_walker_has_next(w)) {
 		p = ylist_walker_next_forward(w);
-		if (!(*p%2)) {
+		if (!(*p % 2)) {
 			ylist_free_item(ylist_walker_list(w), p);
 			ylist_free_node(ylist_walker_del(w));
 		}
@@ -142,23 +142,22 @@ _test_list(void) {
 	while (ylist_walker_has_next(w)) {
 		p = ylist_walker_next_forward(w);
 		yassert(i == *p);
-		i+=2;
+		i += 2;
 	}
 	ylist_walker_destroy(w);
 	ylist_destroy(lst);
 
 	{ /* Just Scope */
-		struct _dummy*      dum;
-		lst = ylist_create(_free_dummycb);
-		for (i=0; i<10; i++) {
-			dum = (struct _dummy*)ymalloc(sizeof(struct _dummy));
+		struct dummy *dum;
+		lst = ylist_create(free_dummycb);
+		for (i = 0; i < 10; i++) {
+			dum = (struct dummy *)ymalloc(sizeof(*dum));
 			dum->id = i;
-			dum->mem = (int*)ymalloc(sizeof(int));
+			dum->mem = (int *)ymalloc(sizeof(*dum->mem));
 			*(dum->mem) = i;
 			ylist_add_last(lst, ylist_create_node(dum));
 		}
 		yassert(10 == ylist_size(lst));
-
 
 		w = ylist_walker_create(lst, YLIST_WALKER_FORWARD);
 		while (ylist_walker_has_next(w)) {
@@ -170,7 +169,6 @@ _test_list(void) {
 		}
 		ylist_walker_destroy(w);
 		yassert(9 == ylist_size(lst));
-
 
 		w = ylist_walker_create(lst, YLIST_WALKER_FORWARD);
 		while (ylist_walker_has_next(w)) {
@@ -184,4 +182,4 @@ _test_list(void) {
 	}
 }
 
-TESTFN(_test_list, list)
+TESTFN(test_list, list)

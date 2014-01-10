@@ -28,8 +28,7 @@
 #define __YAHASh_h__
 
 #include <stdint.h>
-
-#include "yret.h"
+#include <ydef.h>
 
 struct yahash;
 
@@ -41,7 +40,7 @@ yahash_create(void);
 /**
  * @return : reserved for future use.
  */
-EXPORT enum yret
+EXPORT int
 yahash_destroy(struct yahash *h);
 
 /**
@@ -53,14 +52,14 @@ yahash_sz(const struct yahash *h);
 /**
  * @return : return hash @h - self.
  */
-EXPORT struct yahash *
+EXPORT int
 yahash_add(struct yahash *h, void *addr);
 
 /**
  * If these is no matched item, nothing happened.
  * @return : return hash @h - self.
  */
-EXPORT struct yahash *
+EXPORT int
 yahash_del(struct yahash *h, void *addr);
 
 /**

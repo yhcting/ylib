@@ -112,7 +112,6 @@ ycrc16(unsigned short crc, const unsigned char *data, unsigned int len)
 
 	if (!len || !data) {
 		yassert(0);
-		yretset(YRWNothing);
 		return crc;
 	}
 
@@ -218,7 +217,6 @@ ycrc32(unsigned int crc, const unsigned char *data, unsigned int len)
 
 	if (!len || !data) {
 		yassert(0);
-		yretset(YRWNothing);
 		return crc;
 	}
 

@@ -23,7 +23,6 @@
 #define __COMMOn_h__
 
 #include "ydef.h"
-#include "yret.h"
 
 /*****************************************************************************
  *
@@ -104,5 +103,7 @@
 	case 1: expr;			\
 	}				\
 }
+
+#define arrsz(a) ((int)(sizeof(a)/sizeof((a)[0])))
 
 #endif /* __COMMOn_h__ */

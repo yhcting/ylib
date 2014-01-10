@@ -28,7 +28,8 @@
  */
 static void
 test_bitops(void) {
-	unsigned long x = 0xabcffcda;
+	unsigned long x __attribute__((unused));
+	x = 0xabcffcda;
 	yassert(0xc == bits(x, 8, 4));
 	yassert(0xa == bits(x, 0, 4));
 	yassert(0xa == bits(x, 28, 4));

@@ -141,7 +141,7 @@ yahash_create(void) {
 	return h;
 }
 
-enum yret
+int
 yahash_destroy(struct yahash *h) {
 	int	     i;
 	struct _hn  *n, *tmp;
@@ -157,7 +157,7 @@ yahash_destroy(struct yahash *h) {
 	}
 	yfree(h->map);
 	yfree(h);
-	return YROk;
+	return 0;
 }
 
 uint32_t
@@ -165,14 +165,14 @@ yahash_sz(const struct yahash *h) {
 	return h->sz;
 }
 
-struct yahash *
+int
 yahash_add(struct yahash *h, void *p) {
 	uintptr_t   a = (uintptr_t)p;
 	struct _hn *n = _hfind(h, a);
 
 	if (n)
 		/* overwrite value */
-		yretset(YRWOverwrite);
+		return 0;
 	else {
 		/* we need to expand hash map size if hash seems to be full */
 		if (h->sz > _hmapsz(h))
@@ -180,12 +180,11 @@ yahash_add(struct yahash *h, void *p) {
 		n = _ncreate(a);
 		ylistl_add_last(&h->map[_hv(h, n)], &n->lk);
 		h->sz++;
+		return 1;
 	}
-
-	return h;
 }
 
-struct yahash *
+int
 yahash_del(struct yahash *h, void *p) {
 	uintptr_t   a = (uintptr_t)p;
 	struct _hn *n = _hfind(h, a);
@@ -195,10 +194,9 @@ yahash_del(struct yahash *h, void *p) {
 		h->sz--;
 		if (h->sz < _hmapsz(h) / 4)
 			_hmodify(h, h->mapbits-1);
+		return 1;
 	} else
-		yretset(YRWNothing);
-
-	return h;
+		return 0;
 }
 
 int

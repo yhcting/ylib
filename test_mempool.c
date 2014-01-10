@@ -30,16 +30,16 @@
 
 #include <assert.h>
 
-#define _TESTSZ    (1024)
-#define _TESTGRPSZ (7)
+#define TESTSZ    (1024)
+#define TESTGRPSZ (7)
 
 static void
-_test_mempool(void) {
+test_mempool(void) {
 	int         i, j, k;
-	struct ymp* mp;
-	int*        b[_TESTSZ];
+	struct ymp *mp;
+	int        *b[TESTSZ];
 
-	mp = ymp_create(_TESTGRPSZ, sizeof(int), 0);
+	mp = ymp_create(TESTGRPSZ, sizeof(int), 0);
 
 	/*
 	 * Normal Test...
@@ -52,34 +52,34 @@ _test_mempool(void) {
 	ymp_put(mp, b[0]);
 	ymp_put(mp, b[1]);
 
-	for (i = 0; i < _TESTSZ; i++) {
+	for (i = 0; i < TESTSZ; i++) {
 		b[i] = ymp_get(mp);
 		*b[i] = i;
 	}
 
-	for (i = 0; i < _TESTSZ / 2; i++)
+	for (i = 0; i < TESTSZ / 2; i++)
 		ymp_put(mp, b[i]);
 
-	for (i = 0; i < _TESTSZ / 2; i++) {
+	for (i = 0; i < TESTSZ / 2; i++) {
 		b[i] = ymp_get(mp);
 		*b[i] = i;
 	}
 
-	for (i = _TESTSZ / 2; i < _TESTSZ; i++)
+	for (i = TESTSZ / 2; i < TESTSZ; i++)
 		ymp_put(mp, b[i]);
 
-	for (i = 0; i < _TESTSZ / 2; i++) {
+	for (i = 0; i < TESTSZ / 2; i++) {
 		ymp_put(mp, b[i]);
 		b[i] = ymp_get(mp);
 		*b[i] = i;
 	}
 
-	for (i = _TESTSZ / 2; i < _TESTSZ; i++) {
+	for (i = TESTSZ / 2; i < TESTSZ; i++) {
 		b[i] = ymp_get(mp);
 		*b[i] = i;
 	}
 
-	for (i = 0; i < _TESTSZ; i++) {
+	for (i = 0; i < TESTSZ; i++) {
 		assert(*b[i] == i);
 	}
 
@@ -92,10 +92,10 @@ _test_mempool(void) {
 #define __MAGICV     0x12345678
 #define __POISONV    0xdeaddead /* poision value */
 
-	mp = ymp_create(_TESTGRPSZ, sizeof(int), YMP_mt_safe);
+	mp = ymp_create(TESTGRPSZ, sizeof(int), YMP_mt_safe);
 
 	/* initialize */
-	for (i = 0; i < _TESTSZ; i++) {
+	for (i = 0; i < TESTSZ; i++) {
 		b[i] = ymp_get(mp);
 		*b[i] = __MAGICV; /* magic value */
 	}
@@ -108,8 +108,8 @@ _test_mempool(void) {
 
 	for (i = 0; i < 100; i++) {
 		/* nr is number of blocks that is put from pool */
-		for (j = 0; j < _TESTSZ / 2; j++) {
-			k = rand() % _TESTSZ;
+		for (j = 0; j < TESTSZ / 2; j++) {
+			k = rand() % TESTSZ;
 			if (b[k]) {
 				*b[k] = __POISONV;
 				ymp_put(mp, b[k]);
@@ -118,7 +118,7 @@ _test_mempool(void) {
 		}
 
 		/* get again */
-		for (j = 0; j < _TESTSZ; j++) {
+		for (j = 0; j < TESTSZ; j++) {
 			if (!b[j]) {
 				b[j] = ymp_get(mp);
 				*b[j] = __MAGICV;
@@ -127,7 +127,7 @@ _test_mempool(void) {
 	}
 
 	/* free enough blocks to prepare defragmentation */
-	for (i = 0; i < _TESTSZ / 4 * 3; i++) {
+	for (i = 0; i < TESTSZ / 4 * 3; i++) {
 		*b[i] = __POISONV;
 		ymp_put(mp, b[i]);
 		b[i] = NULL;
@@ -138,7 +138,7 @@ _test_mempool(void) {
 	{ /* just scope */
 		int nr = 0;
 		/* verify values */
-		for (i = 0; i < _TESTSZ; i++) {
+		for (i = 0; i < TESTSZ; i++) {
 			if (b[i]) {
 				nr++;
 				assert(__MAGICV == *b[i]);
@@ -152,4 +152,4 @@ _test_mempool(void) {
 #undef __MAGICV
 }
 
-TESTFN(_test_mempool, mempool)
+TESTFN(test_mempool, mempool)

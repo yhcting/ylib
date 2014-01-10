@@ -1,5 +1,6 @@
 /*****************************************************************************
- *    Copyright (C) 2011 Younghyung Cho. <yhcting77@gmail.com>
+ *    Copyright (C) 2011, 2012, 2013, 2014
+ *    Younghyung Cho. <yhcting77@gmail.com>
  *
  *    This file is part of ylib
  *
@@ -58,7 +59,7 @@
 /* #define inline */
 
 #ifndef NULL
-#       define NULL ((void*)0)
+#       define NULL ((void *)0)
 #endif
 
 #ifndef TRUE
@@ -70,12 +71,12 @@
 #endif
 
 #ifndef offset_of
-#       define offset_of(type, member) ((unsigned long) &((type*)0)->member)
+#       define offset_of(type, member) ((unsigned long) &((type *)0)->member)
 #endif
 
 #ifndef container_of
 #       define container_of(ptr, type, member)			\
-	((type*)(((char*)(ptr)) - offset_of(type, member)))
+	((type *)(((char *)(ptr)) - offset_of(type, member)))
 #endif
 
 /**************
@@ -89,7 +90,9 @@
 #       define unlikely(x)	__builtin_expect(!!(x), 0)
 #endif
 
-#define barrier()       __asm__ __volatile__("": : :"memory")
+#ifndef barrier
+#       define barrier()       __asm__ __volatile__("": : :"memory")
+#endif
 
 
 /*****************************************************************************
@@ -98,10 +101,8 @@
  *
  *****************************************************************************/
 
-#define YDBG
-
 /* For debugging */
-#ifdef YDBG
+#ifdef CONFIG_DEBUG
 
 #       include <malloc.h>
 #       include <assert.h>
@@ -110,10 +111,10 @@
 #       define yfree(x)     dfree(x)
 #       define yassert(x)   assert(x)
 
-    extern void* dmalloc(unsigned int);
-    extern void  dfree(void*);
+extern void * dmalloc(unsigned int);
+extern void   dfree(void *);
 
-#else /* YDBG */
+#else /* CONFIG_DEBUG */
 
 #       include <malloc.h>
 
@@ -121,6 +122,6 @@
 #       define yfree(x)     free(x)
 #       define yassert(x)   do {} while (0)
 
-#endif /* YDBG */
+#endif /* CONFIG_DEBUG */
 
 #endif /* __YDEf_h__ */

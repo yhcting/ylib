@@ -29,9 +29,9 @@
 #include "ylist.h"
 
 struct yqueue {
-	struct ylist   *l;
-	unsigned int    max; /**< maximun queue size allowed. */
-	unsigned int    sz;  /**< current queue size */
+	struct ylist *l;
+	unsigned int  max; /**< maximun queue size allowed. */
+	unsigned int  sz;  /**< current queue size */
 };
 
 static inline struct yqueue *

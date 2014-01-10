@@ -27,7 +27,7 @@
 #ifndef __YMEMPOOl_h__
 #define __YMEMPOOl_h__
 
-#include "yret.h"
+#include "ydef.h"
 
 /*
  * Options
@@ -41,11 +41,12 @@ enum {
  */
 struct ymp;
 
-/*
+/**
  * size of pool will be expanded if needed.
  * this is just 'initial' size
- * grpsz  : elem group size size in pool (number of element)
- * elemsz : element size (in bytes)
+ * @grpsz  : elem group size size in pool (number of element)
+ * @elemsz : element size (in bytes)
+ * @opt    : option.
  */
 EXPORT struct ymp *
 ymp_create(int grpsz, int elemsz, int opt);
@@ -53,13 +54,13 @@ ymp_create(int grpsz, int elemsz, int opt);
 EXPORT void
 ymp_destroy(struct ymp *mp);
 
-/*
+/**
  * get one block from pool.
  */
 EXPORT void *
 ymp_get(struct ymp *mp);
 
-/*
+/**
  * return block to pool.
  */
 EXPORT void
@@ -67,17 +68,19 @@ ymp_put(struct ymp *mp, void *block);
 
 
 #ifdef CONFIG_MEMPOOL_DYNAMIC
-/*
+/**
  * interrupt shrinking.
  * this is NOT implemented yet!!
+ * return  : -1 for error.
  */
-EXPORT enum yret
+EXPORT int
 ymp_stop_shrink(struct ymp *);
 
-/*
+/**
  * shrink memory pool.
+ * 
  */
-EXPORT enum yret
+EXPORT int
 ymp_shrink(struct ymp *, int margin);
 
 #else /* CONFIG_MEMPOOL_DYNAMIC */
@@ -85,14 +88,18 @@ ymp_shrink(struct ymp *, int margin);
  * Not supported at Non-dynamic-mempool.
  */
 
-static inline enum yret
-ymp_stop_shrink(struct ymp *mp) { return YRWNothing; }
+static inline int
+ymp_stop_shrink(struct ymp *mp) {
+	return -1;
+}
 
 /*
  * shrink memory pool.
  */
-static inline enum yret
-ymp_shrink(struct ymp *mp, int margin) { return YRWNothing; }
+static inline int
+ymp_shrink(struct ymp *mp, int margin) {
+	return -1;
+}
 
 #endif /* CONFIG_MEMPOOL_DYNAMIC */
 

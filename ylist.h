@@ -1,5 +1,6 @@
 /*****************************************************************************
- *    Copyright (C) 2011 Younghyung Cho. <yhcting77@gmail.com>
+ *    Copyright (C) 2011, 2012, 2013, 2014
+ *    Younghyung Cho. <yhcting77@gmail.com>
  *
  *    This file is part of ylib
  *
@@ -48,7 +49,7 @@ struct ylist_node {
 };
 
 struct ylist {
-	void(              *freecb)(void *);
+	void              (*freecb)(void *);
 	struct ylistl_link  head;
 };
 
@@ -64,8 +65,8 @@ struct ylist {
  *   what are done inside function.)
  */
 struct ylist_walker {
-	struct ylist           *list;
-	struct ylistl_link     *next, *curr;
+	struct ylist       *list;
+	struct ylistl_link *next, *curr;
 };
 
 
@@ -78,7 +79,7 @@ struct ylist_walker {
  */
 static inline void
 ylist_free_item(struct ylist *l, void *item) {
-	if (NULL != l->freecb)
+	if (l->freecb)
 		l->freecb(item);
 	else
 		yfree(item);
@@ -91,21 +92,21 @@ ylist_item(const struct ylist_node *n) {
 
 
 static inline void *
-__ylist_item(const struct ylistl_link* lk) {
+__ylist_item(const struct ylistl_link *lk) {
 	return ylist_item(container_of(lk, struct ylist_node, link));
 }
 
 static inline struct ylist_node *
-__ylist_node(const struct ylistl_link* lk) {
+__ylist_node(const struct ylistl_link *lk) {
 	return container_of(lk, struct ylist_node, link);
 }
 
-static inline struct ylistl_link*
+static inline struct ylistl_link *
 __ylist_first_link(const struct ylist *l) {
 	return l->head.next;
 }
 
-static inline struct ylistl_link*
+static inline struct ylistl_link *
 __ylist_last_link(const struct ylist *l) {
 	return l->head.prev;
 }
@@ -129,7 +130,7 @@ ylist_del(struct ylist_node *n) {
 
 static inline void *
 ylist_free_node(struct ylist_node *n) {
-	void *  item;
+	void *item;
 	item = n->item;
 	yfree(n);
 	return item;
@@ -143,7 +144,7 @@ __ylist_init(struct ylist *l, void(*freecb)(void *)) {
 
 static inline struct ylist*
 ylist_create(void(*freecb)(void *)) {
-	struct ylist *l = (struct ylist*)ymalloc(sizeof(*l));
+	struct ylist *l = (struct ylist *)ymalloc(sizeof(*l));
 	__ylist_init(l, freecb);
 	return l;
 }
@@ -193,7 +194,7 @@ static inline struct ylist_node *
 ylist_find_node(const struct ylist *l, void *item) {
 	struct ylist_node *p;
 	ylistl_foreach_item(p, &l->head, struct ylist_node, link)
-		if (p->item == item)
+		if (unlikely(p->item == item))
 			return p;
 
 	return NULL;
@@ -268,9 +269,15 @@ ylist_walker_create(struct ylist *l, int type) {
 	w->list = l;
 	w->curr = &l->head;
 	switch(type) {
-        case YLIST_WALKER_FORWARD:  w->next = __ylist_first_link(l);  break;
-        case YLIST_WALKER_BACKWARD: w->next = __ylist_last_link(l);   break;
-        default: yfree(w); w = NULL;
+        case YLIST_WALKER_FORWARD:
+		w->next = __ylist_first_link(l);
+		break;
+        case YLIST_WALKER_BACKWARD:
+		w->next = __ylist_last_link(l);
+		break;
+        default:
+		yfree(w);
+		w = NULL;
 	}
 	return w;
 }
@@ -311,7 +318,7 @@ ylist_walker_next_backward(struct ylist_walker *w) {
 	return __ylist_item(w->curr);
 }
 
-static inline struct ylist*
+static inline struct ylist *
 ylist_walker_list(const struct ylist_walker *w) {
 	return w->list;
 }

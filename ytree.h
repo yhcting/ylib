@@ -54,7 +54,7 @@ struct ytree_node {
 };
 
 struct ytree {
-	void(              *freecb)(void *);
+	void              (*freecb)(void *);
 	struct ytreel_link  pseudo;  /**< pseudo root */
 };
 
@@ -147,10 +147,16 @@ enum {
 	YTREE_WALKER_R2L_POST_OT
 };
 
+/**
+ * return : NULL for error.
+ */
 EXPORT struct ytree_walker *
 ytree_walker_create(const struct ytree_node *top_node, int type);
 
-EXPORT void
+/**
+ * return  : -1 for error(ex. invalid param)
+ */
+EXPORT int
 ytree_walker_destroy(struct ytree_walker *w);
 
 static inline int

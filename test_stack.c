@@ -27,15 +27,15 @@
 
 
 static void
-_test_stack(void) {
-	int* pi;
-	struct ystack*  s = ystack_create(NULL);
+test_stack(void) {
+	int *pi;
+	struct ystack *s = ystack_create(NULL);
 
-	pi = (int*)ymalloc(sizeof(int));
+	pi = (int *)ymalloc(sizeof(*pi));
 	*pi = 0;
 	ystack_push(s, pi);
 	yassert(1 == ystack_size(s));
-	pi = (int*)ymalloc(sizeof(int));
+	pi = (int *)ymalloc(sizeof(*pi));
 	*pi = 1;
 	ystack_push(s, pi);
 	yassert(2 == ystack_size(s));
@@ -48,4 +48,4 @@ _test_stack(void) {
 	ystack_destroy(s);
 }
 
-TESTFN(_test_stack, stack)
+TESTFN(test_stack, stack)

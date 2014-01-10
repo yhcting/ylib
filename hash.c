@@ -1,5 +1,6 @@
 /*****************************************************************************
- *    Copyright (C) 2011 Younghyung Cho. <yhcting77@gmail.com>
+ *    Copyright (C) 2011, 2012, 2013, 2014
+ *    Younghyung Cho. <yhcting77@gmail.com>
  *
  *    This file is part of ylib
  *
@@ -29,47 +30,47 @@
 
 #include "common.h"
 
-#define _MAX_HBITS 32
-#define _MIN_HBITS 4
+#define MAX_HBITS 32
+#define MIN_HBITS 4
 
 /* hash node */
-struct _hn {
-	struct ylistl_link    lk;
-	uint8_t              *key;   /* full key */
-	uint32_t	      keysz; /* size of key */
-	uint32_t	      hv32;  /* 32bit hash value */
-	void                 *v;     /* user value */
+struct hn {
+	struct ylistl_link lk;
+	uint8_t           *key;   /* full key */
+	uint32_t	   keysz; /* size of key */
+	uint32_t	   v32;  /* 32bit hash value */
+	void              *v;     /* user value */
 };
 
 struct yhash {
-	struct ylistl_link   *map;
-	uint32_t	      sz;	   /* hash size */
-	uint8_t	              mapbits;	   /* bits of map table = 1<<mapbits */
-	void		    (*fcb)(void *);/* free callback */
+	struct ylistl_link *map;
+	uint32_t	    sz;	   /* hash size */
+	uint8_t	            mapbits;	   /* bits of map table = 1<<mapbits */
+	void		  (*fcb)(void *);/* free callback */
 };
 
 static inline uint32_t
-_hmapsz(const struct yhash *h) {
+hmapsz(const struct yhash *h) {
 	return (1 << h->mapbits);
 }
 
 static inline uint32_t
-_hv__(uint32_t mapbits, uint32_t hv32) {
-	return hv32 >> (32 - mapbits);
+hv__(uint32_t mapbits, uint32_t v32) {
+	return v32 >> (32 - mapbits);
 }
 
 static inline uint32_t
-_hv_(const struct yhash *h, uint32_t hv32) {
-	return _hv__(h->mapbits, hv32);
+hv_(const struct yhash *h, uint32_t v32) {
+	return hv__(h->mapbits, v32);
 }
 
 static inline uint32_t
-_hv(const struct yhash *h, const struct _hn *n) {
-	return _hv_(h, n->hv32);
+hv(const struct yhash *h, const struct hn *n) {
+	return hv_(h, n->v32);
 }
 
 static inline uint32_t
-_hv32(const uint8_t *key, uint32_t keysz) {
+hv32(const uint8_t *key, uint32_t keysz) {
 	if (keysz)
 		return ycrc32(0, key, keysz);
 	else
@@ -82,59 +83,59 @@ _hv32(const uint8_t *key, uint32_t keysz) {
 
 /* Modify hash space to 'bits'*/
 static struct yhash *
-_hmodify(struct yhash *h, uint32_t bits) {
+hmodify(struct yhash *h, uint32_t bits) {
 	int		    i;
-	struct _hn	   *n, *tmp;
-	struct ylistl_link* oldmap;
+	struct hn	   *n, *tmp;
+	struct ylistl_link *oldmap;
 	uint32_t	    oldmapsz;
 
-	if (bits < _MIN_HBITS)
-		bits = _MIN_HBITS;
-	if (bits > _MAX_HBITS)
-		bits = _MAX_HBITS;
+	if (bits < MIN_HBITS)
+		bits = MIN_HBITS;
+	if (bits > MAX_HBITS)
+		bits = MAX_HBITS;
 
 	if (h->mapbits == bits)
 		return h; /* nothing to do */
 
 	oldmap = h->map;
-	oldmapsz = _hmapsz(h);
+	oldmapsz = hmapsz(h);
 
 	h->mapbits = bits; /* map size is changed here */
-	h->map = ymalloc(sizeof(struct ylistl_link) * _hmapsz(h));
+	h->map = ymalloc(sizeof(*h->map) * hmapsz(h));
 	yassert(h->map);
-	for (i=0; i<_hmapsz(h); i++)
+	for (i = 0; i < hmapsz(h); i++)
 		ylistl_init_link(&h->map[i]);
 	/* re assign hash nodes */
-	for (i=0; i<oldmapsz; i++) {
+	for (i = 0; i < oldmapsz; i++) {
 		ylistl_foreach_item_removal_safe(n,
 						 tmp,
 						 &oldmap[i],
-						 struct _hn,
+						 struct hn,
 						 lk) {
 			ylistl_del(&n->lk);
-			ylistl_add_last(&h->map[_hv(h, n)], &n->lk);
+			ylistl_add_last(&h->map[hv(h, n)], &n->lk);
 		}
 	}
 	yfree(oldmap);
 	return h;
 }
 
-static struct _hn*
-_hfind(const struct yhash *h, const uint8_t *key, uint32_t keysz) {
-	struct _hn*	     n;
-	uint32_t	     hv32 = _hv32(key, keysz);
-	struct ylistl_link*  hd = &h->map[_hv_(h, hv32)];
+static struct hn *
+hfind(const struct yhash *h, const uint8_t *key, uint32_t keysz) {
+	struct hn          *n;
+	uint32_t	    v32 = hv32(key, keysz);
+	struct ylistl_link *hd = &h->map[hv_(h, v32)];
 	if (keysz) {
-		ylistl_foreach_item(n, hd, struct _hn, lk)
+		ylistl_foreach_item(n, hd, struct hn, lk)
 			if (keysz == n->keysz
-			    && n->hv32 == hv32
+			    && n->v32 == v32
 			    && 0 == memcmp(key, n->key, keysz))
 				break;
 	} else {
 		/*
 		 * special case : 'n->key' value itself is key.
 		 */
-		ylistl_foreach_item(n, hd, struct _hn, lk)
+		ylistl_foreach_item(n, hd, struct hn, lk)
 			if (keysz == n->keysz
 			    && key == n->key)
 				break;
@@ -143,34 +144,34 @@ _hfind(const struct yhash *h, const uint8_t *key, uint32_t keysz) {
 }
 
 static inline void
-_vdestroy(const struct yhash *h, void *v) {
+vdestroy(const struct yhash *h, void *v) {
 	if (h->fcb)
 		(*h->fcb)(v);
 }
 
 
-static struct _hn*
-_ncreate(const uint8_t *key, uint32_t keysz, void *v) {
-	struct _hn *n = ymalloc(sizeof(*n));
+static struct hn *
+ncreate(const uint8_t *key, uint32_t keysz, void *v) {
+	struct hn *n = ymalloc(sizeof(*n));
 	yassert(n);
 	if (keysz) {
 		n->key = ymalloc(keysz);
 		yassert(n->key);
 		memcpy(n->key, key, keysz);
 	} else
-		n->key = (uint8_t*)key;
+		n->key = (uint8_t *)key;
 	n->keysz = keysz;
-	n->hv32 = _hv32(key, keysz);
+	n->v32 = hv32(key, keysz);
 	n->v = v;
 	ylistl_init_link(&n->lk);
 	return n;
 }
 
 static inline void
-_ndestroy(const struct yhash *h, struct _hn *n) {
+ndestroy(const struct yhash *h, struct hn *n) {
 	if (n->keysz)
 		yfree(n->key);
-	_vdestroy(h, n->v);
+	vdestroy(h, n->v);
 	yfree(n);
 }
 
@@ -180,33 +181,32 @@ yhash_create(void(*fcb)(void *)) {
 	struct yhash *h = ymalloc(sizeof(*h));
 	yassert(h);
 	h->sz = 0;
-	h->mapbits = _MIN_HBITS;
-	h->map = (struct ylistl_link*)ymalloc(sizeof(struct ylistl_link)
-					      * _hmapsz(h));
+	h->mapbits = MIN_HBITS;
+	h->map = (struct ylistl_link *)ymalloc(sizeof(*h->map) * hmapsz(h));
 	yassert(h->map);
-	for (i = 0; i < _hmapsz(h); i++)
+	for (i = 0; i < hmapsz(h); i++)
 		ylistl_init_link(&h->map[i]);
 	h->fcb = fcb;
 	return h;
 }
 
-enum yret
+int
 yhash_destroy(struct yhash *h) {
-	int	     i;
-	struct _hn  *n, *tmp;
-	for (i = 0; i < _hmapsz(h); i++) {
+	int	    i;
+	struct hn  *n, *tmp;
+	for (i = 0; i < hmapsz(h); i++) {
 		ylistl_foreach_item_removal_safe(n,
 						 tmp,
 						 &h->map[i],
-						 struct _hn,
+						 struct hn,
 						 lk) {
 			ylistl_del(&n->lk);
-			_ndestroy(h, n);
+			ndestroy(h, n);
 		}
 	}
 	yfree(h->map);
 	yfree(h);
-	return YROk;
+	return 0;
 }
 
 uint32_t
@@ -220,12 +220,12 @@ yhash_keys(const struct yhash *h,
 	   uint32_t *keysszbuf,
 	   uint32_t bufsz) {
 	uint32_t    r, i;
-	struct _hn *n;
+	struct hn *n;
 	r = 0;
-	for (i = 0; i < _hmapsz(h); i++) {
+	for (i = 0; i < hmapsz(h); i++) {
 		ylistl_foreach_item(n,
 				    &h->map[i],
-				    struct _hn,
+				    struct hn,
 				    lk) {
 			if (r < bufsz) {
 				keysbuf[r] = n->key;
@@ -240,48 +240,46 @@ yhash_keys(const struct yhash *h,
 }
 
 
-struct yhash *
+int
 yhash_add(struct yhash *h,
 	  const uint8_t *key, uint32_t keysz,
 	  void *v) {
-	struct _hn *n = _hfind(h, key, keysz);
+	struct hn *n = hfind(h, key, keysz);
 
 	if (n) {
 		/* overwrite value */
-		_vdestroy(h, n->v);
+		vdestroy(h, n->v);
 		n->v = v;
-		yretset(YRWOverwrite);
+		return 0;
 	} else {
 		/* we need to expand hash map size if hash seems to be full */
-		if (h->sz > _hmapsz(h))
-			_hmodify(h, h->mapbits+1);
-		n = _ncreate(key, keysz, v);
-		ylistl_add_last(&h->map[_hv(h, n)], &n->lk);
+		if (h->sz > hmapsz(h))
+			hmodify(h, h->mapbits + 1);
+		n = ncreate(key, keysz, v);
+		ylistl_add_last(&h->map[hv(h, n)], &n->lk);
 		h->sz++;
+		return 1;
 	}
-
-	return h;
 }
 
-struct yhash *
+int
 yhash_del(struct yhash *h,
 	  const uint8_t *key, uint32_t keysz) {
-	struct _hn *n = _hfind(h, key, keysz);
+	struct hn *n = hfind(h, key, keysz);
 	if (n) {
 		ylistl_del(&n->lk);
-		_ndestroy(h, n);
+		ndestroy(h, n);
 		h->sz--;
-		if (h->sz < _hmapsz(h) / 4)
-			_hmodify(h, h->mapbits-1);
-	} else {
-		yretset(YRWNothing);
-	}
-	return h;
+		if (h->sz < hmapsz(h) / 4)
+			hmodify(h, h->mapbits - 1);
+		return 1;
+	} else
+		return 0;
 }
 
 void *
 yhash_find(const struct yhash *h,
 	   const uint8_t *key, uint32_t keysz) {
-	struct _hn *n = _hfind(h, key, keysz);
+	struct hn *n = hfind(h, key, keysz);
 	return n? n->v: NULL;
 }

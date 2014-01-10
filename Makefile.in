@@ -86,7 +86,7 @@ am__installdirs = "$(DESTDIR)$(pkglibdir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(pkglib_LTLIBRARIES)
 liby_la_LIBADD =
-am_liby_la_OBJECTS = crc.lo tree.lo trie.lo hash.lo ahash.lo ret.lo \
+am_liby_la_OBJECTS = crc.lo tree.lo trie.lo hash.lo ahash.lo \
 	mempool.lo
 liby_la_OBJECTS = $(am_liby_la_OBJECTS)
 PROGRAMS = $(bin_PROGRAMS)
@@ -244,13 +244,13 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 include_HEADERS = \
-	ydef.h yret.h ycrc.h ydynb.h ylistl.h ylist.h yqueue.h ystack.h \
+	ydef.h ycrc.h ydynb.h ylistl.h ylist.h yqueue.h ystack.h \
 	ytreel.h ytree.h yhash.h yahash.h ytrie.h ymempool.h \
 	ylib.h
 
 pkglib_LTLIBRARIES = liby.la
 liby_la_SOURCES = \
-	crc.c tree.c trie.c hash.c ahash.c ret.c mempool.c
+	crc.c tree.c trie.c hash.c ahash.c mempool.c
 
 y_SOURCES = \
 	test_main.c test_list.c test_queue.c test_stack.c test_tree.c \
@@ -401,7 +401,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hash.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mempool.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ret.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ahash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_bitops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_hash.Po@am__quote@

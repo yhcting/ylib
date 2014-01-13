@@ -1,5 +1,6 @@
-/*****************************************************************************
- *    Copyright (C) 2011 Younghyung Cho. <yhcting77@gmail.com>
+/******************************************************************************
+ *    Copyright (C) 2011, 2012, 2013, 2014
+ *    Younghyung Cho. <yhcting77@gmail.com>
  *
  *    This file is part of ylib
  *
@@ -30,7 +31,6 @@ extern "C" {
  * Include headers for modules
  */
 #include "ydef.h"
-#include "yret.h"
 #include "ycrc.h"
 #include "ydynb.h"
 #include "ylistl.h"

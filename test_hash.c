@@ -1,4 +1,4 @@
-/*****************************************************************************
+/******************************************************************************
  *    Copyright (C) 2011, 2012, 2013, 2014
  *    Younghyung Cho. <yhcting77@gmail.com>
  *
@@ -58,7 +58,7 @@ test_hash_normal(void) {
 		yassert(i+1 == yhash_sz(h));
 	}
 
-	r = yhash_keys(h, keys, keyssz, 10);
+	r = yhash_keys(h, (const void **)keys, keyssz, 10);
 	yassert(10 == r);
 	for (i = 0; i < r; i++)
 		yassert(keyssz[i] == ((uint32_t)strlen((char *)keys[i]) + 1));
@@ -66,7 +66,7 @@ test_hash_normal(void) {
 	for (i = 0; i < r; i++)
 		printf("%s\n", keys[i]);
 	*/
-	r = yhash_keys(h, keys, keyssz, 4096);
+	r = yhash_keys(h, (const void **)keys, keyssz, 4096);
 	yassert(1024 == r);
 	for (i = 0; i < r; i++)
 		yassert(keyssz[i] == ((uint32_t)strlen((char *)keys[i]) + 1));
@@ -82,7 +82,7 @@ test_hash_normal(void) {
 		yhash_del(h, (uint8_t *)buf, strlen(buf)+1);
 		yassert(i == yhash_sz(h));
 	}
-	r = yhash_keys(h, keys, keyssz, 10);
+	r = yhash_keys(h, (const void **)keys, keyssz, 10);
 	yassert(0 == r);
 
 	yhash_destroy(h);

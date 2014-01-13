@@ -1,4 +1,4 @@
-/*****************************************************************************
+/******************************************************************************
  *    Copyright (C) 2011, 2012, 2013, 2014
  *    Younghyung Cho. <yhcting77@gmail.com>
  *
@@ -55,13 +55,14 @@ yhash_sz(const struct yhash *h);
  * @keysszbuf: Buffer to contain each key's length.
  *             So, size should be same with @keysbuf.
  *             if NULL, this is ignored.
+ * @bufsz: size of @keysbuf and @keysszbuf
  * @return : number keys assigned to @keysbuf
  *           return value == @bufsz means @keysbuf is not enough large to
  *             contains all keys in the hash.
  */
 EXPORT uint32_t
 yhash_keys(const struct yhash *h,
-	   const uint8_t **keysbuf, /* in/out */
+	   const void **keysbuf, /* in/out */
 	   uint32_t *keysszbuf, /* in/out */
 	   uint32_t bufsz);
 
@@ -79,7 +80,7 @@ yhash_keys(const struct yhash *h,
  */
 int
 yhash_add(struct yhash *h,
-	  const uint8_t *key, uint32_t keysz,
+	  const void *key, uint32_t keysz,
 	  void *v);
 
 /**
@@ -89,13 +90,13 @@ yhash_add(struct yhash *h,
  */
 EXPORT int
 yhash_del(struct yhash *h,
-	  const uint8_t *key, uint32_t keysz);
+	  const void *key, uint32_t keysz);
 
 /**
  * @return : NULL if fails.
  */
 EXPORT void *
 yhash_find(const struct yhash *h,
-	   const uint8_t *key, uint32_t keysz);
+	   const void *key, uint32_t keysz);
 
 #endif /* __YHASh_h__ */

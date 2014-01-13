@@ -1,5 +1,6 @@
-/*****************************************************************************
- *    Copyright (C) 2011 Younghyung Cho. <yhcting77@gmail.com>
+/******************************************************************************
+ *    Copyright (C) 2011, 2012, 2013, 2014
+ *    Younghyung Cho. <yhcting77@gmail.com>
  *
  *    This file is part of ylib
  *
@@ -18,50 +19,33 @@
  *    along with this program.	If not, see <http://www.gnu.org/licenses/>.
  *****************************************************************************/
 
-
-#include <stdio.h>
 #include <string.h>
-
-#include "yahash.h"
-#include "common.h"
-#include "test.h"
-
 #include <assert.h>
 
+#include "common.h"
+#include "ydynb.h"
+#include "test.h"
+
+
 static void
-_test_ahash(void) {
-	int           i;
-	char          buf[4096];
-	char*         ptsv[1024];
-	char*         v;
-	/*
-	 * Test address hash.
-	 */
-	struct yahash* h = yahash_create();
-
-	for (i = 0; i < 1024; i++) {
-		snprintf(buf, sizeof(buf), "this is key %d", i);
-		v = ymalloc(strlen(buf)+1);
-		strcpy(v, buf);
-		/* key and value is same */
-		yahash_add(h, v);
-		ptsv[i] = v;
-		yassert(i+1 == yahash_sz(h));
-	}
-
-	for (i = 256; i < 512; i++) {
-		yassert(yahash_check(h, ptsv[i]));
-	}
-
-	for (i = 1023; i >= 0; i--) {
-		yahash_del(h, ptsv[i]);
-		yassert(i == yahash_sz(h));
-	}
-
-	for (i = 0; i < 1024; i++)
-		yfree(ptsv[i]);
-
-	yahash_destroy(h);
+test_dynb(void) {
+	struct ydynb *b = ydynb_create(2);
+	yassert(2 == ydynb_freesz(b));
+	ydynb_append(b, "ab ", 3);
+	yassert(1 == ydynb_freesz(b));
+	ydynb_append(b, "cde fgh ", 8);
+	/* include trailing 0 */
+	ydynb_append(b, "1234567890123456789012345678901234567890", 41);
+	yassert(52 == ydynb_sz(b));
+	yassert(!strcmp("ab cde fgh 1234567890123456789012345678901234567890",
+			(const char *)ydynb_buf(b)));
+	yassert(EINVAL == ydynb_shrink(b, 0));
+	yassert(EINVAL == ydynb_shrink(b, 0xffff));
+	yassert(EINVAL == ydynb_shrink(b, ydynb_sz(b) - 1));
+	ydynb_shrink(b, ydynb_sz(b));
+	yassert(0 == ydynb_freesz(b));
+	ydynb_destroy(b);
 }
 
-TESTFN(_test_ahash, ahash)
+
+TESTFN(test_dynb, dynb)

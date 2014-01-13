@@ -1,5 +1,6 @@
-/*****************************************************************************
- *    Copyright (C) 2012 Younghyung Cho. <yhcting77@gmail.com>
+/******************************************************************************
+ *    Copyright (C) 2011, 2012, 2013, 2014
+ *    Younghyung Cho. <yhcting77@gmail.com>
  *
  *    This file is part of ylib
  *
@@ -17,6 +18,8 @@
  *    You should have received a copy of the GNU General Public License
  *    along with this program.	If not, see <http://www.gnu.org/licenses/>.
  *****************************************************************************/
+
+
 #include "common.h"
 #include "ylist.h"
 #include "test.h"

@@ -1,0 +1,84 @@
+#!/usr/bin/perl
+
+#
+# License header writer
+#
+
+use warnings;
+use strict;
+
+use constant {
+    TRUE    => 1,
+    FALSE   => 0,
+};
+
+my @skips = qw(config.h);
+
+foreach my $f (<*.c *.h>) {
+    my $skip = FALSE;
+    foreach (@skips) {
+	if ($f eq $_) {
+	    $skip = TRUE;
+	    last;
+	}
+    }
+    if (FALSE == $skip) {
+	wrlic($f);
+    }
+}
+
+
+sub wrlic {
+    my @d;
+    my $replace = FALSE;
+
+    open(FI, "<$_[0]") or die$!;
+    foreach (<FI>) {
+	push @d, $_;
+    }
+    close(FI);
+
+    if (scalar @d > 0
+	&& $d[0] =~ /^\/\*{78}\s*$/) {
+	$replace = TRUE;
+    }
+
+    if (TRUE == $replace) {
+	# remove existing license comment.
+	while (scalar @d > 1) {
+	    shift @d;
+	    if ($d[0] =~ /^ \*{77}\/\s*$/) {
+		shift @d;
+		last;
+	    }
+	}
+    }
+
+    # Add license comments at the head of file.
+    my $license =
+'/******************************************************************************
+ *    Copyright (C) 2011, 2012, 2013, 2014
+ *    Younghyung Cho. <yhcting77@gmail.com>
+ *
+ *    This file is part of ylib
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU Lesser General Public License as
+ *    published by the Free Software Foundation either version 3 of the
+ *    License, or (at your option) any later version.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU Lesser General Public License
+ *    (<http://www.gnu.org/licenses/lgpl.html>) for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.	If not, see <http://www.gnu.org/licenses/>.
+ *****************************************************************************/';
+    unshift @d, ($license, "\n");
+
+    open (FO, ">$_[0]") or die$!;
+    print FO @d;
+    close(FO);
+}

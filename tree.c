@@ -1,5 +1,6 @@
-/*****************************************************************************
- *    Copyright (C) 2011 Younghyung Cho. <yhcting77@gmail.com>
+/******************************************************************************
+ *    Copyright (C) 2011, 2012, 2013, 2014
+ *    Younghyung Cho. <yhcting77@gmail.com>
  *
  *    This file is part of ylib
  *

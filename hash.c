@@ -1,4 +1,4 @@
-/*****************************************************************************
+/******************************************************************************
  *    Copyright (C) 2011, 2012, 2013, 2014
  *    Younghyung Cho. <yhcting77@gmail.com>
  *
@@ -36,7 +36,7 @@
 /* hash node */
 struct hn {
 	struct ylistl_link lk;
-	uint8_t           *key;   /* full key */
+	void              *key;   /* full key */
 	uint32_t	   keysz; /* size of key */
 	uint32_t	   v32;  /* 32bit hash value */
 	void              *v;     /* user value */
@@ -70,7 +70,7 @@ hv(const struct yhash *h, const struct hn *n) {
 }
 
 static inline uint32_t
-hv32(const uint8_t *key, uint32_t keysz) {
+hv32(const void *key, uint32_t keysz) {
 	if (keysz)
 		return ycrc32(0, key, keysz);
 	else
@@ -121,7 +121,7 @@ hmodify(struct yhash *h, uint32_t bits) {
 }
 
 static struct hn *
-hfind(const struct yhash *h, const uint8_t *key, uint32_t keysz) {
+hfind(const struct yhash *h, const void *key, uint32_t keysz) {
 	struct hn          *n;
 	uint32_t	    v32 = hv32(key, keysz);
 	struct ylistl_link *hd = &h->map[hv_(h, v32)];
@@ -151,7 +151,7 @@ vdestroy(const struct yhash *h, void *v) {
 
 
 static struct hn *
-ncreate(const uint8_t *key, uint32_t keysz, void *v) {
+ncreate(const void *key, uint32_t keysz, void *v) {
 	struct hn *n = ymalloc(sizeof(*n));
 	yassert(n);
 	if (keysz) {
@@ -216,7 +216,7 @@ yhash_sz(const struct yhash *h) {
 
 uint32_t
 yhash_keys(const struct yhash *h,
-	   const uint8_t **keysbuf,
+	   const void **keysbuf,
 	   uint32_t *keysszbuf,
 	   uint32_t bufsz) {
 	uint32_t    r, i;
@@ -242,7 +242,7 @@ yhash_keys(const struct yhash *h,
 
 int
 yhash_add(struct yhash *h,
-	  const uint8_t *key, uint32_t keysz,
+	  const void *key, uint32_t keysz,
 	  void *v) {
 	struct hn *n = hfind(h, key, keysz);
 
@@ -264,7 +264,7 @@ yhash_add(struct yhash *h,
 
 int
 yhash_del(struct yhash *h,
-	  const uint8_t *key, uint32_t keysz) {
+	  const void *key, uint32_t keysz) {
 	struct hn *n = hfind(h, key, keysz);
 	if (n) {
 		ylistl_del(&n->lk);
@@ -279,7 +279,7 @@ yhash_del(struct yhash *h,
 
 void *
 yhash_find(const struct yhash *h,
-	   const uint8_t *key, uint32_t keysz) {
+	   const void *key, uint32_t keysz) {
 	struct hn *n = hfind(h, key, keysz);
 	return n? n->v: NULL;
 }

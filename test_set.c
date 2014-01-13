@@ -20,25 +20,38 @@
  *****************************************************************************/
 
 
-#ifndef __YCRc_h__
-#define __YCRc_h__
+#include <stdio.h>
+#include <string.h>
 
-#include <stdint.h>
+#include "common.h"
+#include "yset.h"
+#include "test.h"
 
-/**
- * @crc     : previous crc value
- * @buffer  : data pointer
- * @len     : number of bytes in the buffer.
- */
-EXPORT uint16_t
-ycrc16(uint16_t crc, const uint8_t *data, uint32_t len);
+#include <assert.h>
 
+static void
+test_set(void) {
+	int i, r;
+	int *elems[100];
+	yset_t s = yset_create();
 
-/**
- * See above 'ycrc16' for details.
- */
-EXPORT uint32_t
-ycrc32(uint32_t crc, const uint8_t *data, uint32_t len);
+	for (i = 0; i < 100; i++)
+		yassert(1 == yset_add(s, &i, sizeof(i)));
+	for (i = 0; i < 50; i++)
+		yassert(0 == yset_add(s, &i, sizeof(i)));
+	for (i = 0; i < 25; i++)
+		yassert(1 == yset_del(s, &i, sizeof(i)));
+	for (i = 0; i < 25; i++)
+		yassert(0 == yset_del(s, &i, sizeof(i)));
+	for (i = 0; i < 25; i++)
+		yassert(!yset_contains(s, &i, sizeof(i)));
+	for (; i < 50; i++)
+		yassert(yset_contains(s, &i, sizeof(i)));
+	r = yset_elements(s, (const void **)elems, NULL, arrsz(elems));
+	yassert(75 == r);
+	for (i = 0; i < r; i++)
+		yassert(25 <= *elems[i] && *elems[i] < 100);
+	yset_destroy(s);
+}
 
-
-#endif /* __YCRc_h__ */
+TESTFN(test_set, set)

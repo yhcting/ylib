@@ -35,8 +35,6 @@ extern "C" {
 #include "ydynb.h"
 #include "ylistl.h"
 #include "ylist.h"
-#include "yqueue.h"
-#include "ystack.h"
 #include "ytreel.h"
 #include "ytree.h"
 #include "yhash.h"

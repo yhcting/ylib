@@ -22,6 +22,7 @@
 
 #include <memory.h>
 #include <string.h>
+#include <errno.h>
 
 #include "yhash.h"
 #include "ylistl.h"
@@ -175,23 +176,34 @@ ndestroy(const struct yhash *h, struct hn *n) {
 	yfree(n);
 }
 
-struct yhash *
-yhash_create(void(*fcb)(void *)) {
-	int	      i;
-	struct yhash *h = ymalloc(sizeof(*h));
-	yassert(h);
+int
+yhash_init(struct yhash *h, void (*fcb)(void *)) {
+	int i;
 	h->sz = 0;
 	h->mapbits = MIN_HBITS;
 	h->map = (struct ylistl_link *)ymalloc(sizeof(*h->map) * hmapsz(h));
-	yassert(h->map);
+	if (unlikely(!h->map))
+		return ENOMEM;
 	for (i = 0; i < hmapsz(h); i++)
 		ylistl_init_link(&h->map[i]);
 	h->fcb = fcb;
+	return 0;
+}
+
+struct yhash *
+yhash_create(void(*fcb)(void *)) {
+	struct yhash *h = ymalloc(sizeof(*h));
+	if (unlikely(!h))
+		return NULL;
+	if (unlikely(yhash_init(h, fcb))) {
+		yfree(h);
+		return NULL;
+	}
 	return h;
 }
 
-int
-yhash_destroy(struct yhash *h) {
+void
+yhash_clean(struct yhash *h) {
 	int	    i;
 	struct hn  *n, *tmp;
 	for (i = 0; i < hmapsz(h); i++) {
@@ -205,8 +217,12 @@ yhash_destroy(struct yhash *h) {
 		}
 	}
 	yfree(h->map);
+}
+
+void
+yhash_destroy(struct yhash *h) {
+	yhash_clean(h);
 	yfree(h);
-	return 0;
 }
 
 uint32_t

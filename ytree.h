@@ -64,8 +64,8 @@ struct ytree {
  * Pretty lots of things are done inside 'next' function.
  * So, on-indirect-function-call-cost is not big deal!.
  */
-struct ytree_walker {
-	struct ytree_node         *(*next)(struct ytree_walker *);
+struct ytreei {
+	struct ytree_node         *(*next)(struct ytreei *);
 	const struct ytreel_link  *lcurr, *lnext;
 };
 
@@ -137,32 +137,32 @@ ytree_create(void(*freecb)(void *)) {
 /* OT : Order Traversal */
 enum {
 	/**< pre-order traversal - depth first search(DFS) */
-	YTREE_WALKER_PRE_OT,
+	YTREEI_PRE_OT,
 	/**< level-order traversal - bread first search(BFS) */
-	YTREE_WALKER_LEVEL_OT,
+	YTREEI_LEVEL_OT,
 	/**< post-order traversal */
-	YTREE_WALKER_POST_OT,
+	YTREEI_POST_OT,
 	/**< right to left pre-order traversal */
-	YTREE_WALKER_R2L_PRE_OT,
+	YTREEI_R2L_PRE_OT,
 	/**< right to left post-order traversal */
-	YTREE_WALKER_R2L_POST_OT
+	YTREEI_R2L_POST_OT
 };
 
 /**
  * return : NULL for error.
  */
-EXPORT struct ytree_walker *
-ytree_walker_create(const struct ytree_node *top_node, int type);
+EXPORT struct ytreei *
+ytreei_create(const struct ytree_node *top_node, int type);
 
 /**
  * return  : -1 for error(ex. invalid param)
  */
 EXPORT int
-ytree_walker_destroy(struct ytree_walker *w);
+ytreei_destroy(struct ytreei *);
 
 static inline int
-ytree_walker_has_next(const struct ytree_walker *w) {
-	return !!w->lnext;
+ytreei_has_next(const struct ytreei *itr) {
+	return !!itr->lnext;
 }
 
 /*============================
@@ -194,11 +194,11 @@ ytree_is_empty(const struct ytree *t) {
  */
 static inline void
 ytree_destroy_node_tree(struct ytree_node *n, void(*freecb)(void *)) {
-	struct ytree_walker *w;
+	struct ytreei *itr;
 	/* see 'ytree_free_node_tree' */
-	w = ytree_walker_create(n, YTREE_WALKER_LEVEL_OT);
-	while (ytree_walker_has_next(w)) {
-		n = w->next(w);
+	itr = ytreei_create(n, YTREEI_LEVEL_OT);
+	while (ytreei_has_next(itr)) {
+		n = itr->next(itr);
 		/*
 		 * This has additional overhead for comparison.
 		 * But it's not big deal
@@ -208,7 +208,7 @@ ytree_destroy_node_tree(struct ytree_node *n, void(*freecb)(void *)) {
 		else
 			yfree(ytree_free_node(n));
 	}
-	ytree_walker_destroy(w);
+	ytreei_destroy(itr);
 }
 
 /**
@@ -226,24 +226,24 @@ ytree_destroy(struct ytree *t) {
  */
 static inline void
 ytree_free_node_tree(struct ytree_node *n) {
-	struct ytree_walker *w;
+	struct ytreei *itr;
 	/*
 	 * NOTE! :
-	 *  - Depends on implementation of YTREE_WALKER_LEVEL_OT.
+	 *  - Depends on implementation of YTREEI_LEVEL_OT.
 	 *
 	 * level order traverse doesn't use visited node.
 	 * So, it is suitable for this function.
 	 */
-	w = ytree_walker_create(n, YTREE_WALKER_LEVEL_OT);
-	while(ytree_walker_has_next(w)) {
-		n = w->next(w);
+	itr = ytreei_create(n, YTREEI_LEVEL_OT);
+	while (ytreei_has_next(itr)) {
+		n = itr->next(itr);
 		/*
 		 * This has additional overhead for comparison.
 		 * But it's not big deal
 		 */
 		ytree_free_node(n);
 	}
-	ytree_walker_destroy(w);
+	ytreei_destroy(itr);
 }
 
 /**

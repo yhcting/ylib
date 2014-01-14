@@ -99,17 +99,17 @@ build_test_tree(struct ytree *t) {
 
 
 static void
-test_walker(const struct ytree *t, int type, const char *referseq) {
-	struct ytree_walker *w;
+test_iterator(const struct ytree *t, int type, const char *referseq) {
+	struct ytreei *itr;
 	const struct ytree_node *n __attribute__((unused));
 	int i = 0;
-	w = ytree_walker_create(ytree_root(t), type);
-	while (ytree_walker_has_next(w)) {
-		n = w->next(w);
+	itr = ytreei_create(ytree_root(t), type);
+	while (ytreei_has_next(itr)) {
+		n = itr->next(itr);
 		yassert(referseq[i] == item(n));
 		i++;
 	}
-	ytree_walker_destroy(w);
+	ytreei_destroy(itr);
 }
 
 /**
@@ -144,7 +144,7 @@ test_operation(struct ytree *t) {
 	{ /* Just scope */
 		static const char __vseq[]
 			= { 'F', 'B', 'G', 'A', 'D', 'I', 'C', 'E', 'H' };
-		test_walker(t, YTREE_WALKER_LEVEL_OT, __vseq);
+		test_iterator(t, YTREEI_LEVEL_OT, __vseq);
 	}
 
 	s = ytree_last_child(n); /* I */
@@ -163,7 +163,7 @@ test_operation(struct ytree *t) {
 	{ /* Just scope */
 		static const char __vseq[]
 			= { 'F', 'B', 'G', 'I', 'A', 'D', 'H', 'C', 'E' };
-		test_walker(t, YTREE_WALKER_LEVEL_OT, __vseq);
+		test_iterator(t, YTREEI_LEVEL_OT, __vseq);
 	}
 
 	/* Try to remove root */
@@ -175,7 +175,7 @@ test_operation(struct ytree *t) {
 	{ /* Just scope */
 		static const char __vseq[]
 			= { 'F', 'B', 'G', 'I', 'A', 'D', 'H', 'C', 'E' };
-		test_walker(t, YTREE_WALKER_LEVEL_OT, __vseq);
+		test_iterator(t, YTREEI_LEVEL_OT, __vseq);
 	}
 
 }
@@ -246,11 +246,11 @@ test_tree(void) {
 	build_test_tree(t);
 	verify_test_tree(t);
 
-	test_walker(t, YTREE_WALKER_PRE_OT, preot);
-	test_walker(t, YTREE_WALKER_LEVEL_OT, levelot);
-	test_walker(t, YTREE_WALKER_POST_OT, postot);
-	test_walker(t, YTREE_WALKER_R2L_PRE_OT, r2lpreot);
-	test_walker(t, YTREE_WALKER_R2L_POST_OT, r2lpostot);
+	test_iterator(t, YTREEI_PRE_OT, preot);
+	test_iterator(t, YTREEI_LEVEL_OT, levelot);
+	test_iterator(t, YTREEI_POST_OT, postot);
+	test_iterator(t, YTREEI_R2L_PRE_OT, r2lpreot);
+	test_iterator(t, YTREEI_R2L_POST_OT, r2lpostot);
 	test_operation(t);
 
 	yassert(!ytree_is_empty(t));

@@ -31,10 +31,7 @@ yset_create(void) {
 	return yhash_create(NULL);
 }
 
-/**
- * @return : reserved for future use.
- */
-static inline int
+static inline void
 yset_destroy(yset_t s) {
 	return yhash_destroy(s);
 }

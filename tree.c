@@ -21,34 +21,32 @@
 
 
 #include "ytree.h"
-#include "yqueue.h"
-#include "ystack.h"
-
+#include "ylist.h"
 #include "common.h"
 
 /**
  * base struct of walker.
  * This SHOULD BE located on top of each walker struct.
  */
-struct tree_walker_base {
+struct treei_base {
 	/**< whitebox part */
-	struct ytree_walker         wb;
-	/**< type of walker - use "YTREE_WALKER_XXX" values */
-	int                         type;
+	struct ytreei   itr;
+	/**< type of iterator - use "YTREEI_XXX" values */
+	int             type;
 };
 
-struct tree_walker_preot {
-	struct tree_walker_base    base;
-	struct ystack             *s;      /**< stack to use */
+struct treei_preot {
+	struct treei_base base;
+	struct ylist     *s; /**< stack to use */
 };
 
-struct tree_walker_levelot {
-	struct tree_walker_base    base;
-	struct yqueue             *q;
+struct treei_levelot {
+	struct treei_base base;
+	struct ylist     *q; /**< queue */
 };
 
-struct tree_walker_postot {
-	struct tree_walker_base    base;
+struct treei_postot {
+	struct treei_base    base;
 	const struct ytreel_link  *top;
 };
 
@@ -56,63 +54,63 @@ struct tree_walker_postot {
  * Walker's operations.
  ********************************/
 static struct ytree_node *
-tree_walker_preot_next(struct tree_walker_preot *p) {
+treei_preot_next(struct treei_preot *p) {
 	struct ylistl_link *pos;
 	yassert(p);
-	ylistl_foreach_backward(pos, &p->base.wb.lnext->child) {
-		ystack_push(p->s,
-			    container_of(pos, struct ytreel_link, sibling));
+	ylistl_foreach_backward(pos, &p->base.itr.lnext->child) {
+		ylist_push(p->s,
+			   container_of(pos, struct ytreel_link, sibling));
 	}
-	p->base.wb.lcurr = p->base.wb.lnext;
-	p->base.wb.lnext =
-		ystack_is_empty(p->s)?
+	p->base.itr.lcurr = p->base.itr.lnext;
+	p->base.itr.lnext =
+		ylist_is_empty(p->s)?
 		NULL:
-		(struct ytreel_link *)ystack_pop(p->s);
+		(struct ytreel_link *)ylist_pop(p->s);
 
-	return (p->base.wb.lcurr)?
-		container_of(p->base.wb.lcurr, struct ytree_node, link):
+	return (p->base.itr.lcurr)?
+		container_of(p->base.itr.lcurr, struct ytree_node, link):
 		NULL;;
 }
 
 static struct ytree_node *
-tree_walker_r2lpreot_next(struct tree_walker_preot *p) {
+treei_r2lpreot_next(struct treei_preot *p) {
 	struct ylistl_link *pos;
 	yassert(p);
-	ylistl_foreach(pos, &p->base.wb.lnext->child)
-		ystack_push(p->s,
-			    container_of(pos, struct ytreel_link, sibling));
+	ylistl_foreach(pos, &p->base.itr.lnext->child)
+		ylist_push(p->s,
+			   container_of(pos, struct ytreel_link, sibling));
 
-	p->base.wb.lcurr = p->base.wb.lnext;
-	p->base.wb.lnext = ystack_is_empty(p->s)?
+	p->base.itr.lcurr = p->base.itr.lnext;
+	p->base.itr.lnext = ylist_is_empty(p->s)?
 		           NULL:
-			   (struct ytreel_link *)ystack_pop(p->s);
+			   (struct ytreel_link *)ylist_pop(p->s);
 
-	return (p->base.wb.lcurr)?
-		container_of(p->base.wb.lcurr, struct ytree_node, link):
+	return (p->base.itr.lcurr)?
+		container_of(p->base.itr.lcurr, struct ytree_node, link):
 		NULL;;
 }
 
 static struct ytree_node *
-tree_walker_levelot_next(struct tree_walker_levelot *p) {
+treei_levelot_next(struct treei_levelot *p) {
 	struct ylistl_link *pos;
 	yassert(p);
-	ylistl_foreach(pos, &p->base.wb.lnext->child)
-		yqueue_en(p->q,
+	ylistl_foreach(pos, &p->base.itr.lnext->child)
+		ylist_enq(p->q,
 			  container_of(pos, struct ytreel_link, sibling));
 
-	p->base.wb.lcurr = p->base.wb.lnext;
-	p->base.wb.lnext = yqueue_is_empty(p->q)?
+	p->base.itr.lcurr = p->base.itr.lnext;
+	p->base.itr.lnext = ylist_is_empty(p->q)?
 			   NULL:
-			   (struct ytreel_link*)yqueue_de(p->q);
+			   (struct ytreel_link*)ylist_deq(p->q);
 
-	return (p->base.wb.lcurr)?
-		container_of(p->base.wb.lcurr, struct ytree_node, link):
+	return (p->base.itr.lcurr)?
+		container_of(p->base.itr.lcurr, struct ytree_node, link):
 		NULL;
 }
 
 static struct ytree_node *
-tree_walker_postot_next(struct tree_walker_postot *p) {
-	const struct ytreel_link *l = p->base.wb.lnext;
+treei_postot_next(struct treei_postot *p) {
+	const struct ytreel_link *l = p->base.itr.lnext;
 	yassert(p);
 	if (l && l != p->top) {
 		if (ytreel_has_next(l)) {
@@ -124,17 +122,17 @@ tree_walker_postot_next(struct tree_walker_postot *p) {
 	} else
 		l = NULL;
 
-	p->base.wb.lcurr = p->base.wb.lnext;
-	p->base.wb.lnext = l;
+	p->base.itr.lcurr = p->base.itr.lnext;
+	p->base.itr.lnext = l;
 
-	return (p->base.wb.lcurr)?
-		container_of(p->base.wb.lcurr, struct ytree_node, link):
+	return (p->base.itr.lcurr)?
+		container_of(p->base.itr.lcurr, struct ytree_node, link):
 		NULL;
 }
 
 static struct ytree_node *
-tree_walker_r2lpostot_next(struct tree_walker_postot *p) {
-	const struct ytreel_link *l = p->base.wb.lnext;
+treei_r2lpostot_next(struct treei_postot *p) {
+	const struct ytreel_link *l = p->base.itr.lnext;
 	yassert(p);
 	if (l && l != p->top) {
 		if (ytreel_has_prev(l)) {
@@ -145,18 +143,18 @@ tree_walker_r2lpostot_next(struct tree_walker_postot *p) {
 			l = l->parent;
 	} else
 		l = NULL;
-	p->base.wb.lcurr = p->base.wb.lnext;
-	p->base.wb.lnext = l;
+	p->base.itr.lcurr = p->base.itr.lnext;
+	p->base.itr.lnext = l;
 
-	return (p->base.wb.lcurr)?
-		container_of(p->base.wb.lcurr, struct ytree_node, link):
+	return (p->base.itr.lcurr)?
+		container_of(p->base.itr.lcurr, struct ytree_node, link):
 		NULL;
 }
 
 
-struct ytree_walker *
-ytree_walker_create(const struct ytree_node *top_node, int type) {
-	struct tree_walker_base *w = NULL;
+struct ytreei *
+ytreei_create(const struct ytree_node *top_node, int type) {
+	struct treei_base *itr = NULL;
 
 	if (unlikely(!top_node)) {
 		yassert(0);
@@ -164,45 +162,45 @@ ytree_walker_create(const struct ytree_node *top_node, int type) {
 	}
 
 	switch(type) {
-        case YTREE_WALKER_R2L_PRE_OT:
-        case YTREE_WALKER_PRE_OT: {
-		struct tree_walker_preot *p;
-		p = (struct tree_walker_preot *)ymalloc(sizeof(*p));
+        case YTREEI_R2L_PRE_OT:
+        case YTREEI_PRE_OT: {
+		struct treei_preot *p;
+		p = (struct treei_preot *)ymalloc(sizeof(*p));
 		/*
 		 * This stack SHOULD NOT be used to destroy item.
 		 *Just set freecb as NULL
 		 */
-		p->s = ystack_create(NULL);
-		if (YTREE_WALKER_PRE_OT == type)
-			p->base.wb.next
-				= (struct ytree_node *(*)(struct ytree_walker *))
-				  &tree_walker_preot_next;
+		p->s = ylist_create(0, NULL);
+		if (YTREEI_PRE_OT == type)
+			p->base.itr.next
+				= (struct ytree_node *(*)(struct ytreei *))
+				  &treei_preot_next;
 		else
-			p->base.wb.next
-				= (struct ytree_node *(*)(struct ytree_walker *))
-				  &tree_walker_r2lpreot_next;
+			p->base.itr.next
+				= (struct ytree_node *(*)(struct ytreei *))
+				  &treei_r2lpreot_next;
 
-		p->base.wb.lnext = &top_node->link;
-		w = (struct tree_walker_base *)p;
+		p->base.itr.lnext = &top_node->link;
+		itr = (struct treei_base *)p;
         } break;
 
-        case YTREE_WALKER_LEVEL_OT: {
-		struct tree_walker_levelot *p;
-		p = (struct tree_walker_levelot *)ymalloc(sizeof(*p));
+        case YTREEI_LEVEL_OT: {
+		struct treei_levelot *p;
+		p = (struct treei_levelot *)ymalloc(sizeof(*p));
 		/* This stack SHOULD NOT be used to destroy item */
-		p->q = yqueue_create(NULL);
-		p->base.wb.next
-			= (struct ytree_node *(*)(struct ytree_walker *))
-			  &tree_walker_levelot_next;
-		p->base.wb.lnext = &top_node->link;
-		w = (struct tree_walker_base *)p;
+		p->q = ylist_create(0, NULL);
+		p->base.itr.next
+			= (struct ytree_node *(*)(struct ytreei *))
+			  &treei_levelot_next;
+		p->base.itr.lnext = &top_node->link;
+		itr = (struct treei_base *)p;
         } break;
 
-        case YTREE_WALKER_R2L_POST_OT:
-        case YTREE_WALKER_POST_OT: {
-		struct tree_walker_postot *p;
+        case YTREEI_R2L_POST_OT:
+        case YTREEI_POST_OT: {
+		struct treei_postot *p;
 		const struct ytreel_link *l;
-		p = (struct tree_walker_postot *)ymalloc(sizeof(*p));
+		p = (struct treei_postot *)ymalloc(sizeof(*p));
 		/*
 		 * This stack SHOULD NOT be used to destroy item.
 		   Just set freecb as NULL
@@ -210,10 +208,10 @@ ytree_walker_create(const struct ytree_node *top_node, int type) {
 		p->top = &top_node->link;
 		l = p->top;
 
-		if (YTREE_WALKER_POST_OT == type) {
-			p->base.wb.next
-				= (struct ytree_node *(*)(struct ytree_walker *))
-				  &tree_walker_postot_next;
+		if (YTREEI_POST_OT == type) {
+			p->base.itr.next
+				= (struct ytree_node *(*)(struct ytreei *))
+				  &treei_postot_next;
 			/*
 			 * find initial(starting) value
 			 * of post-order traverse
@@ -221,9 +219,9 @@ ytree_walker_create(const struct ytree_node *top_node, int type) {
 			while (!ytreel_is_leaf(l))
 				l = ytreel_first_child(l);
 		} else {
-			p->base.wb.next
-				= (struct ytree_node *(*)(struct ytree_walker *))
-				  &tree_walker_r2lpostot_next;
+			p->base.itr.next
+				= (struct ytree_node *(*)(struct ytreei *))
+				  &treei_r2lpostot_next;
 			/*
 			 * find initial(starting) value
 			 * of post-order traverse
@@ -232,9 +230,9 @@ ytree_walker_create(const struct ytree_node *top_node, int type) {
 				l = ytreel_last_child(l);
 		}
 		/* now l is leaf and this is starting value.*/
-		p->base.wb.lnext = l;
+		p->base.itr.lnext = l;
 
-		w = (struct tree_walker_base *)p;
+		itr = (struct treei_base *)p;
         } break;
 
         default:
@@ -243,41 +241,40 @@ ytree_walker_create(const struct ytree_node *top_node, int type) {
 	}
 
 
-	w->type = type;
-	w->wb.lcurr = NULL;
+	itr->type = type;
+	itr->itr.lcurr = NULL;
 
-	return (struct ytree_walker *)w;
+	return (struct ytreei *)itr;
 }
 
 int
-ytree_walker_destroy(struct ytree_walker *w) {
-	if (unlikely(!w)) {
+ytreei_destroy(struct ytreei *itr) {
+	if (unlikely(!itr)) {
 		yassert(0);
 		return -1;
 	}
 
-	switch(((struct tree_walker_base *)w)->type) {
-        case YTREE_WALKER_R2L_PRE_OT:
-        case YTREE_WALKER_PRE_OT: {
-		struct tree_walker_preot *p = (struct tree_walker_preot *)w;
-		ystack_destroy(p->s);
+	switch(((struct treei_base *)itr)->type) {
+        case YTREEI_R2L_PRE_OT:
+        case YTREEI_PRE_OT: {
+		struct treei_preot *p = (struct treei_preot *)itr;
+		ylist_destroy(p->s);
         } break;
 
-        case YTREE_WALKER_LEVEL_OT: {
-		struct tree_walker_levelot *p
-			= (struct tree_walker_levelot *)w;
-		yqueue_destroy(p->q);
+        case YTREEI_LEVEL_OT: {
+		struct treei_levelot *p = (struct treei_levelot *)itr;
+		ylist_destroy(p->q);
         } break;
 
-        case YTREE_WALKER_POST_OT:
-        case YTREE_WALKER_R2L_POST_OT: {
+        case YTREEI_POST_OT:
+        case YTREEI_R2L_POST_OT: {
 		; /* Nothing to do specially */
         } break;
         default:
 		yassert(0);
 		return -1;
 	}
-	yfree(w);
+	yfree(itr);
 	return 0;
 }
 

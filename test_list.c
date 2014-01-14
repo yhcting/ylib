@@ -19,7 +19,6 @@
  *    along with this program.	If not, see <http://www.gnu.org/licenses/>.
  *****************************************************************************/
 
-
 #include "common.h"
 #include "ylist.h"
 #include "test.h"
@@ -41,7 +40,6 @@ free_dummycb(void *arg) {
 	}
 }
 
-
 /**
  * Linked list test.
  */
@@ -49,138 +47,153 @@ static void
 test_list(void) {
 	int  i;
 	int *p;
-	struct ylist *lst;
-	struct ylist_walker *w;
+	struct ylist  *lst;
+	struct ylisti *itr;
 
-	lst = ylist_create(NULL);
+	lst = ylist_create(0, NULL);
 	ylist_destroy(lst);
 
-	lst = ylist_create(NULL);
+	lst = ylist_create(0, NULL);
 	p = (int *)ymalloc(sizeof(*p));
-	*p = 0;
-	ylist_add_last(lst, ylist_create_node(p));
+	*p = 3;
+	ylist_add_last(lst, p);
 
-	w = ylist_walker_create(lst, YLIST_WALKER_FORWARD);
-	yassert(ylist_walker_has_next(w));
-	p = (int *)ylist_walker_next_forward(w);
-	yassert(0 == *p);
-	yassert(!ylist_walker_has_next(w));
-	ylist_walker_destroy(w);
+	itr = ylisti_create(lst, YLISTI_FORWARD);
+	yassert(ylisti_has_next(itr));
+	p = (int *)ylisti_next(itr);
+	yassert(3 == *p);
+	yassert(!ylisti_has_next(itr));
+	ylisti_destroy(itr);
 
-	w = ylist_walker_create(lst, YLIST_WALKER_FORWARD);
-	yfree(ylist_walker_next_forward(w));
-	ylist_free_node(ylist_walker_del(w));
+	itr = ylisti_create(lst, YLISTI_FORWARD);
+	yassert(ylisti_has_next(itr));
+	ylisti_next(itr);
+	ylist_remove(lst, ylisti_node(itr), 1);
 	yassert(0 == ylist_size(lst));
-	ylist_walker_destroy(w);
+	ylisti_destroy(itr);
 
 	for (i = 0; i < 10; i++) {
-		p = (int *)ymalloc(*p);
+		p = (int *)ymalloc(sizeof(*p));
 		*p = i;
-		ylist_add_last(lst, ylist_create_node(p));
+		ylist_add_last(lst, p);
 	}
 	yassert(10 == ylist_size(lst));
 
 	/* simple iteration */
 	i = 0;
-	w = ylist_walker_create(lst, YLIST_WALKER_FORWARD);
-	while (ylist_walker_has_next(w)) {
-		p = ylist_walker_next_forward(w);
+	itr = ylisti_create(lst, YLISTI_FORWARD);
+	while (ylisti_has_next(itr)) {
+		p = ylisti_next(itr);
 		yassert(i == *p);
 		i++;
 	}
-	ylist_walker_destroy(w);
+	ylisti_destroy(itr);
 
 	i = 9;
-	w = ylist_walker_create(lst, YLIST_WALKER_BACKWARD);
-	while (ylist_walker_has_next(w)) {
-		p = ylist_walker_next_backward(w);
+	itr = ylisti_create(lst, YLISTI_BACKWARD);
+	while (ylisti_has_next(itr)) {
+		p = ylisti_next(itr);
 		yassert(i == *p);
 		i--;
 	}
-	ylist_walker_destroy(w);
+	ylisti_destroy(itr);
 
 	/* remove odd numbers - tail is removed. */
-	w = ylist_walker_create(lst, YLIST_WALKER_FORWARD);
-	while (ylist_walker_has_next(w)) {
-		p = ylist_walker_next_forward(w);
-		if (*p % 2) {
-			ylist_free_item(ylist_walker_list(w), p);
-			ylist_free_node(ylist_walker_del(w));
-		}
+	itr = ylisti_create(lst, YLISTI_FORWARD);
+	while (ylisti_has_next(itr)) {
+		p = ylisti_next(itr);
+		if (*p % 2)
+			ylist_remove(lst, ylisti_node(itr), 1);
 	}
-	ylist_walker_destroy(w);
+	ylisti_destroy(itr);
 
 	i = 0;
-	w = ylist_walker_create(lst, YLIST_WALKER_FORWARD);
-	while (ylist_walker_has_next(w)) {
-		p = ylist_walker_next_forward(w);
+	itr = ylisti_create(lst, YLISTI_FORWARD);
+	while (ylisti_has_next(itr)) {
+		p = ylisti_next(itr);
 		yassert(i == *p);
 		i += 2;
 	}
-	ylist_walker_destroy(w);
+	ylisti_destroy(itr);
 	ylist_destroy(lst);
-	lst = ylist_create(NULL);
 
+
+	lst = ylist_create(0, NULL);
 	/* remove even numbers - head is removed. */
-	for (i=0; i<10; i++) {
+	for (i = 0; i < 10; i++) {
 		p = (int *)ymalloc(sizeof(*p));
 		*p = i;
-		ylist_add_last(lst, ylist_create_node(p));
+		ylist_add_last(lst, p);
 	}
 
-	w = ylist_walker_create(lst, YLIST_WALKER_FORWARD);
-	while (ylist_walker_has_next(w)) {
-		p = ylist_walker_next_forward(w);
-		if (!(*p % 2)) {
-			ylist_free_item(ylist_walker_list(w), p);
-			ylist_free_node(ylist_walker_del(w));
-		}
+	itr = ylisti_create(lst, YLISTI_FORWARD);
+	while (ylisti_has_next(itr)) {
+		p = ylisti_next(itr);
+		if (!(*p % 2))
+			ylist_remove(lst, ylisti_node(itr), 1);
 	}
-	ylist_walker_destroy(w);
+	ylisti_destroy(itr);
 
 	i = 1;
-	w = ylist_walker_create(lst, YLIST_WALKER_FORWARD);
-	while (ylist_walker_has_next(w)) {
-		p = ylist_walker_next_forward(w);
+	itr = ylisti_create(lst, YLISTI_FORWARD);
+	while (ylisti_has_next(itr)) {
+		p = ylisti_next(itr);
 		yassert(i == *p);
 		i += 2;
 	}
-	ylist_walker_destroy(w);
+	ylisti_destroy(itr);
 	ylist_destroy(lst);
 
 	{ /* Just Scope */
 		struct dummy *dum;
-		lst = ylist_create(free_dummycb);
+		lst = ylist_create(0, free_dummycb);
 		for (i = 0; i < 10; i++) {
 			dum = (struct dummy *)ymalloc(sizeof(*dum));
 			dum->id = i;
 			dum->mem = (int *)ymalloc(sizeof(*dum->mem));
 			*(dum->mem) = i;
-			ylist_add_last(lst, ylist_create_node(dum));
+			ylist_add_last(lst, dum);
 		}
 		yassert(10 == ylist_size(lst));
 
-		w = ylist_walker_create(lst, YLIST_WALKER_FORWARD);
-		while (ylist_walker_has_next(w)) {
-			dum = ylist_walker_next_forward(w);
-			if (5 == dum->id) {
-				ylist_free_node(ylist_walker_del(w));
-				ylist_free_item(lst, dum);
-			}
+		itr = ylisti_create(lst, YLISTI_FORWARD);
+		while (ylisti_has_next(itr)) {
+			dum = ylisti_next(itr);
+			if (5 == dum->id)
+				ylist_remove(lst, ylisti_node(itr), 1);
 		}
-		ylist_walker_destroy(w);
+		ylisti_destroy(itr);
 		yassert(9 == ylist_size(lst));
 
-		w = ylist_walker_create(lst, YLIST_WALKER_FORWARD);
-		while (ylist_walker_has_next(w)) {
-			dum = ylist_walker_next_forward(w);
+		itr = ylisti_create(lst, YLISTI_FORWARD);
+		while (ylisti_has_next(itr)) {
+			dum = ylisti_next(itr);
 			yassert(5 != dum->id);
 		}
-		ylist_walker_destroy(w);
-
-
+		ylisti_destroy(itr);
 		ylist_destroy(lst);
 	}
+
+	lst = ylist_create(1, NULL);
+	p = (int *)ymalloc(sizeof(*p));
+	*p = 0;
+	ylist_add_last(lst, p);
+	yassert(1 == ylist_size(lst));
+
+	p = (int *)ymalloc(sizeof(*p));
+	*p = 1;
+	yassert(ylist_add_last(lst, p));
+	yassert(1 == ylist_size(lst));
+	yfree(p); /* p is fail to insert to the list */
+
+	p = (int *)ylist_peek_last(lst);
+	yassert(0 == *p && 1 == ylist_size(lst));
+	p = ylist_remove_last(lst, FALSE);
+	yassert(ylist_is_empty(lst));
+	yfree(p);
+
+	ylist_clean(lst);
+	ylist_destroy(lst);
 }
 
 TESTFN(test_list, list)

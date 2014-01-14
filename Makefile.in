@@ -91,8 +91,7 @@ am_liby_la_OBJECTS = crc.lo tree.lo trie.lo hash.lo mempool.lo \
 liby_la_OBJECTS = $(am_liby_la_OBJECTS)
 PROGRAMS = $(bin_PROGRAMS)
 am_y_OBJECTS = test_main.$(OBJEXT) test_list.$(OBJEXT) \
-	test_queue.$(OBJEXT) test_stack.$(OBJEXT) test_tree.$(OBJEXT) \
-	test_hash.$(OBJEXT) test_mempool.$(OBJEXT) \
+	test_tree.$(OBJEXT) test_hash.$(OBJEXT) test_mempool.$(OBJEXT) \
 	test_bitops.$(OBJEXT) test_set.$(OBJEXT) test_dynb.$(OBJEXT)
 y_OBJECTS = $(am_y_OBJECTS)
 y_DEPENDENCIES = liby.la
@@ -244,7 +243,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 include_HEADERS = \
-	ydef.h ycrc.h ydynb.h ylistl.h ylist.h yqueue.h ystack.h \
+	ydef.h ycrc.h ydynb.h ylistl.h ylist.h \
 	ytreel.h ytree.h yhash.h ytrie.h ymempool.h yset.h \
 	ylib.h
 
@@ -253,7 +252,7 @@ liby_la_SOURCES = \
 	crc.c tree.c trie.c hash.c mempool.c libmain.c
 
 y_SOURCES = \
-	test_main.c test_list.c test_queue.c test_stack.c test_tree.c \
+	test_main.c test_list.c test_tree.c \
 	test_hash.c test_mempool.c test_bitops.c test_set.c test_dynb.c
 
 y_LDADD = liby.la
@@ -407,9 +406,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_list.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_mempool.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_queue.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_set.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_tree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tree.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/trie.Plo@am__quote@

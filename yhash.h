@@ -30,16 +30,22 @@
 struct yhash;
 
 /**
+ * @return : 0 if success, otherwise error number.
+ */
+EXPORT int
+yhash_init(struct yhash *h, void (*fcb)(void *));
+
+/**
  * @fcb : callback to free user value(item)
  *	  (NULL means, item doesn't need to be freed.)
  */
 EXPORT struct yhash *
 yhash_create(void (*fcb)(void *));
 
-/**
- * @return : reserved for future use.
- */
-EXPORT int
+EXPORT void
+yhash_clean(struct yhash *h);
+
+EXPORT void
 yhash_destroy(struct yhash *h);
 
 /**

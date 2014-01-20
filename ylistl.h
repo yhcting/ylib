@@ -153,10 +153,10 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
 	     (pos) = container_of((pos)->member.prev, type, member))
 
 /**
- * @type    : the type of the struct of *@pos
  * @pos     : the @type* to use as a loop cursor.
  * @n       : another @type* to use as temporary storage.
  * @head    : the head for list (&struct ylistl_link)
+ * @type    : the type of the struct of *@pos
  * @member  : the name of the ylistl_link within the struct.
  */
 #define ylistl_foreach_item_removal_safe(pos, n, head, type, member)    \

@@ -40,9 +40,9 @@ test_hash_normal(void) {
 	int    i;
 	char   buf[4096];
 	char  *v;
-	uint32_t r;
-	const uint8_t *keys[4096];
-	uint32_t keyssz[4096];
+	unsigned int r;
+	const char *keys[4096];
+	unsigned int keyssz[4096];
 
 	/*
 	 * Test normal hash.
@@ -51,17 +51,17 @@ test_hash_normal(void) {
 
 	for (i = 0; i < 1024; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-		v = ymalloc(strlen(buf)+1);
+		v = ymalloc(strlen(buf) + 1);
 		strcpy(v, buf);
 		/* key and value is same */
-		yhash_add(h, (uint8_t *)buf, strlen(buf) + 1, v);
-		yassert(i+1 == yhash_sz(h));
+		yhash_add(h, (void *)buf, strlen(buf) + 1, v);
+		yassert(i + 1 == yhash_sz(h));
 	}
 
 	r = yhash_keys(h, (const void **)keys, keyssz, 10);
 	yassert(10 == r);
 	for (i = 0; i < r; i++)
-		yassert(keyssz[i] == ((uint32_t)strlen((char *)keys[i]) + 1));
+		yassert(keyssz[i] == ((unsigned int)strlen((char *)keys[i]) + 1));
 	/*
 	for (i = 0; i < r; i++)
 		printf("%s\n", keys[i]);
@@ -69,22 +69,23 @@ test_hash_normal(void) {
 	r = yhash_keys(h, (const void **)keys, keyssz, 4096);
 	yassert(1024 == r);
 	for (i = 0; i < r; i++)
-		yassert(keyssz[i] == ((uint32_t)strlen((char *)keys[i]) + 1));
+		yassert(keyssz[i] == ((unsigned int)strlen((char *)keys[i]) + 1));
 
 	for (i = 256; i < 512; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-		v = yhash_find(h, (uint8_t *)buf, strlen(buf)+1);
+		v = yhash_find(h, (void *)buf, strlen(buf)+1);
 		yassert(v && 0 == strcmp(v, buf));
 	}
 
 	for (i = 1023; i >= 0; i--) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-		yhash_del(h, (uint8_t *)buf, strlen(buf)+1);
+		yhash_del(h, (void *)buf, strlen(buf)+1);
 		yassert(i == yhash_sz(h));
 	}
 	r = yhash_keys(h, (const void **)keys, keyssz, 10);
 	yassert(0 == r);
 
+	yhash_clean(h);
 	yhash_destroy(h);
 }
 
@@ -104,19 +105,19 @@ test_hash_address(void) {
 		v = ymalloc(strlen(buf)+1);
 		strcpy(v, buf);
 		/* key and value is same */
-		yhash_add(h, (uint8_t *)v, 0, v);
+		yhash_add(h, (void *)v, 0, v);
 		ptsv[i] = v;
 		yassert(i+1 == yhash_sz(h));
 	}
 
 	for (i = 256; i < 512; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-		v = yhash_find(h, (uint8_t *)ptsv[i], 0);
+		v = yhash_find(h, (void *)ptsv[i], 0);
 		yassert(v && 0 == strcmp(v, buf));
 	}
 
 	for (i = 1023; i >= 0; i--) {
-		yhash_del(h, (uint8_t *)ptsv[i], 0);
+		yhash_del(h, (void *)ptsv[i], 0);
 		yassert(i == yhash_sz(h));
 	}
 

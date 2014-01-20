@@ -39,7 +39,7 @@ yset_destroy(yset_t s) {
 /**
  * @return : number of elements in the set.
  */
-static inline uint32_t
+static inline unsigned int
 yset_sz(const yset_t s) {
 	return yhash_sz(s);
 }
@@ -56,11 +56,11 @@ yset_sz(const yset_t s) {
  *          return value == @bufsz means @elemsbuf is not large enough to
  *            contains all elements in the set.
  */
-static inline uint32_t
+static inline unsigned int
 yset_elements(const yset_t s,
 	      const void **elemsbuf, /* in/out */
-	      uint32_t *elemsszbuf, /* in/out */
-	      uint32_t bufsz) {
+	      unsigned int *elemsszbuf, /* in/out */
+	      unsigned int bufsz) {
 	return yhash_keys(s, elemsbuf, elemsszbuf, bufsz);
 }
 
@@ -77,7 +77,7 @@ yset_elements(const yset_t s,
  *          otherwise # of newly added item. (0 means overwritten).
  */
 static inline int
-yset_add(yset_t s, const void *elem, uint32_t elemsz) {
+yset_add(yset_t s, const void *elem, unsigned int elemsz) {
 	return yhash_add(s, elem, elemsz, (void *)1);
 }
 
@@ -87,7 +87,7 @@ yset_add(yset_t s, const void *elem, uint32_t elemsz) {
  * @return: -1 for error otherwise # of deleted. (0 means nothing to delete)
  */
 static inline int
-yset_del(yset_t s, const void *elem, uint32_t elemsz) {
+yset_del(yset_t s, const void *elem, unsigned int elemsz) {
 	return yhash_del(s, elem, elemsz);
 }
 
@@ -95,7 +95,7 @@ yset_del(yset_t s, const void *elem, uint32_t elemsz) {
  * @return: boolean.
  */
 static inline int
-yset_contains(const yset_t s, const void *elem, uint32_t elemsz) {
+yset_contains(const yset_t s, const void *elem, unsigned int elemsz) {
 	return !!yhash_find(s, elem, elemsz);
 }
 

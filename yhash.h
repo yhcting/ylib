@@ -24,7 +24,6 @@
 #ifndef __YHASh_h__
 #define __YHASh_h__
 
-#include <stdint.h>
 #include <ydef.h>
 
 struct yhash;
@@ -51,7 +50,7 @@ yhash_destroy(struct yhash *h);
 /**
  * @return : number of elements in hash.
  */
-EXPORT uint32_t
+EXPORT unsigned int
 yhash_sz(const struct yhash *h);
 
 /**
@@ -66,11 +65,22 @@ yhash_sz(const struct yhash *h);
  *           return value == @bufsz means @keysbuf is not enough large to
  *             contains all keys in the hash.
  */
-EXPORT uint32_t
+EXPORT unsigned int
 yhash_keys(const struct yhash *h,
 	   const void **keysbuf, /* in/out */
-	   uint32_t *keysszbuf, /* in/out */
-	   uint32_t bufsz);
+	   unsigned int *keysszbuf, /* in/out */
+	   unsigned int bufsz);
+
+/**
+ * For hash internal access.
+ * DO NOT use unless you know exactly what you are doing.
+ */
+EXPORT int
+yhash_add2(struct yhash *h,
+	   /* pointing internally generated-deep-copied address */
+	   const void ** const pkey,
+	   const void *key, unsigned int keysz,
+	   void *v);
 
 /**
  * @v	   : user value(item)
@@ -84,25 +94,33 @@ yhash_keys(const struct yhash *h,
  * @return : -1 for error
  *           otherwise # of newly added item. (0 means overwritten).
  */
-int
+EXPORT int
 yhash_add(struct yhash *h,
-	  const void *key, uint32_t keysz,
+	  const void *key, unsigned int keysz,
 	  void *v);
 
 /**
  * If these is no matched item, nothing happened.
- * @v	   : user value(item)
  * @return : -1 for error otherwise # of deleted. (0 means nothing to delete)
  */
 EXPORT int
 yhash_del(struct yhash *h,
-	  const void *key, uint32_t keysz);
+	  const void *key, unsigned int keysz);
+
+/**
+ * @value: if NULL, yhash_del2 is exactly same with yhash_del.
+ *         otherwise, data value is NOT freed and stored in it.
+ */
+EXPORT int
+yhash_del2(struct yhash *h,
+	   void **value,
+	   const void *key, unsigned int keysz);
 
 /**
  * @return : NULL if fails.
  */
 EXPORT void *
 yhash_find(const struct yhash *h,
-	   const void *key, uint32_t keysz);
+	   const void *key, unsigned int keysz);
 
 #endif /* __YHASh_h__ */

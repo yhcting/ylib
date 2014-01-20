@@ -20,9 +20,9 @@
  *****************************************************************************/
 
 
+#include "ycommon.h"
 #include "ytree.h"
 #include "ylist.h"
-#include "common.h"
 
 /**
  * base struct of walker.

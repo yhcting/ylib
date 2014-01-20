@@ -24,7 +24,7 @@
 #ifndef __YHASh_h__
 #define __YHASh_h__
 
-#include <ydef.h>
+#include "ydef.h"
 
 struct yhash;
 

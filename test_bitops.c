@@ -20,7 +20,7 @@
  *****************************************************************************/
 
 
-#include "common.h"
+#include "ycommon.h"
 #include "test.h"
 
 #include <assert.h>

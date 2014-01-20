@@ -19,14 +19,13 @@
  *    along with this program.	If not, see <http://www.gnu.org/licenses/>.
  *****************************************************************************/
 
-#include "common.h"
-
 #include <string.h>
 #include <malloc.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <errno.h>
 
+#include "ycommon.h"
 #include "ymempool.h"
 
 /*

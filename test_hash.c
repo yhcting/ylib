@@ -23,8 +23,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "ycommon.h"
 #include "yhash.h"
-#include "common.h"
 #include "test.h"
 
 #include <assert.h>

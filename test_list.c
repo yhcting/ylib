@@ -19,11 +19,11 @@
  *    along with this program.	If not, see <http://www.gnu.org/licenses/>.
  *****************************************************************************/
 
-#include "common.h"
+#include <assert.h>
+
+#include "ycommon.h"
 #include "ylist.h"
 #include "test.h"
-
-#include <assert.h>
 
 struct dummy {
 	int  id;

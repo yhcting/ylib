@@ -22,7 +22,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include "common.h"
+#include "ycommon.h"
 #include "ylru.h"
 #include "ylistl.h"
 #include "yhash.h"

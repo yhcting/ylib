@@ -56,7 +56,7 @@
 #include <memory.h>
 #include <string.h>
 
-#include "common.h"
+#include "ycommon.h"
 #include "ytrie.h"
 
 

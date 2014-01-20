@@ -20,10 +20,8 @@
  *****************************************************************************/
 
 
-#include "ydef.h"
+#include "ycommon.h"
 #include "ycrc.h"
-
-#include "common.h"
 
 /**
  * Most important part of CRC library is 'Performance'. Not flexibility!.

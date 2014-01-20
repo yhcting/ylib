@@ -25,8 +25,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include "ycommon.h"
 #include "ymempool.h"
-#include "common.h"
 #include "test.h"
 
 #include <assert.h>

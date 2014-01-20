@@ -22,7 +22,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "common.h"
+#include "ycommon.h"
 #include "ylru.h"
 #include "test.h"
 

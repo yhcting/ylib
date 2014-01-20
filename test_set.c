@@ -22,12 +22,11 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
-#include "common.h"
+#include "ycommon.h"
 #include "yset.h"
 #include "test.h"
-
-#include <assert.h>
 
 static void
 test_set(void) {

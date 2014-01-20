@@ -20,8 +20,8 @@
  *****************************************************************************/
 
 
+#include "ycommon.h"
 #include "ytree.h"
-#include "common.h"
 #include "test.h"
 
 #include <assert.h>

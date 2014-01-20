@@ -25,12 +25,12 @@
 #include <errno.h>
 #include <stdint.h>
 
+#include "ycommon.h"
 #include "yhash.h"
 #include "ylistl.h"
 /* crc is used as hash function */
 #include "ycrc.h"
 
-#include "common.h"
 
 #define MAX_HBITS 32
 #define MIN_HBITS 4

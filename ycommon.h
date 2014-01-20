@@ -20,8 +20,8 @@
  *****************************************************************************/
 
 
-#ifndef __COMMOn_h__
-#define __COMMOn_h__
+#ifndef __YCOMMOn_h__
+#define __YCOMMOn_h__
 
 #include "ydef.h"
 
@@ -109,4 +109,4 @@
 
 #define sec2ns(x) = ((x) * 1000 * 1000 * 1000)
 
-#endif /* __COMMOn_h__ */
+#endif /* __YCOMMOn_h__ */

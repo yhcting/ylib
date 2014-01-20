@@ -68,7 +68,7 @@ test_list(void) {
 	itr = ylisti_create(lst, YLISTI_FORWARD);
 	yassert(ylisti_has_next(itr));
 	ylisti_next(itr);
-	ylist_remove(lst, ylisti_node(itr), 1);
+	ylist_remove_current(lst, itr, 1);
 	yassert(0 == ylist_size(lst));
 	ylisti_destroy(itr);
 
@@ -103,7 +103,7 @@ test_list(void) {
 	while (ylisti_has_next(itr)) {
 		p = ylisti_next(itr);
 		if (*p % 2)
-			ylist_remove(lst, ylisti_node(itr), 1);
+			ylist_remove_current(lst, itr, 1);
 	}
 	ylisti_destroy(itr);
 
@@ -130,7 +130,7 @@ test_list(void) {
 	while (ylisti_has_next(itr)) {
 		p = ylisti_next(itr);
 		if (!(*p % 2))
-			ylist_remove(lst, ylisti_node(itr), 1);
+			ylist_remove_current(lst, itr, 1);
 	}
 	ylisti_destroy(itr);
 
@@ -160,7 +160,7 @@ test_list(void) {
 		while (ylisti_has_next(itr)) {
 			dum = ylisti_next(itr);
 			if (5 == dum->id)
-				ylist_remove(lst, ylisti_node(itr), 1);
+				ylist_remove_current(lst, itr, 1);
 		}
 		ylisti_destroy(itr);
 		yassert(9 == ylist_size(lst));

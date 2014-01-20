@@ -25,6 +25,7 @@
 #include <malloc.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include "ymempool.h"
 
@@ -235,22 +236,29 @@ need_shrink(struct ymp *mp) {
 /*
  * expand memory pool by 1 group
  */
-static void
+static int
 expand(struct ymp *mp) {
 	int            i;
 	struct blk  ***newfbp;
 
-	newfbp = ymalloc(sizeof(*newfbp) * (mp->nrgrp + 1));
-	yassert(newfbp);
+	if (unlikely(!(newfbp = ymalloc(sizeof(*newfbp) * (mp->nrgrp + 1)))))
+		return ENOMEM;
 
 	/* allocate new fbp group */
 	newfbp[mp->nrgrp] = ymalloc(sizeof(**newfbp) * mp->grpsz);
-	yassert(newfbp[mp->nrgrp]);
+	if (unlikely(!newfbp[mp->nrgrp])) {
+		yfree(newfbp);
+		return ENOMEM;
+	}
+	/* set all to NULL */
+	memset(newfbp[mp->nrgrp], 0, sizeof(**newfbp) * mp->grpsz);
 
 	/* initialize fbp & block group */
 	for (i = 0; i < mp->grpsz; i++) {
 		newfbp[mp->nrgrp][i]
 			= (struct blk *)ymalloc(blksz(mp));
+		if (unlikely(!newfbp[mp->nrgrp][i]))
+			goto nomem_blkgrp;
 		newfbp[mp->nrgrp][i]->i = sz(mp) + i;
 	}
 
@@ -261,9 +269,17 @@ expand(struct ymp *mp) {
 	yfree(mp->fbp);
 	mp->fbp = newfbp;
 	mp->nrgrp++;
+	return 0;
+
+ nomem_blkgrp:
+	for (i = 0; i < mp->grpsz; i++) {
+		if (newfbp[mp->nrgrp][i])
+			yfree(newfbp[mp->nrgrp][i]);
+	}
+	return ENOMEM;
 }
 
-static void
+static int
 shrink(struct ymp *mp, int margin) {
 	int from, i, j;
 	/* start index of empty group */
@@ -276,12 +292,13 @@ shrink(struct ymp *mp, int margin) {
 		yfree(mp->fbp[i]);
 	}
 	mp->nrgrp = from;
+	return 0;
 }
 
 #else /* CONFIG_MEMPOOL_DYNAMIC */
 
-static inline void
-shrink(struct ymp *mp, int margin) { }
+static inline int
+shrink(struct ymp *mp, int margin) { return 0; }
 
 /*
  * @i    : index of memory block pool.
@@ -315,7 +332,7 @@ blkdump(struct ymp *mp) {
 /*
  * expand memory pool by 1 group
  */
-static void
+static int
 expand(struct ymp *mp) {
 	int             i;
 	unsigned char **newgrp;
@@ -327,7 +344,8 @@ expand(struct ymp *mp) {
 
 	newgrp = ymalloc(sizeof(*newgrp) * (mp->nrgrp + 1));
 	newfbp = ymalloc(sizeof(*newfbp) * (mp->nrgrp + 1));
-	yassert(newgrp && newfbp);
+	if (unlikely(!newgrp || !newfbp))
+		goto nomem_expand;
 
 	/* allocate new fbp group */
 	newfbp[mp->nrgrp] = ymalloc(sizeof(**newfbp) * mp->grpsz);
@@ -335,7 +353,9 @@ expand(struct ymp *mp) {
 	newgrp[mp->nrgrp] = ymalloc(sizeof(**newgrp)
 				    * mp->grpsz
 				    * bsz);
-	yassert(newfbp[mp->nrgrp] && newgrp[mp->nrgrp]);
+	if (unlikely(!newfbp[mp->nrgrp]
+		     || !newgrp[mp->nrgrp]))
+		goto nomem_newgrp;
 
 	/* initialize fbp & block group */
 	for (i = 0; i < mp->grpsz; i++) {
@@ -354,6 +374,22 @@ expand(struct ymp *mp) {
 	mp->grp = newgrp;
 	mp->fbp = newfbp;
 	mp->nrgrp++;
+
+	return 0;
+
+ nomem_newgrp:
+	if (newfbp[mp->nrgrp])
+		yfree(newfbp[mp->nrgrp]);
+	if (newgrp[mp->nrgrp])
+		yfree(newgrp[mp->nrgrp]);
+
+ nomem_expand:
+	if (newgrp)
+		yfree(newgrp);
+	if (newfbp)
+		yfree(newfbp);
+
+	return ENOMEM;
 }
 
 #endif /* CONFIG_MEMPOOL_DYNAMIC */
@@ -367,22 +403,42 @@ ymp_create(int grpsz, int elemsz, int opt) {
 	struct ymp *mp;
 
 	yassert(grpsz > 0 && elemsz > 0);
-	mp = ymalloc(sizeof(*mp));
+	if (unlikely(!(mp = ymalloc(sizeof(*mp)))))
+		return NULL;
+	memset(mp, 0, sizeof(*mp));
+
+	if (unlikely(!(mp->fbp = ymalloc(sizeof(*mp->fbp)))))
+		goto nomem;
+
 #ifndef CONFIG_MEMPOOL_DYNAMIC
-	mp->grp = ymalloc(sizeof(*mp->grp));
+	if (unlikely(!(mp->grp = ymalloc(sizeof(*mp->grp)))))
+		goto nomem;
 #endif
+
 	mp->grpsz = grpsz;
 	mp->nrgrp = 0;
-	mp->fbp = ymalloc(sizeof(*mp->fbp));
 	mp->esz = elemsz;
 	mp->fbi = 0;
 	mp->opt = opt;
 	init_lock(mp);
 
 	/* allocate 1-block-group for initial state */
-	expand(mp);
+	if (expand(mp))
+		goto nomem;
 
 	return mp;
+
+
+ nomem:
+#ifndef CONFIG_MEMPOOL_DYNAMIC
+	if (mp->grp)
+		yfree(mp->grp);
+#endif
+	if (mp->fbp)
+		yfree(mp->fbp);
+	yfree(mp);
+
+	return NULL;
 }
 
 void
@@ -411,13 +467,17 @@ ymp_destroy(struct ymp *mp) {
 /*
  * get one block from pool.
  */
-void*
+void *
 ymp_get(struct ymp *mp) {
 	struct blk *b;
 
 	lock(mp);
-	if (mp->fbi >= sz(mp))
-		expand(mp);
+	if (mp->fbi >= sz(mp)) {
+		if (expand(mp)) {
+			unlock(mp);
+			return NULL;
+		}
+	}
 
 	b = fbpblk(mp, mp->fbi);
 	yassert(b->i == mp->fbi);

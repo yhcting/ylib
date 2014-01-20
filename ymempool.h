@@ -53,19 +53,20 @@ EXPORT struct ymp *
 ymp_create(int grpsz, int elemsz, int opt);
 
 EXPORT void
-ymp_destroy(struct ymp *mp);
+ymp_destroy(struct ymp *);
 
 /**
  * get one block from pool.
+ * NULL if fails. (Ex. Out Of Memory).
  */
 EXPORT void *
-ymp_get(struct ymp *mp);
+ymp_get(struct ymp *);
 
 /**
  * return block to pool.
  */
 EXPORT void
-ymp_put(struct ymp *mp, void *block);
+ymp_put(struct ymp *, void *block);
 
 
 #ifdef CONFIG_MEMPOOL_DYNAMIC
@@ -108,12 +109,12 @@ ymp_shrink(struct ymp *mp, int margin) {
  * return number of element
  */
 EXPORT int
-ymp_sz(struct ymp *mp);
+ymp_sz(struct ymp *);
 
 /*
  * return number of used element
  */
 EXPORT int
-ymp_usedsz(struct ymp *mp);
+ymp_usedsz(struct ymp *);
 
 #endif /* __YMEMPOOl_h__ */

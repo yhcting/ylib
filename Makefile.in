@@ -86,8 +86,8 @@ am__installdirs = "$(DESTDIR)$(pkglibdir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(pkglib_LTLIBRARIES)
 liby_la_LIBADD =
-am_liby_la_OBJECTS = lru.lo crc.lo tree.lo trie.lo hash.lo mempool.lo \
-	libmain.lo
+am_liby_la_OBJECTS = crc.lo list.lo tree.lo trie.lo hash.lo mempool.lo \
+	lru.lo msgq.lo libmain.lo
 liby_la_OBJECTS = $(am_liby_la_OBJECTS)
 PROGRAMS = $(bin_PROGRAMS)
 am_y_OBJECTS = test_main.$(OBJEXT) test_list.$(OBJEXT) \
@@ -244,21 +244,47 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 include_HEADERS = \
-	ydef.h ycommon.h ycrc.h ydynb.h ylistl.h ylist.h \
-	ytreel.h ytree.h yhash.h ytrie.h ymempool.h yset.h \
+	ydef.h \
+	ycommon.h \
+	ycrc.h \
+	ydynb.h \
+	ylistl.h \
+	ylist.h \
+	ytreel.h \
+	ytree.h \
+	yhash.h \
+	ytrie.h \
+	ymempool.h \
+	yset.h \
 	ylru.h \
+	ymsgq.h \
 	ylib.h
 
 pkglib_LTLIBRARIES = liby.la
 liby_la_SOURCES = \
-	lru.c crc.c tree.c trie.c hash.c mempool.c libmain.c
+	crc.c \
+	list.c \
+	tree.c \
+	trie.c \
+	hash.c \
+	mempool.c \
+	lru.c \
+	msgq.c \
+	libmain.c
 
 y_SOURCES = \
-	test_main.c test_list.c test_tree.c \
-	test_hash.c test_mempool.c test_bitops.c test_set.c test_dynb.c \
-	test_yp.c test_lru.c
+	test_main.c \
+	test_list.c \
+	test_tree.c \
+	test_hash.c \
+	test_mempool.c \
+	test_bitops.c \
+	test_set.c \
+	test_dynb.c \
+	test_yp.c \
+	test_lru.c
 
-y_LDADD = liby.la
+y_LDADD = liby.la -lpthread -lrt
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -402,8 +428,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hash.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libmain.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/list.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lru.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mempool.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msgq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_bitops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_dynb.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_hash.Po@am__quote@

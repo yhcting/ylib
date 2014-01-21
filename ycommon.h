@@ -107,6 +107,6 @@
 
 #define arrsz(a) ((int)(sizeof(a)/sizeof((a)[0])))
 
-#define sec2ns(x) = ((x) * 1000 * 1000 * 1000)
+#define sec2ns(x) ((x) * 1000 * 1000 * 1000)
 
 #endif /* __YCOMMOn_h__ */

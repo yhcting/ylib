@@ -35,7 +35,9 @@
 #ifndef __YDEf_h__
 #define __YDEf_h__
 
+#ifndef CONFIG_IGNORE_CONFIG
 #include "config.h"
+#endif
 
 /*
  *

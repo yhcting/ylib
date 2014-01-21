@@ -64,44 +64,6 @@ struct ylisti {
 };
 
 
-/*============================
- * ylist
- *============================*/
-
-static inline struct ylist_node *
-__ylist_node(const struct ylistl_link *lk) {
-	return container_of(lk, struct ylist_node, lk);
-}
-
-static inline void *
-__ylist_item(const struct ylistl_link *lk) {
-	return __ylist_node(lk)->item;
-}
-
-static inline struct ylist_node *
-__ylist_create_node(void *item) {
-	struct ylist_node *n;
-	n = (struct ylist_node *)ymalloc(sizeof(*n));
-	if (unlikely(!n))
-		return NULL;
-	n->item = item;
-	return n;
-}
-
-static inline struct ylist_node *
-__ylist_del_node(struct ylist_node *n) {
-	ylistl_del(&n->lk);
-	return n;
-}
-
-static inline void *
-__ylist_destroy_node(struct ylist_node *n) {
-	void *item;
-	item = n->item;
-	yfree(n);
-	return item;
-}
-
 /* ============================================================================
  *
  * Main Interfaces
@@ -119,43 +81,19 @@ ylist_free_item(struct ylist *l, void *item) {
 }
 
 
-static inline void
+EXPORT void
 ylist_init(struct ylist *l,
 	   unsigned int  max,
-	   void(*freecb)(void *)) {
-	ylistl_init_link(&l->head);
-	l->sz = 0;
-	l->max = max;
-	l->freecb = freecb;
-}
+	   void(*freecb)(void *));
 
-static inline struct ylist *
+EXPORT struct ylist *
 ylist_create(unsigned int max,
-	     void (*freecb)(void *)) {
-	struct ylist *l = (struct ylist *)ymalloc(sizeof(*l));
-	if (unlikely(!l))
-		return NULL;
-	ylist_init(l, max, freecb);
-	return l;
-}
+	     void (*freecb)(void *));
 
-static inline void
-ylist_clean(struct ylist *l) {
-	struct ylist_node *n, *p;
-	ylistl_foreach_item_removal_safe(p,
-					 n,
-					 &l->head,
-					 struct ylist_node,
-					 lk) {
-		ylist_free_item(l, p->item);
-		yfree(p);
-	}
-	l->sz = 0;
-}
+/* Items are freed too. */
+EXPORT void
+ylist_clean(struct ylist *l);
 
-/**
- * Free item too.
- */
 static inline void
 ylist_destroy(struct ylist *l) {
 	ylist_clean(l);
@@ -165,18 +103,9 @@ ylist_destroy(struct ylist *l) {
 /**
  * This doesn't free items. (cf. ylist_clean)
  */
-static inline void
-ylist_free(struct ylist *l) {
-	struct ylist_node *n, *p;
-	ylistl_foreach_item_removal_safe(p,
-					 n,
-					 &l->head,
-					 struct ylist_node,
-					 lk)
-		yfree(p);
-	yfree(l);
-	l->sz = 0;
-}
+/* items are not freed. (cf. ylist_clean) */
+EXPORT void
+ylist_free(struct ylist *l);
 
 static inline void(*
 ylist_freecb(struct ylist *l))(void *) {
@@ -193,89 +122,26 @@ ylist_size(const struct ylist *l) {
 	return l->sz;
 }
 
-static inline int
-ylist_add_last(struct ylist *l, void *item) {
-	struct ylist_node *n;
-	if (l->max
-	    && l->sz >= l->max)
-		return EPERM;
-	n = __ylist_create_node(item);
-	if (unlikely(!n))
-		return ENOMEM;
-        ylistl_add_prev(&l->head, &n->lk);
-	++l->sz;
-	return 0;
-}
+EXPORT int
+ylist_add_last(struct ylist *l, void *item);
 
-static inline int
-ylist_add_first(struct ylist *l, void *item) {
-	struct ylist_node *n;
-	if (l->max
-	    && l->sz >= l->max)
-		return EPERM;
-	n = __ylist_create_node(item);
-	if (unlikely(!n))
-		return ENOMEM;
-        ylistl_add_next(&l->head, &n->lk);
-	++l->sz;
-	return 0;
-}
+EXPORT int
+ylist_add_first(struct ylist *l, void *item);
 
-static inline void *
-ylist_peek_last(const struct ylist *l) {
-	return ylist_is_empty(l)? NULL: __ylist_item(l->head.prev);
-}
+EXPORT void *
+ylist_peek_last(const struct ylist *l);
 
-static inline void *
-ylist_peek_first(const struct ylist *l) {
-	return ylist_is_empty(l)? NULL: __ylist_item(l->head.next);
-}
+EXPORT void *
+ylist_peek_first(const struct ylist *l);
 
-static inline void *
-ylist_remove_last(struct ylist *l, int free) {
-	struct ylist_node *n;
-	void *item;
-	yassert(!ylist_is_empty(l));
-	n = __ylist_node(l->head.prev);
-	__ylist_del_node(n);
-	--l->sz;
-	item = __ylist_destroy_node(n);
-	if (!free)
-		return item;
-	ylist_free_item(l, item);
-	return NULL;
-}
+EXPORT void *
+ylist_remove_last(struct ylist *l, int free);
 
-static inline void *
-ylist_remove_first(struct ylist *l, int free) {
-	struct ylist_node *n;
-	void *item;
-	yassert(!ylist_is_empty(l));
-	n = __ylist_node(l->head.next);
-	__ylist_del_node(n);
-	--l->sz;
-	item = __ylist_destroy_node(n);
-	if (!free)
-		return item;
-	ylist_free_item(l, item);
-	return NULL;
-}
+EXPORT void *
+ylist_remove_first(struct ylist *l, int free);
 
-static inline void *
-ylist_remove_current(struct ylist *l, struct ylisti *itr, int free) {
-	void *item;
-	struct ylist_node *n;
-	yassert(!ylist_is_empty(l)
-		&& l == itr->list);
-	n = __ylist_node(itr->lcurr);
-	__ylist_del_node(n);
-	--l->sz;
-	item = __ylist_destroy_node(n);
-	if (!free)
-		return item;
-	ylist_free_item(l, item);
-	return NULL;
-}
+EXPORT void *
+ylist_remove_current(struct ylist *l, struct ylisti *itr, int free);
 
 /* ==================================
  * Alias
@@ -311,51 +177,13 @@ enum {
 	YLISTI_BACKWARD
 };
 
-/**
- *
- */
 static inline int
 ylisti_has_next(const struct ylisti *itr) {
 	return &itr->list->head != itr->lnext;
 }
 
-static inline void *
-__ylisti_next_forward(struct ylisti *itr) {
-	yassert(ylisti_has_next(itr));
-	itr->lcurr = itr->lnext;
-	itr->lnext = itr->lnext->next;
-	return __ylist_item(itr->lcurr);
-}
-
-static inline void *
-__ylisti_next_backward(struct ylisti *itr) {
-	yassert(ylisti_has_next(itr));
-	itr->lcurr = itr->lnext;
-	itr->lnext = itr->lnext->prev;
-	return __ylist_item(itr->lcurr);
-}
-
-static inline struct ylisti *
-ylisti_create(struct ylist *l, int type) {
-	struct ylisti *itr =
-		(struct ylisti *)ymalloc(sizeof(*itr));
-	itr->list = l;
-	itr->lcurr = &l->head;
-	switch(type) {
-        case YLISTI_FORWARD:
-		itr->next = &__ylisti_next_forward;
-		itr->lnext = l->head.next;
-		break;
-        case YLISTI_BACKWARD:
-		itr->next = &__ylisti_next_backward;
-		itr->lnext = l->head.prev;
-		break;
-        default:
-		yfree(itr);
-		itr = NULL;
-	}
-	return itr;
-}
+EXPORT struct ylisti *
+ylisti_create(struct ylist *l, int type);
 
 static inline void
 ylisti_destroy(struct ylisti *itr) {

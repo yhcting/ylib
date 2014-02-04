@@ -111,11 +111,7 @@ ymsg_init_exec(struct ymsg *m,
 
 static inline struct ymsg *
 ymsg_create(void) {
-	struct ymsg *m = (struct ymsg *)ymalloc(sizeof(*m));
-	if (unlikely(!m))
-		return NULL;
-	memset(m, 0, sizeof(*m));
-	return m;
+	return (struct ymsg *)ycalloc(1, sizeof(struct ymsg));
 }
 
 static inline void

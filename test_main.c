@@ -51,6 +51,12 @@ dmalloc(unsigned int sz) {
 	return malloc(sz);
 }
 
+void *
+dcalloc(unsigned int n, unsigned int sz) {
+	_mem_count++;
+	return calloc(n, sz);
+}
+
 void
 dfree(void *p) {
 	_mem_count--;

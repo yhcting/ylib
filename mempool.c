@@ -244,13 +244,12 @@ expand(struct ymp *mp) {
 		return ENOMEM;
 
 	/* allocate new fbp group */
-	newfbp[mp->nrgrp] = ymalloc(sizeof(**newfbp) * mp->grpsz);
+	newfbp[mp->nrgrp] = ycalloc(1, sizeof(**newfbp) * mp->grpsz);
 	if (unlikely(!newfbp[mp->nrgrp])) {
 		yfree(newfbp);
 		return ENOMEM;
 	}
-	/* set all to NULL */
-	memset(newfbp[mp->nrgrp], 0, sizeof(**newfbp) * mp->grpsz);
+	/* now all are NULL */
 
 	/* initialize fbp & block group */
 	for (i = 0; i < mp->grpsz; i++) {
@@ -402,9 +401,8 @@ ymp_create(int grpsz, int elemsz, int opt) {
 	struct ymp *mp;
 
 	yassert(grpsz > 0 && elemsz > 0);
-	if (unlikely(!(mp = ymalloc(sizeof(*mp)))))
+	if (unlikely(!(mp = ycalloc(1, sizeof(*mp)))))
 		return NULL;
-	memset(mp, 0, sizeof(*mp));
 
 	if (unlikely(!(mp->fbp = ymalloc(sizeof(*mp->fbp)))))
 		goto nomem;

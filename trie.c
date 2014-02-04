@@ -79,7 +79,7 @@ struct ytrie {
 
 static inline struct node *
 alloc_node(void) {
-	struct node *n = ymalloc(sizeof(*n));
+	struct node *n = ycalloc(1, sizeof(*n));
 	if (unlikely(!n))
 		/*
 		 * if allocing such a small size of memory fails,
@@ -87,7 +87,6 @@ alloc_node(void) {
 		 * Just ASSERT IT!
 		 */
 		yassert(0);
-	memset(n, 0, sizeof(*n));
 	return n;
 }
 
@@ -276,7 +275,7 @@ node_clone(const struct node *n,
 	struct node *r = alloc_node();
 	if (n->v)
 		r->v = clonev(user, n->v);
-	for (i=0; i<16; i++)
+	for (i = 0; i < 16; i++)
 		if (n->n[i])
 			r->n[i] = node_clone(n->n[i], user, clonev);
 	return r;
@@ -404,9 +403,9 @@ ytrie_insert(struct ytrie *t,
 
 struct ytrie *
 ytrie_create(void(*fcb)(void *)) {
-	struct ytrie *t = ymalloc(sizeof(struct ytrie));
-	yassert(t);
-	memset(t, 0, sizeof(*t));
+	struct ytrie *t = ycalloc(1, sizeof(*t));
+	if (!t)
+		return NULL;
 	t->fcb = fcb;
 	return t;
 }

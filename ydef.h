@@ -110,10 +110,12 @@
 #       include <assert.h>
 
 #       define ymalloc(x)   dmalloc(x)
+#       define ycalloc(n, s) dcalloc(n, s)
 #       define yfree(x)     dfree(x)
 #       define yassert(x)   assert(x)
 
 extern void * dmalloc(unsigned int);
+extern void * dcalloc(unsigned int, unsigned int);
 extern void   dfree(void *);
 
 #else /* CONFIG_DEBUG */
@@ -121,6 +123,7 @@ extern void   dfree(void *);
 #       include <malloc.h>
 
 #       define ymalloc(x)   malloc(x)
+#       define ycalloc(n, s) calloc(n, s)
 #       define yfree(x)     free(x)
 #       define yassert(x)   do {} while (0)
 

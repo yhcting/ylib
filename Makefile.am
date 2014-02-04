@@ -15,6 +15,7 @@ include_HEADERS = \
 	yset.h \
 	ylru.h \
 	ymsgq.h \
+	ystatmath.h \
 	ylib.h
 
 pkglib_LTLIBRARIES = liby.la
@@ -27,6 +28,7 @@ liby_la_SOURCES = \
 	mempool.c \
 	lru.c \
 	msgq.c \
+	statmath.c \
 	libmain.c
 
 bin_PROGRAMS = y
@@ -40,7 +42,8 @@ y_SOURCES = \
 	test_set.c \
 	test_dynb.c \
 	test_yp.c \
-	test_lru.c
+	test_lru.c \
+	test_statmath.c
 
 y_LDADD = liby.la -lpthread -lrt
 

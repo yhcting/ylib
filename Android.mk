@@ -12,6 +12,7 @@ LOCAL_SRC_FILES := \
 	mempool.c \
 	lru.c \
 	msgq.c \
+	statmath.c \
 	libmain.c
 
 #LOCAL_FORCE_STATIC_EXECUTABLE := true

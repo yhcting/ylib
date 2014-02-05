@@ -28,7 +28,6 @@ liby_la_SOURCES = \
 	mempool.c \
 	lru.c \
 	msgq.c \
-	statmath.c \
 	libmain.c
 
 bin_PROGRAMS = y

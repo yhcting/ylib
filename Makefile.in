@@ -87,7 +87,7 @@ am__installdirs = "$(DESTDIR)$(pkglibdir)" "$(DESTDIR)$(bindir)" \
 LTLIBRARIES = $(pkglib_LTLIBRARIES)
 liby_la_LIBADD =
 am_liby_la_OBJECTS = crc.lo list.lo tree.lo trie.lo hash.lo mempool.lo \
-	lru.lo msgq.lo statmath.lo libmain.lo
+	lru.lo msgq.lo libmain.lo
 liby_la_OBJECTS = $(am_liby_la_OBJECTS)
 PROGRAMS = $(bin_PROGRAMS)
 am_y_OBJECTS = test_main.$(OBJEXT) test_list.$(OBJEXT) \
@@ -271,7 +271,6 @@ liby_la_SOURCES = \
 	mempool.c \
 	lru.c \
 	msgq.c \
-	statmath.c \
 	libmain.c
 
 y_SOURCES = \
@@ -435,7 +434,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lru.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mempool.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msgq.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/statmath.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_bitops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_dynb.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_hash.Po@am__quote@

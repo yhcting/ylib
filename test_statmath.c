@@ -74,6 +74,11 @@ test_ivar(void) {
 		ysm_ivar_add(iv, vs2[i]);
 	yassert(5.25f == ysm_ivar(iv));
 	ysm_ivar_destroy(iv);
+
+	iv = ysm_ivar_create();
+	yassert(isnan(ysm_ivar(iv)));
+	ysm_ivar_destroy(iv);
+
 }
 
 

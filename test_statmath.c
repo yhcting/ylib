@@ -32,7 +32,8 @@ test_imean(void) {
 	double vs0[] = {1};
 	double vs1[] = {1, 2, 3, 4, 5, 6, 7};
 	double vs2[] = {1, 2, 3, 4, 5, 6, 7, 8};
-	struct ysm_imean *im = ysm_imean_create();
+	struct ysm_imean *im, *im0, *im1, *im2;
+	im = ysm_imean_create();
 	for (i = 0; i < arrsz(vs0); i++)
 		ysm_imean_add(im, vs0[i]);
 	yassert(1 == ysm_imean(im));
@@ -44,11 +45,23 @@ test_imean(void) {
 	yassert(4 == ysm_imean(im));
 	ysm_imean_destroy(im);
 
+	im0 = ysm_imean_create();
+	im1 = ysm_imean_create();
+	im2 = ysm_imean_create();
 	im = ysm_imean_create();
 	for (i = 0; i < arrsz(vs2); i++)
 		ysm_imean_add(im, vs2[i]);
 	yassert(4.5f == ysm_imean(im));
+	for (i = 0; i < arrsz(vs2) / 2; i++)
+		ysm_imean_add(im0, vs2[i]);
+	for (; i < arrsz(vs2); i++)
+		ysm_imean_add(im1, vs2[i]);
+	ysm_imean_combine(im2, im0, im1);
+	yassert(ysm_imean(im) == ysm_imean(im2));
 	ysm_imean_destroy(im);
+	ysm_imean_destroy(im0);
+	ysm_imean_destroy(im1);
+	ysm_imean_destroy(im2);
 }
 
 static void
@@ -57,7 +70,8 @@ test_ivar(void) {
 	double vs0[] = {1};
 	double vs1[] = {1, 2, 3, 4, 5, 6, 7};
 	double vs2[] = {1, 2, 3, 4, 5, 6, 7, 8};
-	struct ysm_ivar *iv = ysm_ivar_create();
+	struct ysm_ivar *iv, *iv0, *iv1, *iv2;
+	iv = ysm_ivar_create();
 	for (i = 0; i < arrsz(vs0); i++)
 		ysm_ivar_add(iv, vs0[i]);
 	yassert(0 == ysm_ivar(iv));
@@ -70,15 +84,27 @@ test_ivar(void) {
 	ysm_ivar_destroy(iv);
 
 	iv = ysm_ivar_create();
+	iv0 = ysm_ivar_create();
+	iv1 = ysm_ivar_create();
+	iv2 = ysm_ivar_create();
 	for (i = 0; i < arrsz(vs2); i++)
 		ysm_ivar_add(iv, vs2[i]);
 	yassert(5.25f == ysm_ivar(iv));
+	for (i = 0; i < arrsz(vs2) / 2; i++)
+		ysm_ivar_add(iv0, vs2[i]);
+	for (; i < arrsz(vs2); i++)
+		ysm_ivar_add(iv1, vs2[i]);
+	ysm_ivar_combine(iv2, iv0, iv1);
+	yassert(ysm_ivar(iv) == ysm_ivar(iv2));
+
 	ysm_ivar_destroy(iv);
+	ysm_ivar_destroy(iv0);
+	ysm_ivar_destroy(iv1);
+	ysm_ivar_destroy(iv2);
 
 	iv = ysm_ivar_create();
 	yassert(isnan(ysm_ivar(iv)));
 	ysm_ivar_destroy(iv);
-
 }
 
 

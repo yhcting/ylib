@@ -88,7 +88,7 @@ hv32(const void *key, unsigned int keysz) {
  */
 static int
 hmodify(struct yhash *h, unsigned int bits) {
-	int		    i;
+	unsigned int	    i;
 	struct hn	   *n, *tmp;
 	struct ylistl_link *oldmap;
 	unsigned int	    oldmapsz;
@@ -198,7 +198,7 @@ ndestroy(const struct yhash *h, struct hn *n) {
 
 static inline void
 hclean_nodes(struct yhash *h) {
-	int	    i;
+	unsigned int i;
 	struct hn  *n, *tmp;
 	for (i = 0; i < hmapsz(h); i++) {
 		ylistl_foreach_item_removal_safe(n,
@@ -214,7 +214,7 @@ hclean_nodes(struct yhash *h) {
 
 int
 yhash_init(struct yhash *h, void (*fcb)(void *)) {
-	int i;
+	unsigned int i;
 	h->sz = 0;
 	h->mapbits = MIN_HBITS;
 	h->map = (struct ylistl_link *)ymalloc(sizeof(*h->map) * hmapsz(h));

@@ -46,12 +46,22 @@ __imean_add(unsigned int n, /* # of elements - including given new value 'v' */
 	return u + (v - u) / (double)n;
 }
 
+static inline void
+ysm_imean_init(struct ysm_imean *im) {
+	memset(im, 0, sizeof(*im));
+}
+
 /**
  * @return : NULL if fails (usually OOM)
  */
 static inline struct ysm_imean *
 ysm_imean_create(void) {
 	return (struct ysm_imean *)ycalloc(1, sizeof(struct ysm_imean));
+}
+
+static inline void
+ysm_imean_clean(struct ysm_imean *im) {
+	ysm_imean_init(im);
 }
 
 static inline void
@@ -116,9 +126,19 @@ struct ysm_ivar {
 	double       u; /* mean */
 };
 
+static inline void
+ysm_ivar_init(struct ysm_ivar *iv) {
+	memset(iv, 0, sizeof(*iv));
+}
+
 static inline struct ysm_ivar *
 ysm_ivar_create(void) {
 	return (struct ysm_ivar *)ycalloc(1, sizeof(struct ysm_ivar));
+}
+
+static inline void
+ysm_ivar_clean(struct ysm_ivar *iv) {
+	ysm_ivar_init(iv);
 }
 
 static inline void

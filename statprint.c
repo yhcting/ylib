@@ -237,6 +237,6 @@ ystpr_distgraph(int           fd,
 	/* calculate distribution */
 	interval = max - min;
 	for (d = vs; d < de; d++) {
-		
+
 	}
 }

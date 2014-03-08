@@ -62,6 +62,8 @@ ystpr_bargraph(int                 fd,
 
 
 /**
+ * [UNDER-IMPLEMENTATION]
+ *
  * Print ascii distribution bar graph like below
  *
  *  Samples: xx

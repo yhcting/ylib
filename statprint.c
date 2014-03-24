@@ -40,6 +40,7 @@
 #include <float.h>
 #include <unistd.h>
 #include <string.h>
+#include <limits.h>
 
 #include "ycommon.h"
 #include "ystatprint.h"
@@ -59,7 +60,7 @@ stats_double(double       *omin, /* [out] */
 	     const double *vs,
 	     unsigned int  vsz) {
 	const double *d, *de;
-	double min, max;
+	double r, min, max;
 	struct ysm_ivar iv;
 	register int calvar;
 	de = vs + vsz;
@@ -227,31 +228,129 @@ ystpr_distgraph(int           fd,
 		unsigned int  h,
 		unsigned int  isp,
 		char          barc) {
-#define __PRSTR_ALL_SAME_VALUES "All values are same."
-	double min, max, var, mean, interval, *d;
-	unsigned int i, j, *dist;
+	/*
+	 * Comment text will be something like
+	 *   "-2s", "-s", "-3s", "u", "s", "2s" ...
+	 * And min/max value - print double value.
+	 * So, 64 should be enough
+	 */
+#define _MAX_CMT_LEN 64
+#define _PRSTR_ALL_SAME_VALUES "All values are same.\n"
+#define _dist_index(v) (((v) - min) * (double)w / interval)
+#define _get_dist_index(out, v)				\
+	do {							\
+		tmp = _dist_index(v);				\
+		if (unlikely(tmp > w - 1))			\
+			tmp = w - 1;				\
+		(out) = tmp;					\
+	} while (0);
+
+	const double *d;
+	double min, max, var, sigma, mean, interval, *dist;
+	unsigned int tmp, r, i, j, sigminus, sigplus, nrcmt, *idxs;
+	char **cmts;
 	const double * const de = vs + vsz;
 
 	/* verify input and calculate required values. */
 	if (unlikely(r = stats_double(&min, &max, &mean, &var, vs, vsz)))
 		return r;
 
+	sigma = sqrt(var);
 	/* all values are same. */
 	if (min >= max) {
 		/* ignore IO error. '- 1' to remove trailing 0 */
 		r = write(fd,
-			  __PRSTR_ALL_SAME_VALUES,
-			  sizeof(__PRSTR_ALL_SAME_VALUES) - 1);
+			  _PRSTR_ALL_SAME_VALUES,
+			  sizeof(_PRSTR_ALL_SAME_VALUES) - 1);
 		return 0;
 	}
 
 	/* allocates memories required */
-	if (unlikely(!(dist = (unsigned int *)calloc(w, sizeof(*dist)))))
+	if (unlikely(!(dist = (double *)ycalloc(w, sizeof(*dist)))))
 		return ENOMEM;
 
 	/* calculate distribution */
 	interval = max - min;
 	for (d = vs; d < de; d++) {
-
+		_get_dist_index(i, *d);
+		dist[i]++;
 	}
+
+	/* calculate 'u - Ns' that can be shown at the graph */
+	i = 0;
+	while (0 <= _dist_index(mean - ++i * sigma));
+	sigminus = i - 1;
+	i = 0;
+	while (w > _dist_index(mean + ++i * sigma));
+	sigplus = i - 1;
+
+	/* + 1 for 'mean', + 2 for min/max */
+	nrcmt = sigminus + sigplus + 1 + 2;
+	if (unlikely(!(cmts = ymalloc(sizeof(*cmts) * nrcmt)))) {
+		yfree(dist);
+		return ENOMEM;
+	}
+	if (unlikely(!(idxs = ymalloc(sizeof(*idxs) * nrcmt)))) {
+		yfree(dist);
+		yfree(cmts);
+		return ENOMEM;
+	}
+
+	for (i = 0; i < nrcmt; i++) {
+		cmts[i] = (char *)ymalloc(sizeof(*cmts[i])
+					  * _MAX_CMT_LEN);
+		if (unlikely(!cmts[i])) {
+			for (j = 0; j < i; j++)
+				yfree(cmts[j]);
+			yfree(idxs);
+			yfree(dist);
+			return ENOMEM;
+		}
+		cmts[i][_MAX_CMT_LEN - 1] = 0; /* trailing 0 */
+	}
+
+	j = 0;
+
+	/* add comment for min */
+	idxs[j] = 0;
+	snprintf(cmts[j++], _MAX_CMT_LEN - 1, "%f", min);
+	for (i = sigminus; i > 0; i--) {
+		_get_dist_index(idxs[j], mean - i * sigma);
+		/* ignore return value intentionally */
+		snprintf(cmts[j++], _MAX_CMT_LEN - 1, "-%ds", i);
+	}
+
+	_get_dist_index(idxs[j], mean);
+	snprintf(cmts[j++], _MAX_CMT_LEN - 1, "u");
+	for (i = 1; i <= sigplus; i++) {
+		_get_dist_index(idxs[j], mean + i * sigma);
+		/* ignore return value intentionally */
+		snprintf(cmts[j++], _MAX_CMT_LEN - 1, "%ds", i);
+	}
+	/* add comment for max */
+	idxs[j] = w - 1;
+	snprintf(cmts[j++], _MAX_CMT_LEN - 1, "%f", max);
+
+	r = ystpr_bargraph(fd,
+			   dist,
+			   w,
+			   h,
+			   idxs,
+			   (const char * const *)cmts,
+			   nrcmt,
+			   isp,
+			   barc);
+
+	yfree(idxs);
+	yfree(dist);
+	for (i = 0; i < nrcmt; i++)
+		yfree(cmts[i]);
+	yfree(cmts);
+
+	return r;
+
+#undef _get_dist_index
+#undef _dist_index
+#undef _PRSTR_ALL_SAME_VALUES
+#undef _MAX_CMT_LEN
 }

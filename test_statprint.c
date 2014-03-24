@@ -51,7 +51,9 @@
  * Linked list test.
  */
 static void
-test_statprint(void) {
+test_bargraph(void) __attribute((unused));
+static void
+test_bargraph(void) {
 	int fd, r;
 	const char *expected_result;
 	char buf[16384];
@@ -378,6 +380,148 @@ test_statprint(void) {
 
 
 	unlink(tmpf);
+}
+
+static void
+test_distgraph(void) {
+	int fd, r;
+	const char *expected_result;
+	char buf[16384];
+	char *p;
+	const char *tmpf = "____temp__";
+	double v0[] = {};
+	double v1[] = {1.0f};
+	double v2[] = {1.0f, 2.0f, 1.0f, 1.0f};
+	double v3[] = {
+		1.0f, 2.5f, 0.0f, 5.0f, -1.0f, 9.0f, 0.0f, 1.5f, 2.0f,
+		2.3f, 1.2f, 1.4f, 1.9f, 2.7f};
+
+	fd = open(tmpf, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	r = ystpr_distgraph(fd,
+			    v0,
+			    arrsz(v0),
+			    20,
+			    15,
+			    1,
+			    '*');
+	close(fd);
+	yassert(!r);
+	expected_result = "All values are same.\n";
+	memset(buf, 0, sizeof(buf));
+	p = buf;
+	fd = open(tmpf, O_RDONLY);
+	while (0 < (r = read(fd, p, sizeof(buf) - (p - buf))))
+		p += r;
+	close(fd);
+	yassert(!strcmp(expected_result, buf));
+
+
+	fd = open(tmpf, O_WRONLY | O_TRUNC);
+	r = ystpr_distgraph(fd,
+			    v1,
+			    arrsz(v1),
+			    20,
+			    15,
+			    1,
+			    '*');
+	close(fd);
+	yassert(!r);
+	expected_result = "All values are same.\n";
+	memset(buf, 0, sizeof(buf));
+	p = buf;
+	fd = open(tmpf, O_RDONLY);
+	while (0 < (r = read(fd, p, sizeof(buf) - (p - buf))))
+		p += r;
+	close(fd);
+	yassert(!strcmp(expected_result, buf));
+
+
+	fd = open(tmpf, O_WRONLY | O_TRUNC);
+	r = ystpr_distgraph(fd,
+			    v2,
+			    arrsz(v2),
+			    20,
+			    15,
+			    1,
+			    '*');
+	close(fd);
+	yassert(!r);
+	expected_result =
+"---------------------------------------- 3.000000\n"
+"*                                       \n"
+"*                                       \n"
+"*                                       \n"
+"*                                       \n"
+"*                                       \n"
+"*                                       \n"
+"*                                       \n"
+"*                                       \n"
+"*                                       \n"
+"*                                     * \n"
+"*                                     * \n"
+"*                                     * \n"
+"*                                     * \n"
+"*                                     * \n"
+"* * * * * * * * * * * * * * * * * * * * \n"
+"---------------------------------------- 0.000000\n"
+"^         ^               ^           ^\n"
+"1.000000                  1s\n"
+"          u                           2.000000\n";
+	memset(buf, 0, sizeof(buf));
+	p = buf;
+	fd = open(tmpf, O_RDONLY);
+	while (0 < (r = read(fd, p, sizeof(buf) - (p - buf))))
+		p += r;
+	close(fd);
+	yassert(!strcmp(expected_result, buf));
+
+
+	fd = open(tmpf, O_WRONLY | O_TRUNC);
+	ystpr_distgraph(fd,
+			v3,
+			arrsz(v3),
+			20,
+			15,
+			1,
+			'*');
+	close(fd);
+	yassert(!r);
+	expected_result =
+"---------------------------------------- 3.000000\n"
+"        *                               \n"
+"        *                               \n"
+"        *                               \n"
+"        *                               \n"
+"    *   * * * *                         \n"
+"    *   * * * *                         \n"
+"    *   * * * *                         \n"
+"    *   * * * *                         \n"
+"    *   * * * *                         \n"
+"*   *   * * * *         *             * \n"
+"*   *   * * * *         *             * \n"
+"*   *   * * * *         *             * \n"
+"*   *   * * * *         *             * \n"
+"*   *   * * * *         *             * \n"
+"* * * * * * * * * * * * * * * * * * * * \n"
+"---------------------------------------- 0.000000\n"
+"^ ^         ^       ^         ^       ^\n"
+"-1.000000   u                 2s\n"
+"  -1s               1s                9.000000\n";
+	memset(buf, 0, sizeof(buf));
+	p = buf;
+	fd = open(tmpf, O_RDONLY);
+	while (0 < (r = read(fd, p, sizeof(buf) - (p - buf))))
+		p += r;
+	close(fd);
+	yassert(!strcmp(expected_result, buf));
+
+	unlink(tmpf);
+}
+
+static void
+test_statprint(void) {
+	test_bargraph();
+	test_distgraph();
 }
 
 TESTFN(test_statprint, statprint)

@@ -59,7 +59,7 @@ vcreate(unsigned int *data_size,
 
 static void
 test_lru(void) {
-	int *pi __attribute__((unused));
+	int *pi;
 	struct ylru_cb cbs = {
 		.free = &vfree,
 		.create = NULL

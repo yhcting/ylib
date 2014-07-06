@@ -89,13 +89,14 @@ struct ylisti {
  */
 static inline void
 ylist_free_item(struct ylist *l, void *item) {
-	if (l->freecb)
+	if (l->freecb && item)
 		l->freecb(item);
-	else
-		yfree(item);
 }
 
 
+/**
+ * @max '0' means infinite (as much as possible)
+ */
 EXPORT void
 ylist_init(struct ylist *l,
 	   unsigned int  max,
@@ -137,9 +138,28 @@ ylist_size(const struct ylist *l) {
 	return l->sz;
 }
 
+/**
+ * return
+ *     1 : list have given item
+ *     0 : false
+ *    <0 : error
+ */
+EXPORT int
+ylist_have(const struct ylist *l, void *item);
+
+/**
+ * return
+ *     0: success
+ *    <0: fails (ex. too long name)
+ */
 EXPORT int
 ylist_add_last(struct ylist *l, void *item);
 
+/**
+ * return
+ *     0: success
+ *    <0: fails (ex. too long name)
+ */
 EXPORT int
 ylist_add_first(struct ylist *l, void *item);
 
@@ -149,9 +169,15 @@ ylist_peek_last(const struct ylist *l);
 EXPORT void *
 ylist_peek_first(const struct ylist *l);
 
+/**
+ * return
+ *     NULL for error (ex. list is empty).
+ *     Otherwise 'item' (even if item is already freed if free == TRUE.)
+ */
 EXPORT void *
 ylist_remove_last(struct ylist *l, int free);
 
+/** See comments of 'ylist_remove_last' */
 EXPORT void *
 ylist_remove_first(struct ylist *l, int free);
 

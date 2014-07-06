@@ -37,21 +37,24 @@
 #ifndef __YGRAPh_h__
 #define __YGRAPh_h__
 
+#include <string.h>
+
 #include "ylistl.h"
 #include "yhash.h"
 
-#define YGRAPH_MAX_VERTEX_NAME_LEN 63
+#define YGRAPH_VERTEX_NAME_LEN 63
 
 struct yvertex {
 	/* vertex name - usage of this field is totally up to client.
 	 * But, originally this is designed to identify vertex.
 	 * (Unique in the graph is recommended(but not required))
 	 */
-	char		   name[YGRAPH_MAX_VERTEX_NAME_LEN + 1];
-	void		  *d;  /* vertex data */
+	char		   name[YGRAPH_VERTEX_NAME_LEN + 1];
 	struct ylistl_link ie; /* head of Incoming Edge list */
 	struct ylistl_link oe; /* head of Outgoing Edge list */
 	struct ylistl_link lk; /* link for vertex list */
+	/* extra data from here is used as vertex data */
+	char               d[0];
 };
 
 struct yedge {
@@ -72,7 +75,7 @@ struct ygraph {
 
 /******************************************************************************
  *
- * Macros
+ * MACROS
  *
  *****************************************************************************/
 /**
@@ -80,7 +83,7 @@ struct ygraph {
  * @e : struct yedge *. variable used as iteration cursor
  */
 #define ygraph_foreach_oedge(v, e)				\
-	ylistl_foreach_item(e, &v->oe, struct yedge, olk)
+	ylistl_foreach_item(e, &(v)->oe, struct yedge, olk)
 
 /**
  * @v : struct yvertex *.
@@ -88,14 +91,14 @@ struct ygraph {
  * @tmp: another 'struct yedge *' used as temporary storage.
  */
 #define ygraph_foreach_oedge_removal_safe(v, e, etmp)			\
-	ylistl_foreach_item_removal_safe(e, etmp, &v->oe, struct yedge, olk)
+	ylistl_foreach_item_removal_safe(e, etmp, &(v)->oe, struct yedge, olk)
 
 /**
  * @v : struct yvertex *.
  * @e : struct yedge *. variable used as iteration cursor
  */
 #define ygraph_foreach_iedge(v, e)				\
-	ylistl_foreach_item(e, &v->ie, struct yedge, ilk)
+	ylistl_foreach_item(e, &(v)->ie, struct yedge, ilk)
 
 /**
  * @v : struct yvertex *.
@@ -103,7 +106,7 @@ struct ygraph {
  * @tmp: another 'struct yedge *' used as temporary storage.
  */
 #define ygraph_foreach_iedge_removal_safe(v, e, etmp)			\
-	ylistl_foreach_item_removal_safe(e, etmp, &v->ie, struct yedge, ilk)
+	ylistl_foreach_item_removal_safe(e, etmp, &(v)->ie, struct yedge, ilk)
 
 
 /**
@@ -111,7 +114,7 @@ struct ygraph {
  * @v : struct yvertex. variable used as iteration cursor
  */
 #define ygraph_foreach_vertex(g, v)				\
-	ylistl_foreach_item(v, &g->vs, struct yvertex, lk)
+	ylistl_foreach_item(v, &(g)->vs, struct yvertex, lk)
 
 /**
  * @g : struct ygraph *.
@@ -119,7 +122,65 @@ struct ygraph {
  * @tmp: another 'struct yvertex *' used as temporary storage.
  */
 #define ygraph_foreach_vertex_removal_safe(g, v, vtmp)			\
-	ylistl_foreach_item_removal_safe(v, vtmp, &g->vs, struct yvertex, lk)
+	ylistl_foreach_item_removal_safe(v, vtmp, &(g)->vs, struct yvertex, lk)
+
+
+/******************************************************************************
+ *
+ * VERTEX
+ *
+ *****************************************************************************/
+/**
+ * return
+ *     0: success
+ *    <0: fails (ex. too long name)
+ */
+int
+ygraph_vertex_set_name(struct yvertex *v, const char *name);
+
+static inline const char *
+ygraph_vertex_get_name(const struct yvertex *v) {
+	return v->name;
+}
+
+static inline void *
+ygraph_vertex_get_data(const struct yvertex *v) {
+	return &v->d;
+}
+
+static inline void
+ygraph_vertex_set_data(struct yvertex *v, void *d, unsigned int sz) {
+	memcpy(ygraph_vertex_get_data(v), d, sz);
+}
+
+
+/**
+ * return
+ *     NULL: error
+ *     Otherwise : Success
+ */
+struct yvertex *
+ygraph_vertex_create(unsigned int datasz);
+
+/**
+ * return
+ *     0: success
+ *    <0: error
+ */
+int
+ygraph_vertex_init(struct yvertex *);
+
+static inline void
+ygraph_vertex_clean(struct yvertex *v, void (*fcb)(void *)) {
+	if (fcb)
+		(*fcb)(ygraph_vertex_get_data(v));
+}
+
+static inline void
+ygraph_vertex_destroy(struct yvertex *v, void (*fcb)(void *)) {
+	ygraph_vertex_clean(v, fcb);
+	yfree(v);
+}
 
 /******************************************************************************
  *
@@ -128,7 +189,7 @@ struct ygraph {
  *****************************************************************************/
 /**
  * ygraph is created and initialized.
- * @fcb : call back to free vertex data.
+ * @fcb : call back to free vertex extra data.
  */
 struct ygraph *
 ygraph_create(void (*fcb)(void *));
@@ -136,7 +197,7 @@ ygraph_create(void (*fcb)(void *));
 /**
  * return
  *     0: success
- *    <0: fails (ex. vertex is already in the graph)
+ *    <0: fails (ex. NOMEM)
  */
 int
 ygraph_init(struct ygraph *,
@@ -151,43 +212,11 @@ ygraph_clean(struct ygraph *);
 void
 ygraph_destroy(struct ygraph *);
 
-
 /******************************************************************************
  *
- * VERTEX
+ * GRAPH - VERTEX
  *
  *****************************************************************************/
-
-/**
- * return
- *     0: success
- *    <0: error
- */
-int
-ygraph_init_vertex(struct yvertex *);
-
-/**
- * return
- *     0: success
- *    <0: fails (ex. too long name)
- */
-int
-ygraph_set_vertex_name(struct yvertex *v, const char *name);
-
-const char *
-ygraph_get_vertex_name(const struct yvertex *v) {
-	return v->name;
-}
-
-static inline void
-ygraph_set_vertex_data(struct yvertex *v, void *d) {
-	v->d = d;
-}
-
-static inline void *
-ygraph_get_vertex_data(const struct yvertex *v) {
-	return v->d;
-}
 
 /**
  * return
@@ -240,7 +269,7 @@ ygraph_find_vertex(const struct ygraph *, const char *name);
 
 /******************************************************************************
  *
- * EDGE
+ * GRAPH - EDGE
  *
  *****************************************************************************/
 
@@ -299,5 +328,34 @@ ygraph_get_edge_weight(const struct ygraph *,
 		       const struct yvertex *from,
 		       const struct yvertex *to);
 
+
+/******************************************************************************
+ *
+ * More useful interfaces
+ *
+ *****************************************************************************/
+/**
+ * Vertex is added to previous position of 'basev'
+ * That is edge from 'basev' to 'v' is added too.
+ * Edge weight is not defined for this operation.
+ * Note that, 'basev' SHOULD NOT be same with 'v'
+ * @basev : vertex already in the graph.
+ * @v : vertex to add (NOT int the graph yet.)
+ * return
+ *     0 : success
+ *    <0 : fails (ex. invalid parameter)
+ */
+int
+ygraph_add_vertex_prev(struct ygraph *,
+		       struct yvertex *basev,
+		       struct yvertex *v); /* vertex to add */
+
+/**
+ * See comments of 'ygraph_add_vertex_prev.
+ */
+int
+ygraph_add_vertex_next(struct ygraph *,
+		       struct yvertex *basev,
+		       struct yvertex *v); /* vertex to add */
 
 #endif /* __YGRAPh_h__ */

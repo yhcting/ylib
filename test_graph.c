@@ -65,13 +65,13 @@ make_test_graph(struct ygraph *g) {
 	struct yvertex *v000, *v001, *v002, *v003, *v012, *v022, *v032;
 	struct yvertex *v112;
 
-#define __add_v(g, v, name)				\
-	do {						\
-		v = ymalloc(sizeof(*v));		\
-		ygraph_init_vertex(v);			\
-		v->d = (void *)name;			\
-		ygraph_set_vertex_name(v, name);	\
-		ygraph_add_vertex(g, v);		\
+#define __add_v(g, v, name)						\
+	do {								\
+		v = ygraph_vertex_create(sizeof(void *));		\
+		ygraph_vertex_init(v);					\
+		ygraph_vertex_set_data(v, (void *)name, sizeof(void *)); \
+		ygraph_vertex_set_name(v, name);			\
+		ygraph_add_vertex(g, v);				\
 	} while (0)
 
 	__add_v(g, v000, "v000");
@@ -124,11 +124,11 @@ test_graph(void) {
 	make_test_graph(g);
 
 	yassert(v002 = ygraph_find_vertex(g, "v002"));
-	yassert(!strcmp((char *)ygraph_get_vertex_data(v002), "v002"));
+	yassert(!strcmp((char *)ygraph_vertex_get_data(v002), "v002"));
 	yassert(ygraph_has_vertex(g, v002));
 
 	yassert(v012 = ygraph_find_vertex(g, "v012"));
-	yassert(!strcmp((char *)ygraph_get_vertex_data(v012), "v012"));
+	yassert(!strcmp((char *)ygraph_vertex_get_data(v012), "v012"));
 	yassert(ygraph_has_vertex(g, v012));
 
 	yassert(v112 = ygraph_find_vertex(g, "v112"));

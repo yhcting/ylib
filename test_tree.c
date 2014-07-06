@@ -116,7 +116,7 @@ build_test_tree(struct ytree *t) {
 static void
 test_iterator(const struct ytree *t, int type, const char *referseq) {
 	struct ytreei *itr;
-	const struct ytree_node *n __attribute__((unused));
+	const struct ytree_node *n;
 	int i = 0;
 	itr = ytreei_create(ytree_root(t), type);
 	while (ytreei_has_next(itr)) {

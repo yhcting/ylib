@@ -33,6 +33,7 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+#include <limits.h>
 
 #include "ylist.h"
 
@@ -72,10 +73,9 @@ remove_node(struct ylist *l, struct ylistl_link *lk, int free) {
 	n = node(lk);
 	--l->sz;
 	item = destroy_node(n);
-	if (!free)
-		return item;
-	ylist_free_item(l, item);
-	return NULL;
+	if (free)
+		ylist_free_item(l, item);
+	return item;
 }
 
 /* ============================================================================
@@ -91,6 +91,8 @@ ylist_init(struct ylist *l,
 	l->sz = 0;
 	l->max = max;
 	l->freecb = freecb;
+	if (0 == l->max)
+		l->max = UINT_MAX;
 }
 
 struct ylist *
@@ -134,14 +136,24 @@ ylist_free(struct ylist *l) {
 }
 
 int
+ylist_have(const struct ylist *l, void *item) {
+	struct ylist_node *p;
+	ylistl_foreach_item(p, &l->head, struct ylist_node, lk) {
+		if (unlikely(p->item == item))
+			return 1;
+	}
+	return 0;
+}
+
+int
 ylist_add_last(struct ylist *l, void *item) {
 	struct ylist_node *n;
 	if (unlikely(l->max
 		     && l->sz >= l->max))
-		return EPERM;
+		return -EPERM;
 	n = create_node(item);
 	if (unlikely(!n))
-		return ENOMEM;
+		return -ENOMEM;
         ylistl_add_prev(&l->head, &n->lk);
 	++l->sz;
 	return 0;
@@ -152,10 +164,10 @@ ylist_add_first(struct ylist *l, void *item) {
 	struct ylist_node *n;
 	if (unlikely(l->max
 		     && l->sz >= l->max))
-		return EPERM;
+		return -EPERM;
 	n = create_node(item);
 	if (unlikely(!n))
-		return ENOMEM;
+		return -ENOMEM;
         ylistl_add_next(&l->head, &n->lk);
 	++l->sz;
 	return 0;
@@ -173,20 +185,22 @@ ylist_peek_first(const struct ylist *l) {
 
 void *
 ylist_remove_last(struct ylist *l, int free) {
-	yassert(!ylist_is_empty(l));
+	if (unlikely(ylist_is_empty(l)))
+		return NULL;
 	return remove_node(l, l->head.prev, free);
 }
 
 void *
 ylist_remove_first(struct ylist *l, int free) {
-	yassert(!ylist_is_empty(l));
+	if (unlikely(ylist_is_empty(l)))
+		return NULL;
 	return remove_node(l, l->head.next, free);
 }
 
 void *
 ylist_remove_current(struct ylist *l, struct ylisti *itr, int free) {
-	yassert(!ylist_is_empty(l)
-		&& l == itr->list);
+	if (unlikely(ylist_is_empty(l)))
+		return NULL;
 	return remove_node(l, itr->lcurr, free);
 }
 

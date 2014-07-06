@@ -80,8 +80,8 @@ struct ymsg {
 	void    *data; /* data or argument of action */
 	void   (*free)(void *); /* function to free passing data/arg */
 	union {
-		/* message code */
-		long   code;
+		/* message code - int type to use as switch argument. */
+		int    code;
 		/* execute with given argument */
 		void (*run)(void *, void (*)(void *));
 	} u;
@@ -109,7 +109,7 @@ ymsg_init_common(struct ymsg *m,
 static inline void
 ymsg_init_data(struct ymsg *m,
 	       uint8_t pri,
-	       long    code,
+	       int     code,
 	       void   *data) {
 	ymsg_init_common(m, YMSG_TYP_DATA, pri, 0, data);
 	m->u.code = code;
@@ -132,7 +132,8 @@ ymsg_create(void) {
 static inline void
 ymsg_destroy(struct ymsg *m) {
 	if (likely(YMSG_TYP_INVALID != m->type
-		   && m->free))
+		   && m->free
+		   && m->data))
 		(*m->free)(m->data);
 	yfree(m);
 }
@@ -150,7 +151,7 @@ EXPORT void
 ymq_destroy(struct ymq *);
 
 /**
- * return 0 for success, otherwise error number
+ * return 0 for success, otherwise -(error number)
  *     EPERM : Q is already full.
  */
 EXPORT int

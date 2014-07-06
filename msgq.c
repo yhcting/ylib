@@ -115,7 +115,7 @@ ymq_en(struct ymq *q, struct ymsg *m) {
 	if (unlikely(!q || !m
 		     || YMSG_TYP_INVALID == m->type
 		     || YMSG_PRI_NR <= m->pri))
-		return EINVAL;
+		return -EINVAL;
 	m->when = monotonic_time();
 	pthread_mutex_lock(&q->m);
 	ylistl_add_last(&q->q[m->pri], &m->lk);

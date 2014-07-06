@@ -34,94 +34,40 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
+#ifndef __LIBDBg_h__
+#define __LIBDBg_h__
+
+#ifdef LIB_DEBUG
+/*****************************************************************************
+ *
+ * DEBUG
+ *
+ *****************************************************************************/
+
 #include <stdio.h>
-#include <malloc.h>
-#include <string.h>
-#include <pthread.h>
 
-#include "ydef.h"
-#include "ylistl.h"
-
-struct tstfn {
-	void             (*fn)(void);
-	const char        *modname;
-	struct ylistl_link lk;
-};
-
-static YLISTL_DECL_HEAD(_tstfnl);
-static int  _mem_count = 0;
-static pthread_mutex_t _mem_count_lock = PTHREAD_MUTEX_INITIALIZER;
-
-void
-dregister_tstfn(void (*fn)(void), const char *mod) {
-	/* malloc should be used instead of dmalloc */
-	struct tstfn* n = malloc(sizeof(*n));
-	n->fn = fn;
-	n->modname = mod;
-	ylistl_add_last(&_tstfnl, &n->lk);
-}
+/* Debug PRint */
+#define dpr(a, b...) printf(a, ##b);
+/* Debug Function PRint */
+#define dfpr(a, b...) printf("%s: " a "\n", __func__, ##b);
+/* Debug POSition PRint */
+#define dpospr(a, b...) printf("%s: %d: " a "\n", __FILE__, __LINE__, ##b);
+/* Debug CHecK PoinT */
+#define dchkpt() printf("%s: %d\n", __FILE__, __LINE__);
 
 
-void *
-dmalloc(unsigned int sz) {
-	pthread_mutex_lock(&_mem_count_lock);
-	_mem_count++;
-	pthread_mutex_unlock(&_mem_count_lock);
-	return malloc(sz);
-}
+#else /* LIB_DEBUG */
+/*****************************************************************************
+ *
+ * NORMAL
+ *
+ *****************************************************************************/
 
-void *
-dcalloc(unsigned int n, unsigned int sz) {
-	pthread_mutex_lock(&_mem_count_lock);
-	_mem_count++;
-	pthread_mutex_unlock(&_mem_count_lock);
-	return calloc(n, sz);
-}
+#define dpr(a, b...) do { } while (0)
+#define dfpr(a, b...) do { } while (0)
+#define dpospr(a, b...) do { } while (0)
+#define dchkpt() do { } while (0)
 
-void
-dfree(void *p) {
-	pthread_mutex_lock(&_mem_count_lock);
-	_mem_count--;
-	pthread_mutex_unlock(&_mem_count_lock);
-	free(p);
-}
 
-int
-dmem_count(void) {
-	return _mem_count;
-}
-
-int
-main(int argc, const char *argv[]) {
-	int           sv;
-	struct tstfn *p;
-	const char *modnm = NULL; /* module name to test */
-	if (2 == argc)
-		modnm = argv[1];
-	else if (2 < argc) {
-		fprintf(stderr, "Usage: y [module name]\n");
-		return -1;
-	}
-
-	pthread_mutex_init(&_mem_count_lock, NULL);
-	ylistl_foreach_item(p, &_tstfnl, struct tstfn, lk) {
-		if (modnm
-		    && strcmp(modnm, p->modname))
-			continue; /* skip not-interesting test */
-		printf("<< Test [%s] >>\n", p->modname);
-		sv = dmem_count();
-		(*p->fn)();
-		if (sv != dmem_count()) {
-			printf("Unbalanced memory at [%s]!\n"
-			       "    balance : %d\n",
-			       p->modname,
-			       dmem_count() - sv);
-			return -1;
-			/* yassert(0); */
-		}
-		printf(" => PASSED\n");
-	}
-	pthread_mutex_destroy(&_mem_count_lock);
-	printf(">>>>>> TEST PASSED <<<<<<<\n");
-	return 0;
-}
+#endif /* LIB_DEBUG */
+#endif /* __LIBDBg_h__ */

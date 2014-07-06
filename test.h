@@ -37,6 +37,8 @@
 #ifndef __TESt_h__
 #define __TESt_h__
 
+#include "ydef.h"
+
 extern int dmem_count(void);
 extern void dregister_tstfn(void (*fn)(void), const char *mod);
 
@@ -45,5 +47,12 @@ extern void dregister_tstfn(void (*fn)(void), const char *mod);
 	static void __tst_##fn(void) {					\
 		dregister_tstfn(&fn, #mod);				\
 	}
+
+#ifndef CONFIG_DEBUG
+
+#undef yassert
+#define yassert(x) do { if ((x)) { ; } } while (0)
+
+#endif /* CONFIG_DEBUG */
 
 #endif /* __TESt_h__ */

@@ -76,23 +76,23 @@
 /* #define inline */
 
 #ifndef NULL
-#       define NULL ((void *)0)
+#	define NULL ((void *)0)
 #endif
 
 #ifndef TRUE
-#       define TRUE 1
+#	define TRUE 1
 #endif
 
 #ifndef FALSE
-#       define FALSE 0
+#	define FALSE 0
 #endif
 
 #ifndef offset_of
-#       define offset_of(type, member) ((unsigned long) &((type *)0)->member)
+#	define offset_of(type, member) ((unsigned long) &((type *)0)->member)
 #endif
 
 #ifndef container_of
-#       define container_of(ptr, type, member)			\
+#	define container_of(ptr, type, member)			\
 	((type *)(((char *)(ptr)) - offset_of(type, member)))
 #endif
 
@@ -100,15 +100,15 @@
  * GCC Specific
  **************/
 #ifndef likely
-#       define likely(x)	__builtin_expect(!!(x), 1)
+#	define likely(x)	__builtin_expect(!!(x), 1)
 #endif
 
 #ifndef unlikely
-#       define unlikely(x)	__builtin_expect(!!(x), 0)
+#	define unlikely(x)	__builtin_expect(!!(x), 0)
 #endif
 
 #ifndef barrier
-#       define barrier()       __asm__ __volatile__("": : :"memory")
+#	define barrier()       __asm__ __volatile__("": : :"memory")
 #endif
 
 
@@ -121,13 +121,13 @@
 /* For debugging */
 #ifdef CONFIG_DEBUG
 
-#       include <malloc.h>
-#       include <assert.h>
+#	include <malloc.h>
+#	include <assert.h>
 
-#       define ymalloc(x)   dmalloc(x)
-#       define ycalloc(n, s) dcalloc(n, s)
-#       define yfree(x)     dfree(x)
-#       define yassert(x)   assert(x)
+#	define ymalloc   dmalloc
+#	define ycalloc   dcalloc
+#	define yfree     dfree
+#	define yassert(x)   assert(x)
 
 extern void * dmalloc(unsigned int);
 extern void * dcalloc(unsigned int, unsigned int);
@@ -135,12 +135,12 @@ extern void   dfree(void *);
 
 #else /* CONFIG_DEBUG */
 
-#       include <malloc.h>
+#	include <malloc.h>
 
-#       define ymalloc(x)   malloc(x)
-#       define ycalloc(n, s) calloc(n, s)
-#       define yfree(x)     free(x)
-#       define yassert(x)   do {} while (0)
+#	define ymalloc   malloc
+#	define ycalloc   calloc
+#	define yfree     free
+#	define yassert(x)   do { } while (0)
 
 #endif /* CONFIG_DEBUG */
 

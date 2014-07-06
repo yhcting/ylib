@@ -18,6 +18,7 @@ include_HEADERS = \
 	ystatmath.h \
 	ystatprint.h \
 	ygraph.h \
+	ymtconcur.h \
 	ylib.h
 
 pkglib_LTLIBRARIES = liby.la
@@ -32,6 +33,7 @@ liby_la_SOURCES = \
 	msgq.c \
 	statprint.c \
 	graph.c \
+	mtconcur.c \
 	libmain.c
 
 bin_PROGRAMS = y
@@ -48,7 +50,9 @@ y_SOURCES = \
 	test_lru.c \
 	test_statmath.c \
 	test_statprint.c \
-	test_graph.c
+	test_graph.c \
+	test_mtconcur.c
+
 
 y_LDADD = liby.la -lpthread -lrt -lm
 

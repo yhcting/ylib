@@ -65,10 +65,10 @@ test_list(void) {
 	struct ylist  *lst;
 	struct ylisti *itr;
 
-	lst = ylist_create(0, NULL);
+	lst = ylist_create(0, &yfree);
 	ylist_destroy(lst);
 
-	lst = ylist_create(0, NULL);
+	lst = ylist_create(0, &yfree);
 	p = (int *)ymalloc(sizeof(*p));
 	*p = 3;
 	ylist_add_last(lst, p);
@@ -93,12 +93,15 @@ test_list(void) {
 		ylist_add_last(lst, p);
 	}
 	yassert(10 == ylist_size(lst));
+	yassert(ylist_have(lst, p));
+	yassert(!ylist_have(lst, lst));
 
 	/* simple iteration */
 	i = 0;
 	itr = ylisti_create(lst, YLISTI_FORWARD);
 	while (ylisti_has_next(itr)) {
 		p = ylisti_next(itr);
+		yassert(ylist_have(lst, p));
 		yassert(i == *p);
 		i++;
 	}
@@ -133,7 +136,7 @@ test_list(void) {
 	ylist_destroy(lst);
 
 
-	lst = ylist_create(0, NULL);
+	lst = ylist_create(0, &yfree);
 	/* remove even numbers - head is removed. */
 	for (i = 0; i < 10; i++) {
 		p = (int *)ymalloc(sizeof(*p));
@@ -189,7 +192,7 @@ test_list(void) {
 		ylist_destroy(lst);
 	}
 
-	lst = ylist_create(1, NULL);
+	lst = ylist_create(1, &yfree);
 	p = (int *)ymalloc(sizeof(*p));
 	*p = 0;
 	ylist_add_last(lst, p);

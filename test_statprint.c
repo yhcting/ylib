@@ -47,11 +47,6 @@
 #include "test.h"
 #include "ystatprint.h"
 
-/**
- * Linked list test.
- */
-static void
-test_bargraph(void) __attribute((unused));
 static void
 test_bargraph(void) {
 	int fd, r;

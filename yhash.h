@@ -116,6 +116,8 @@ yhash_add(struct yhash *h,
 
 /**
  * If these is no matched item, nothing happened.
+ * @keysz  : size of hash key
+ *           See, comment of yhash_add for details.
  * @return : -1 for error otherwise # of deleted. (0 means nothing to delete)
  */
 EXPORT int
@@ -132,6 +134,8 @@ yhash_del2(struct yhash *h,
 	   const void *key, unsigned int keysz);
 
 /**
+ * @keysz  : size of hash key
+ *           See, comment of yhash_add for details.
  * @return : NULL if fails.
  */
 EXPORT void *

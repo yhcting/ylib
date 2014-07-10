@@ -33,7 +33,7 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#define LIB_DEBUG
+/* #define LIB_DEBUG */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -205,32 +205,38 @@ test_mtconcur(void) {
 	/* make cyclic link */
 	ymtconcur_add_dependency(m, nH, nA);
 	yassert(-1 == ymtconcur_run(m, (void **)&workout, nA));
-
+	yassert(!workout);
 	ymtconcur_remove_dependency(m, nH, nA);
 
+	/* no cyclic link from now on */
 	workout = NULL;
-	ymtconcur_run(m, (void **)&workout, nA);
+	yassert(!ymtconcur_run(m, (void **)&workout, nA));
+	yassert(workout);
 	free_workout(workout);
 
 	/* set ccjob to test error case */
 	ccj.run_func = &gen_error_func;
 	ymtconcur_jobnode_set_job(nE, &ccj);
-
 	workout = NULL;
-	ymtconcur_run(m, (void **)&workout, nA);
+	yassert(-1 == ymtconcur_run(m, (void **)&workout, nA));
+	yassert(!workout);
 
 	/* back to original test function */
 	init_testjob(&ccj);
 	ymtconcur_jobnode_set_job(nE, &ccj);
 	workout = NULL;
-	ymtconcur_run(m, (void **)&workout, nA);
-	free_workout(workout);
-	workout = NULL;
-	ymtconcur_run(m, (void **)&workout, nA);
+	yassert(!ymtconcur_run(m, (void **)&workout, nA));
+	yassert(workout);
 	free_workout(workout);
 
 	workout = NULL;
-	ymtconcur_run(m, (void **)&workout, nC);
+	yassert(!ymtconcur_run(m, (void **)&workout, nA));
+	yassert(workout);
+	free_workout(workout);
+
+	workout = NULL;
+	yassert(!ymtconcur_run(m, (void **)&workout, nC));
+	yassert(workout);
 	free_workout(workout);
 
 	ymtconcur_destroy(m);

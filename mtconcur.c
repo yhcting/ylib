@@ -57,23 +57,36 @@
  * Data structures
  *
  *****************************************************************************/
+#define MCODE_DEF_LIST					\
+	/* start running */				\
+	_MCODE_DEF(START,     YMSG_PRI_VERY_HIGH)	\
+	/* internal error */				\
+	_MCODE_DEF(ERROR,     YMSG_PRI_VERY_HIGH)	\
+	/* all jobs are done */				\
+	_MCODE_DEF(ALL_DONE,  YMSG_PRI_NORMAL)		\
+	/* one job is done.				\
+	 * Message data is 'return value from job'.	\
+	 * data : struct job_routine_ret.		\
+	 */						\
+	_MCODE_DEF(JOB_END,   YMSG_PRI_NORMAL)		\
+	_MCODE_DEF(JOB_ERROR, YMSG_PRI_HIGH)
+
+#define _MCODE_DEF(x, y) MCODE_##x,
 enum {
-	MCODE_START,	  /* start running */
-	MCODE_ERROR,	  /* internal error */
-	/* one job is done.
-	 * Message data is 'return value from job'.
-	 * data : struct job_routine_ret.
-	 */
-	MCODE_JOB_END,
-	MCODE_JOB_ERROR,
+	MCODE_DEF_LIST
+	MCODE_ENUM_LIMIT
 };
+#undef _MCODE_DEF
 
 struct ymtconcur {
 	struct ygraph	    g;
 	struct yvertex	   *targetv;	 /* target vertex */
 	struct ymq	   *mq;
-	struct ylistl_link  readyQ;
 	unsigned int	    maxjobs;	 /* # jobs can be run in parallel */
+	/* Below this line : variables foro runtime information.
+	 * That is, they become dirty while running - ymtconcur_run()
+	 */
+	struct ylistl_link  readyQ;
 	unsigned int	    runningjobs; /* # jobs now running */
 	int		    err;	 /* error value. 0 means "OK" */
 };
@@ -102,6 +115,20 @@ struct job_thread_arg {
 	struct ccjob	 *j;
 };
 
+#ifdef LIB_DEBUG
+#define _MCODE_DEF(x, y) #x,
+static const char *_mcode_name[] = {
+	MCODE_DEF_LIST
+};
+#undef _MCODE_DEF
+#endif /* LIB_DEBUG */
+
+#define _MCODE_DEF(x, y) y,
+static const uint8_t _mcode_pri[] = {
+	MCODE_DEF_LIST
+};
+#undef _MCODE_DEF
+
 /******************************************************************************
  *
  * Accessing data structure.
@@ -126,20 +153,14 @@ post_message(struct ymtconcur *m,
 	     void *data,
 	     void (*freecb)(void *)) {
 	struct ymsg *msg;
-	uint8_t pri = YMSG_PRI_NORMAL;
+	if (unlikely(code < 0
+		     || code >= MCODE_ENUM_LIMIT))
+		return -1;
 
-	dfpr("code=%d", code);
-	/* critical messages */
-	switch (code) {
-	case MCODE_START:
-	case MCODE_ERROR:
-	case MCODE_JOB_ERROR:
-		pri = YMSG_PRI_VERY_HIGH;
-	}
-
+	dfpr("code=%s", _mcode_name[code]);
 	if (unlikely(!(msg = ymsg_create())))
 		return -1;
-	ymsg_init_data(msg, pri, code, data);
+	ymsg_init_data(msg, _mcode_pri[code], code, data);
 	msg->free = freecb;
 	if (unlikely(ymq_en(m->mq, msg))) {
 		ymsg_destroy(msg);
@@ -154,6 +175,14 @@ post_message(struct ymtconcur *m,
  *
  *
  *****************************************************************************/
+/* Initialize mtconcur RunTime INFOrmation */
+static void
+mtconcur_init_rtinfo(struct ymtconcur *m) {
+	m->runningjobs = 0;
+	m->err = 0;
+	ylistl_init_link(&m->readyQ);
+}
+
 static void
 ccjob_init(struct ccjob *j, const struct ymtconcurjob *job) {
 	memmove(&j->j, job, sizeof(j->j));
@@ -168,7 +197,6 @@ ccjob_init(struct ccjob *j, const struct ymtconcurjob *job) {
 static inline void
 ccjob_get_jobout(struct ccjob *j) {
 	++j->jorefcnt;
-	dfpr("%s: %d", j->j.name, j->jorefcnt);
 }
 
 static void
@@ -251,7 +279,6 @@ walk_depending_vertices_dfs(struct ymtconcur *m,
 #define mark_undiscovered__(v) do { v2job(v)->flag = 0; } while (0)
 #define is_discovered__(v) (!!v2job(v)->flag)
 
-	dfpr(">>>>>>>>>>>>>>>>>>>>>>>");
 	/* DFS */
 	if (unlikely(!(vs = ylist_create(0, NULL))))
 		return -1;
@@ -272,7 +299,6 @@ walk_depending_vertices_dfs(struct ymtconcur *m,
 			/* It's already discovered. Skip next steps! */
 			continue;
 
-		dfpr("callback: %s", v2job(v)->j.name);
 		/* This is first visit */
 		cbr = (*cb)(v, user);
 		/* This would better to be called after callback, because
@@ -330,8 +356,7 @@ prepare_concur_run(struct ymtconcur *m, struct yvertex *targetv) {
 		j->wjcnt = -1;
 	}
 
-	/* initialize readyQ */
-	ylistl_init_link(&m->readyQ);
+	mtconcur_init_rtinfo(m);
 
 	/* initialize participant ccjobs */
 	if (likely(1 == walk_depending_vertices_dfs(m,
@@ -358,14 +383,14 @@ check_cyclic_link(struct ymtconcur *m, struct yvertex *basev) {
 	struct yvertex *v;
 	struct yedge* e;
 
-#define mark_discovered__(v) do { v2job(v)->flag = 1; } while (0)
-#define mark_undiscovered__(v) do { v2job(v)->flag = 0; } while (0)
-#define is_discovered__(v) (!!v2job(v)->flag)
+#define __mark_discovered(v) do { v2job(v)->flag = 1; } while (0)
+#define __mark_undiscovered(v) do { v2job(v)->flag = 0; } while (0)
+#define __is_discovered(v) (!!v2job(v)->flag)
 
 
 	/* clear all flag of vertex */
 	ygraph_foreach_vertex(&m->g, v) {
-		mark_undiscovered__(v);
+		__mark_undiscovered(v);
 	}
 
 	/* DFS */
@@ -396,7 +421,7 @@ check_cyclic_link(struct ymtconcur *m, struct yvertex *basev) {
 		       && ylist_size(vs) > 0)
 			ylist_pop(vs);
 
-		if (is_discovered__(v)) {
+		if (__is_discovered(v)) {
 			if (ylist_have(vs, v)) {
 				r = 1;
 				goto done;
@@ -408,7 +433,7 @@ check_cyclic_link(struct ymtconcur *m, struct yvertex *basev) {
 		/* This is first visit */
 
 		/* save to history stack */
-		mark_discovered__(v);
+		__mark_discovered(v);
 		if (unlikely(0 > ylist_push(vs, v)))
 			goto fail;
 
@@ -429,9 +454,9 @@ check_cyclic_link(struct ymtconcur *m, struct yvertex *basev) {
 		ylist_destroy(es);
 	return r;
 
-#undef is_discovered__
-#undef mark_undiscovered__
-#undef mark_discovered__
+#undef __is_discovered
+#undef __mark_undiscovered
+#undef __mark_discovered
 
 }
 
@@ -447,7 +472,6 @@ job_thread_routine(void *arg) {
 	struct ymtconcurjobarg *jargs = NULL;
 	struct job_thread_arg *jta = arg;
 
-	dfpr(">>>>>");
 	/* get data from thread argument */
 	m = jta->m;
 	j = jta->j;
@@ -502,7 +526,6 @@ run_ready_jobs(struct ymtconcur *m) {
 	static pthread_attr_t *__pthdattr;
 	int count;
 
-	dfpr(">>>>>");
 	if (unlikely(!__pthdattr)) {
 		if (unlikely(pthread_attr_init(&__thdattr)))
 			return -1;
@@ -566,21 +589,17 @@ mhndr_start_enq_leaf_cb(struct yvertex *v, void *user) {
 
 static int
 mhndr_start(struct ymtconcur *m, struct yvertex *targetv) {
-	dfpr(">>>>>");
 	if (unlikely(0 > walk_depending_vertices_dfs
 			 (m, targetv, (void *)m, &mhndr_start_enq_leaf_cb)))
 		return -1;
 	if (unlikely(0 > run_ready_jobs(m)))
 		return -1;
-	dfpr("<<<<<");
 	return 0;
 }
 
-static int
+static void
 mhndr_error(struct ymtconcur *m) {
-	dfpr(">>>>>");
 	m->err = 1;
-	return 0;
 }
 
 /* put data that are used as arguments for this job */
@@ -599,7 +618,6 @@ mhndr_job_end(struct ymtconcur *m,
 	struct yedge *e;
 	struct yvertex *v = job2v(j);
 
-	dfpr(">>>>>");
 	--m->runningjobs; /* one job is endded */
 
 	ygraph_foreach_oedge(v, e) {
@@ -627,7 +645,6 @@ mhndr_job_end(struct ymtconcur *m,
 
 static int
 mhndr_job_error(struct ymtconcur *m, struct ccjob *j) {
-	dfpr(">>>>>");
 	--m->runningjobs; /* one job is endded with error*/
 	m->err = 1;
 	put_job_arguments(j);
@@ -665,10 +682,8 @@ ymtconcur_init(struct ymtconcur *m, unsigned int maxjobs) {
 	if (unlikely(!(m->mq = ymq_create())))
 		goto init_graph;
 
-	ylistl_init_link(&m->readyQ);
 	m->maxjobs = !maxjobs? UINT_MAX: maxjobs;
-	m->runningjobs = 0;
-	m->err = 0;
+	mtconcur_init_rtinfo(m);
 
 	return 0;
 
@@ -755,11 +770,14 @@ ymtconcur_run(struct ymtconcur *m,
 	      void **out,
 	      struct yvertex *targetv) {
 	struct ymsg *msg;
-	void *msgdata;
+	void *mdata;
 	int r;
 
+	dfpr("!!!!!!!!!!!!!!!!!!!!!!!!!!! start run !!!!!!!!!!!!!!!!!!!!\n");
 	if (unlikely(!(targetv && m)))
 		return -1;
+
+	mtconcur_init_rtinfo(m);
 
 	/* Cyclic loop is NOT allowed */
 	if (unlikely(check_cyclic_link(m, targetv)))
@@ -777,53 +795,62 @@ ymtconcur_run(struct ymtconcur *m,
 	dfpr("+++ start");
 	/* Run message loop */
 	while (1) {
+		int mcode;
+
 		msg = ymq_de(m->mq);
-		msgdata = msg->data;
-		dfpr("code=%d", msg->u.code);
-		switch (msg->u.code) {
+		mcode = msg->u.code;
+		mdata = msg->data;
+		ymsg_destroy(msg);
+
+		dfpr("code=%s", _mcode_name[mcode]);
+		switch (mcode) {
 		case MCODE_START:
 			r = mhndr_start(m, targetv);
 			break;
 		case MCODE_ERROR:
-			r = mhndr_error(m);
-			break;
+			mhndr_error(m);
+			goto exit_mloop;
 		case MCODE_JOB_END:
-			r = mhndr_job_end(m, msgdata);
+			r = mhndr_job_end(m, mdata);
 			break;
 		case MCODE_JOB_ERROR:
-			r = mhndr_job_error(m, msgdata);
+			r = mhndr_job_error(m, mdata);
 			break;
+		case MCODE_ALL_DONE:
+			/* all done successfully */
+			goto exit_mloop;
 		default: /* This is NOT expected - unknown code */
 			r = -1;
 			yassert(0);
 		}
-		ymsg_destroy(msg);
-		if (r < 0) {
-			if (unlikely(0 > post_message(m,
-						      MCODE_ERROR,
-						      NULL,
-						      NULL)))
-				yassert(0); /* unrecoverable error */
-		}
-		if (unlikely(!m->runningjobs))
-			break; /* exit from loop */
 
+		if (unlikely(r < 0
+			     && 0 > post_message(m,
+						 MCODE_ERROR,
+						 NULL,
+						 NULL)))
+			yassert(0); /* unrecoverable error */
+
+		if (unlikely(!m->runningjobs
+			     && 0 > post_message(m,
+						 MCODE_ALL_DONE,
+						 mdata,
+						 NULL)))
+			yassert(0); /* unrecoverable error */
 	}
+ exit_mloop:
 
 	/* Successful running! */
-	if (!m->err) {
-		struct ccjob *j = msgdata;
-		yassert(MCODE_JOB_END == msg->u.code);
-		if (out && *out) {
+	if (likely(!m->err)) {
+		struct ccjob *j = mdata;
+		if (likely(out))
 			*out = j->jobout;
-			/* output data is returned to caller.
-			 * This SHOULD NOT be freed by internal operation.
-			 */
-			j->jobout = NULL;
-		} else {
+		else
 			(*j->j.free_out)(j->jobout);
-			j->jobout = NULL;
-		}
+		/* output data is returned to caller or already freed.
+		 * This SHOULD NOT be freed by anywhere else in mtconcur.
+		 */
+		j->jobout = NULL;
 		return 0;
 	}
 

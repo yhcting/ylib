@@ -64,7 +64,6 @@
 /*****************************************************************************
  *
  * Bit operations
- *     - Not fully tested yet.
  *
  *****************************************************************************/
 #define bits(x, offset, bitsz) \
@@ -97,28 +96,39 @@
  * Others
  *
  *****************************************************************************/
+#define unroll16(count, stmt)					\
+	/* Just in case, minimize referencing 'count' argument. \
+	 * Reason: 'count' argument may update some values.	\
+	 */							\
+	do {							\
+		int ___n___;					\
+		int ___c___ = (count);				\
+		if (unlikely(___c___ < 0)) {			\
+			___c___ = 0;				\
+		}						\
+		___n___ = ___c___ / 16;				\
+		switch (___c___ & 0xf) {			\
+		case 0: while ( ___n___--) {			\
+				stmt;				\
+			case 15: stmt;				\
+			case 14: stmt;				\
+			case 13: stmt;				\
+			case 12: stmt;				\
+			case 11: stmt;				\
+			case 10: stmt;				\
+			case 9:	 stmt;				\
+			case 8:	 stmt;				\
+			case 7:	 stmt;				\
+			case 6:	 stmt;				\
+			case 5:	 stmt;				\
+			case 4:	 stmt;				\
+			case 3:	 stmt;				\
+			case 2:	 stmt;				\
+			case 1:	 stmt;				\
+			}					\
+		}						\
+	} while (0)
 
-#define unroll16( expr, count, cond)	\
-	switch( (count) & 0xf ) {	\
-        case 0: while (cond){		\
-			expr;		\
-	case 15: expr;			\
-	case 14: expr;			\
-	case 13: expr;			\
-	case 12: expr;			\
-	case 11: expr;			\
-	case 10: expr;			\
-	case 9: expr;			\
-	case 8: expr;			\
-	case 7: expr;			\
-	case 6: expr;			\
-	case 5: expr;			\
-	case 4: expr;			\
-	case 3: expr;			\
-	case 2: expr;			\
-	case 1: expr;			\
-	}				\
-}
 
 #define arrsz(a) ((int)(sizeof(a)/sizeof((a)[0])))
 

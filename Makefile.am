@@ -51,6 +51,7 @@ y_SOURCES = \
 	test_statmath.c \
 	test_statprint.c \
 	test_graph.c \
+	test_etc.c \
 	test_mtconcur.c
 
 

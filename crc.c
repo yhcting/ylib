@@ -120,18 +120,17 @@ static const unsigned short _crc16_table[256] = {
 
 
 unsigned short
-ycrc16(unsigned short crc, const unsigned char *data, unsigned int len)
+ycrc16(register unsigned short crc,
+       register const unsigned char *data,
+       unsigned int len)
 {
-	const unsigned char *end = data + len;
-
-	if (!len || !data) {
+	if (unlikely(!len || !data)) {
 		yassert(0);
 		return crc;
 	}
 
-	unroll16(crc = (crc >> 8) ^ _crc16_table[(crc ^ (*data++)) & 0xff];,
-		 len,
-		 data < end);
+	unroll16(len,
+		 crc = (crc >> 8) ^ _crc16_table[(crc ^ (*data++)) & 0xff];);
 	return crc;
 }
 
@@ -149,7 +148,6 @@ ycrc16(unsigned short crc, const unsigned char *data, unsigned int len)
  * reflect input bytes = true
  * reflect output bytes = true
  */
-
 static const unsigned int _crc32_table[256] = {
 	0x00000000L, 0xF26B8303L, 0xE13B70F7L, 0x1350F3F4L,
 	0xC79A971FL, 0x35F1141CL, 0x26A1E7E8L, 0xD4CA64EBL,
@@ -223,19 +221,17 @@ static const unsigned int _crc32_table[256] = {
  * Steps through buffer one byte at at time, calculates reflected
  * crc using table.
  */
-
 unsigned int
-ycrc32(unsigned int crc, const unsigned char *data, unsigned int len)
+ycrc32(register unsigned int crc,
+       register const unsigned char *data,
+       unsigned int len)
 {
-	const unsigned char *end = data + len;
-
-	if (!len || !data) {
+	if (unlikely(!len || !data)) {
 		yassert(0);
 		return crc;
 	}
 
-	unroll16(crc = (crc >> 8) ^ _crc32_table[(crc ^ (*data++)) & 0xff];,
-		 len,
-		 data < end );
+	unroll16(len,
+		 crc = (crc >> 8) ^ _crc32_table[(crc ^ (*data++)) & 0xff];);
 	return crc;
 }

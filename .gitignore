@@ -24,6 +24,7 @@ include/
 
 # files for build system
 Makefile
+Makefile.in
 autom4te.cache/
 config.status
 /config.h

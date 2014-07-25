@@ -42,7 +42,7 @@
 #include "test.h"
 
 static void
-test_yp(void) {
+test_p(void) {
 	int i;
 	int *p, *p2;
 	int *o = ypget(ypmalloc(sizeof(int) * 3));
@@ -61,4 +61,4 @@ test_yp(void) {
 	ypput(o);
 }
 
-TESTFN(test_yp, yp)
+TESTFN(test_p, p)

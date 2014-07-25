@@ -33,6 +33,7 @@ liby_la_SOURCES = \
 	msgq.c \
 	statprint.c \
 	graph.c \
+	p.c \
 	mtconcur.c \
 	libmain.c
 
@@ -46,7 +47,7 @@ y_SOURCES = \
 	test_bitops.c \
 	test_set.c \
 	test_dynb.c \
-	test_yp.c \
+	test_p.c \
 	test_lru.c \
 	test_statmath.c \
 	test_statprint.c \

@@ -152,7 +152,7 @@ ymq_de(struct ymq *q) {
 	}
 	pthread_mutex_unlock(&q->m);
 	yassert(lk);
-	return container_of(lk, struct ymsg, lk);
+	return containerof(lk, struct ymsg, lk);
 }
 
 unsigned int

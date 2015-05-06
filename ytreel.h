@@ -69,7 +69,7 @@ struct ytreel_link {
  * @member  : the name of @link with in the 'type' struct.
  */
 #define ytreel_item(link, type, member)		\
-        container_of(link, type, member)
+        containerof(link, type, member)
 
 static inline void
 ytreel_init_link(struct ytreel_link *link) {
@@ -126,12 +126,12 @@ ytreel_replace(struct ytreel_link *old, struct ytreel_link *lnew) {
 
 static inline struct ytreel_link *
 ytreel_next(const struct ytreel_link *l) {
-	return container_of(l->sibling.next, struct ytreel_link, sibling);
+	return containerof(l->sibling.next, struct ytreel_link, sibling);
 }
 
 static inline struct ytreel_link *
 ytreel_prev(const struct ytreel_link *l) {
-	return container_of(l->sibling.prev, struct ytreel_link, sibling);
+	return containerof(l->sibling.prev, struct ytreel_link, sibling);
 }
 
 static inline int
@@ -153,12 +153,12 @@ ytreel_has_prev(const struct ytreel_link *l) {
 
 static inline struct ytreel_link *
 ytreel_first_child(const struct ytreel_link *l) {
-	return container_of(l->child.next, struct ytreel_link, sibling);
+	return containerof(l->child.next, struct ytreel_link, sibling);
 }
 
 static inline struct ytreel_link *
 ytreel_last_child(const struct ytreel_link *l) {
-	return container_of(l->child.prev, struct ytreel_link, sibling);
+	return containerof(l->child.prev, struct ytreel_link, sibling);
 }
 
 /**

@@ -509,7 +509,7 @@ ymp_put(struct ymp *mp, void *block) {
 	struct blk *ub; /* used block */
 	int          ti;
 
-	b = container_of(block, struct blk, d);
+	b = containerof(block, struct blk, d);
 	lock(mp);
 	yassert(mp->fbi > 0
 		&& b->i < mp->fbi);

@@ -229,7 +229,7 @@ v2job(struct yvertex *v) {
 
 static inline struct yvertex *
 job2v(struct ccjob *j) {
-	return container_of(j, struct yvertex, d);
+	return containerof(j, struct yvertex, d);
 }
 
 static struct yvertex *
@@ -552,7 +552,7 @@ run_ready_jobs(struct ymtconcur *m) {
 		struct ylistl_link *plk = m->readyQ.next;
 		/* remove first - dequeue from the readyQ */
 		ylistl_del(plk);
-		ccj = container_of(plk, struct ccjob, lk);
+		ccj = containerof(plk, struct ccjob, lk);
 		yassert(!ccj->wjcnt);
 		if (unlikely(!(jta = ymalloc(sizeof(*jta)))))
 			return -1;

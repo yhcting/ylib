@@ -106,7 +106,7 @@ ytree_free_item(struct ytree *t, void *item) {
 
 static inline struct ytree_node *
 __ytree_node(const struct ytreel_link* link) {
-	return container_of(link, struct ytree_node, link);
+	return containerof(link, struct ytree_node, link);
 }
 
 static inline void *
@@ -187,7 +187,7 @@ ytreei_has_next(const struct ytreei *itr) {
 static inline struct ytree_node *
 ytree_root(const struct ytree *t) {
 	/* child(only child) of pseudo root is real root of this tree */
-	return __ytree_node(container_of(t->pseudo.child.next,
+	return __ytree_node(containerof(t->pseudo.child.next,
 					 struct ytreel_link,
 					 sibling));
 }
@@ -311,19 +311,19 @@ ytree_del(struct ytree_node *n) {
  *===================*/
 static inline struct ytree_node *
 ytree_parent(const struct ytree_node *n) {
-	return container_of(n->link.parent, struct ytree_node, link);
+	return containerof(n->link.parent, struct ytree_node, link);
 }
 
 static inline struct ytree_node *
 ytree_next(const struct ytree_node *n) {
-	return container_of(ytreel_next(&n->link),
+	return containerof(ytreel_next(&n->link),
 			    struct ytree_node,
 			    link);
 }
 
 static inline struct ytree_node *
 ytree_prev(const struct ytree_node *n) {
-	return container_of(ytreel_prev(&n->link),
+	return containerof(ytreel_prev(&n->link),
 			    struct ytree_node,
 			    link);
 }
@@ -340,14 +340,14 @@ ytree_has_prev(const struct ytree_node *n) {
 
 static inline struct ytree_node *
 ytree_first_child(const struct ytree_node *n) {
-	return container_of(ytreel_first_child(&n->link),
+	return containerof(ytreel_first_child(&n->link),
 			    struct ytree_node,
 			    link);
 }
 
 static inline struct ytree_node *
 ytree_last_child(const struct ytree_node *n) {
-	return container_of(ytreel_last_child(&n->link),
+	return containerof(ytreel_last_child(&n->link),
 			    struct ytree_node,
 			    link);
 }

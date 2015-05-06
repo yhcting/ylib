@@ -54,6 +54,8 @@
 #include "config.h"
 #endif
 
+#include <stddef.h>
+
 /*
  *
  */
@@ -87,13 +89,13 @@
 #	define FALSE 0
 #endif
 
-#ifndef offset_of
-#	define offset_of(type, member) ((unsigned long) &((type *)0)->member)
+#ifndef offsetof
+#	define offsetof(type, member) ((size_t) &((type *)0)->member)
 #endif
 
-#ifndef container_of
-#	define container_of(ptr, type, member)			\
-	((type *)(((char *)(ptr)) - offset_of(type, member)))
+#ifndef containerof
+#	define containerof(ptr, type, member)			\
+	((type *)(((char *)(ptr)) - offsetof(type, member)))
 #endif
 
 /**************

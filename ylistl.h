@@ -150,14 +150,14 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
  * @member  : the name of the ylistl_link within the struct.
  */
 #define ylistl_foreach_item(pos, head, type, member)			\
-        for ((pos) = container_of((head)->next, type, member);		\
+        for ((pos) = containerof((head)->next, type, member);		\
 	     &(pos)->member != (head);					\
-	     (pos) = container_of((pos)->member.next, type, member))
+	     (pos) = containerof((pos)->member.next, type, member))
 
 #define ylistl_foreach_item_backward(pos, head, type, member)		\
-        for ((pos) = container_of((head)->prev, type, member);		\
+        for ((pos) = containerof((head)->prev, type, member);		\
 	     &(pos)->member != (head);					\
-	     (pos) = container_of((pos)->member.prev, type, member))
+	     (pos) = containerof((pos)->member.prev, type, member))
 
 /**
  * @pos     : the @type* to use as a loop cursor.
@@ -167,18 +167,18 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
  * @member  : the name of the ylistl_link within the struct.
  */
 #define ylistl_foreach_item_removal_safe(pos, n, head, type, member)    \
-        for ((pos) = container_of((head)->next, type, member),		\
-		     (n) = container_of((pos)->member.next, type, member); \
+        for ((pos) = containerof((head)->next, type, member),		\
+		     (n) = containerof((pos)->member.next, type, member); \
 	     &(pos)->member != (head);					\
 	     (pos) = (n),						\
-		     (n) = container_of((pos)->member.next, type, member))
+		     (n) = containerof((pos)->member.next, type, member))
 
 #define ylistl_foreach_item_removal_safe_backward(pos, n, head, type, member) \
-        for ((pos) = container_of((head)->prev, type, member),		\
-		     (n) = container_of((pos)->member.prev, type, member); \
+        for ((pos) = containerof((head)->prev, type, member),		\
+		     (n) = containerof((pos)->member.prev, type, member); \
 	     &(pos)->member != (head);					\
 	     (pos) = (n),						\
-		     (n) = container_of((pos)->member.prev, type, member))
+		     (n) = containerof((pos)->member.prev, type, member))
 
 static inline unsigned int
 ylistl_size(const struct ylistl_link *head) {

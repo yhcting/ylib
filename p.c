@@ -113,7 +113,7 @@ ypmalloc(unsigned int sz) {
 
 void
 ypfree(void *v) {
-	struct ypmblk *p = container_of(v, struct ypmblk, blk);
+	struct ypmblk *p = containerof(v, struct ypmblk, blk);
 	/* check magic-guard */
 	yassert(!memcmp(&_magicn, &p->magic, sizeof(p->magic))
 		&& !memcmp(&_magicn, tail_magic_guard(p), sizeof(p->magic)));
@@ -122,7 +122,7 @@ ypfree(void *v) {
 
 void
 ypput(void *v) {
-	struct ypmblk *p = container_of(v, struct ypmblk, blk);
+	struct ypmblk *p = containerof(v, struct ypmblk, blk);
 	/* check magic-guard */
 	yassert(!memcmp(&_magicn, &p->magic, sizeof(p->magic))
 		&& !memcmp(&_magicn, tail_magic_guard(p), sizeof(p->magic)));
@@ -134,7 +134,7 @@ ypput(void *v) {
 
 void *
 ypget(void *v) {
-	struct ypmblk *p = container_of(v, struct ypmblk, blk);
+	struct ypmblk *p = containerof(v, struct ypmblk, blk);
 	/* check magic-guard */
 	yassert(!memcmp(&_magicn, &p->magic, sizeof(p->magic))
 		&& !memcmp(&_magicn, tail_magic_guard(p), sizeof(p->magic)));
@@ -156,12 +156,12 @@ ypmalloc(unsigned int sz) {
 
 void
 ypfree(void *v) {
-	yfree(container_of(v, struct ypmblk, blk));
+	yfree(containerof(v, struct ypmblk, blk));
 }
 
 void
 ypput(void *v) {
-	struct ypmblk *p = container_of(v, struct ypmblk, blk);
+	struct ypmblk *p = containerof(v, struct ypmblk, blk);
 	--p->refcnt;
 	yassert(0 <= p->refcnt);
 	if (unlikely(p->refcnt <= 0))
@@ -170,7 +170,7 @@ ypput(void *v) {
 
 void *
 ypget(void *v) {
-	struct ypmblk *p = container_of(v, struct ypmblk, blk);
+	struct ypmblk *p = containerof(v, struct ypmblk, blk);
 	++p->refcnt;
 	return v;
 }

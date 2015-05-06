@@ -39,7 +39,7 @@
 
 static inline struct ylist_node *
 node(const struct ylistl_link *lk) {
-	return container_of(lk, struct ylist_node, lk);
+	return containerof(lk, struct ylist_node, lk);
 }
 
 static inline void *

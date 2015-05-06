@@ -74,7 +74,7 @@ treei_preot_next(struct treei_preot *p) {
 	yassert(p);
 	ylistl_foreach_backward(pos, &p->base.itr.lnext->child) {
 		ylist_push(p->s,
-			   container_of(pos, struct ytreel_link, sibling));
+			   containerof(pos, struct ytreel_link, sibling));
 	}
 	p->base.itr.lcurr = p->base.itr.lnext;
 	p->base.itr.lnext =
@@ -83,7 +83,7 @@ treei_preot_next(struct treei_preot *p) {
 		(struct ytreel_link *)ylist_pop(p->s);
 
 	return (p->base.itr.lcurr)?
-		container_of(p->base.itr.lcurr, struct ytree_node, link):
+		containerof(p->base.itr.lcurr, struct ytree_node, link):
 		NULL;;
 }
 
@@ -93,7 +93,7 @@ treei_r2lpreot_next(struct treei_preot *p) {
 	yassert(p);
 	ylistl_foreach(pos, &p->base.itr.lnext->child)
 		ylist_push(p->s,
-			   container_of(pos, struct ytreel_link, sibling));
+			   containerof(pos, struct ytreel_link, sibling));
 
 	p->base.itr.lcurr = p->base.itr.lnext;
 	p->base.itr.lnext = ylist_is_empty(p->s)?
@@ -101,7 +101,7 @@ treei_r2lpreot_next(struct treei_preot *p) {
 			   (struct ytreel_link *)ylist_pop(p->s);
 
 	return (p->base.itr.lcurr)?
-		container_of(p->base.itr.lcurr, struct ytree_node, link):
+		containerof(p->base.itr.lcurr, struct ytree_node, link):
 		NULL;;
 }
 
@@ -111,7 +111,7 @@ treei_levelot_next(struct treei_levelot *p) {
 	yassert(p);
 	ylistl_foreach(pos, &p->base.itr.lnext->child)
 		ylist_enq(p->q,
-			  container_of(pos, struct ytreel_link, sibling));
+			  containerof(pos, struct ytreel_link, sibling));
 
 	p->base.itr.lcurr = p->base.itr.lnext;
 	p->base.itr.lnext = ylist_is_empty(p->q)?
@@ -119,7 +119,7 @@ treei_levelot_next(struct treei_levelot *p) {
 			   (struct ytreel_link*)ylist_deq(p->q);
 
 	return (p->base.itr.lcurr)?
-		container_of(p->base.itr.lcurr, struct ytree_node, link):
+		containerof(p->base.itr.lcurr, struct ytree_node, link):
 		NULL;
 }
 
@@ -141,7 +141,7 @@ treei_postot_next(struct treei_postot *p) {
 	p->base.itr.lnext = l;
 
 	return (p->base.itr.lcurr)?
-		container_of(p->base.itr.lcurr, struct ytree_node, link):
+		containerof(p->base.itr.lcurr, struct ytree_node, link):
 		NULL;
 }
 
@@ -162,7 +162,7 @@ treei_r2lpostot_next(struct treei_postot *p) {
 	p->base.itr.lnext = l;
 
 	return (p->base.itr.lcurr)?
-		container_of(p->base.itr.lcurr, struct ytree_node, link):
+		containerof(p->base.itr.lcurr, struct ytree_node, link):
 		NULL;
 }
 

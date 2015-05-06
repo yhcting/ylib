@@ -48,6 +48,7 @@
 #ifndef __YTREEl_h__
 #define __YTREEl_h__
 
+#include "ycommon.h"
 #include "ylistl.h"
 
 /*================================

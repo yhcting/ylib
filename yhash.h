@@ -65,7 +65,7 @@ yhash_destroy(struct yhash *h);
 /**
  * @return : number of elements in hash.
  */
-EXPORT unsigned int
+EXPORT u32
 yhash_sz(const struct yhash *h);
 
 /**
@@ -80,11 +80,11 @@ yhash_sz(const struct yhash *h);
  *           return value == @bufsz means @keysbuf is not enough large to
  *             contains all keys in the hash.
  */
-EXPORT unsigned int
+EXPORT u32
 yhash_keys(const struct yhash *h,
 	   const void **keysbuf, /* in/out */
-	   unsigned int *keysszbuf, /* in/out */
-	   unsigned int bufsz);
+	   u32 *keysszbuf, /* in/out */
+	   u32 bufsz);
 
 /**
  * For hash internal access.
@@ -94,7 +94,7 @@ EXPORT int
 yhash_add2(struct yhash *h,
 	   /* pointing internally generated-deep-copied address */
 	   const void ** const pkey,
-	   const void *key, unsigned int keysz,
+	   const void *key, u32 keysz,
 	   void *v);
 
 /**
@@ -106,7 +106,7 @@ yhash_add2(struct yhash *h,
  */
 EXPORT int
 yhash_add(struct yhash *h,
-	  const void *key, unsigned int keysz,
+	  const void *key, u32 keysz,
 	  void *v);
 
 /**
@@ -117,7 +117,7 @@ yhash_add(struct yhash *h,
  */
 EXPORT int
 yhash_del(struct yhash *h,
-	  const void *key, unsigned int keysz);
+	  const void *key, u32 keysz);
 
 /**
  * @value: if NULL, yhash_del2 is exactly same with yhash_del.
@@ -126,7 +126,7 @@ yhash_del(struct yhash *h,
 EXPORT int
 yhash_del2(struct yhash *h,
 	   void **value,
-	   const void *key, unsigned int keysz);
+	   const void *key, u32 keysz);
 
 /**
  * @keysz  : size of hash key
@@ -135,6 +135,6 @@ yhash_del2(struct yhash *h,
  */
 EXPORT void *
 yhash_find(const struct yhash *h,
-	   const void *key, unsigned int keysz);
+	   const void *key, u32 keysz);
 
 #endif /* __YHASh_h__ */

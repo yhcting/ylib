@@ -44,35 +44,35 @@
  */
 #if 0
 /* CRC-4-ITU : X^4 + X + 1 */
-static const int YCRC_4ITU  = 0x0000000C;
+static const s32 YCRC_4ITU  = 0x0000000C;
 /* CRC-5-ITU : X^5 + X^4 + X^2 + 1 */
-static const int YCRC_5ITU  = 0x00000015;
+static const s32 YCRC_5ITU  = 0x00000015;
 /* CRC-6-ITU : X^6 + X + 1 */
-static const int YCRC_6ITU  = 0x00000030;
+static const s32 YCRC_6ITU  = 0x00000030;
 /* CRC-7 : X^7 + X^3 + 1 */
-static const int YCRC_7     = 0x00000048;
+static const s32 YCRC_7     = 0x00000048;
 /* CRC-8 : X^8 + X^7 + X^6 + X^4 + X^2 + 1 */
-static const int YCRC_8     = 0x000000AB;
+static const s32 YCRC_8     = 0x000000AB;
 /* CRC-10 : X^10 + X^9 + X^5 + X^4 + X + 1 */
-static const int YCRC_10    = 0x00000331;
+static const s32 YCRC_10    = 0x00000331;
 /* CRC-12: X^12+X^11+X^3+X^2+X+1 */
-static const int YCRC_12    = 0x00000F01;
+static const s32 YCRC_12    = 0x00000F01;
 /* CRC-15 : X^15 + X^14 + X^10 + X^8 + X^7 + X^4 + X^3 + 1 */
-static const int YCRC_15    = 0x00004CD1;
+static const s32 YCRC_15    = 0x00004CD1;
 /* CRC-16: X^16+X^15+X^2+1 */
-static const int YCRC_16    = 0x0000A001;
+static const s32 YCRC_16    = 0x0000A001;
 /* CRC-CCITT: X^16+X^12+X^5+1 */
-static const int YCRC_CCITT = 0x00008408;
+static const s32 YCRC_CCITT = 0x00008408;
 /*
  * CRC-24 : X^24 + X^23 + X^18 + X^17 + X^14 + X^11 + X^10
  *            + X^7 + X^6 + X^5 + X^4 + X^3 + X + 1
  */
-static const int YCRC_24    = 0x00DF3261;
+static const s32 YCRC_24    = 0x00DF3261;
 /*
  * CRC-32: X^32 + X^26 + X^23 + X^22 + X^16
  *   + X^12 + X^11 + X^10 + X^8 + X^7 + X^5 + X^4 + X^2 + X + 1
  */
-static const int YCRC_32    = 0xEDB88320;
+static const s32 YCRC_32    = 0xEDB88320;
 /*
  * ylib didn't support 64bit crc
  * CRC-64-ISO : X^64 + X^4 + X^3 + X + 1
@@ -82,7 +82,7 @@ static const int YCRC_32    = 0xEDB88320;
 
 
 /** CRC table for the CRC-16. The poly is 0x8005 (x^16 + x^15 + x^2 + 1) */
-static const unsigned short _crc16_table[256] = {
+static const u16 _crc16_table[256] = {
 	0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
 	0xC601, 0x06C0, 0x0780, 0xC741, 0x0500, 0xC5C1, 0xC481, 0x0440,
 	0xCC01, 0x0CC0, 0x0D80, 0xCD41, 0x0F00, 0xCFC1, 0xCE81, 0x0E40,
@@ -119,10 +119,10 @@ static const unsigned short _crc16_table[256] = {
 
 
 
-unsigned short
-ycrc16(register unsigned short crc,
-       register const unsigned char *data,
-       unsigned int len)
+u16
+ycrc16(register u16 crc,
+       register const u8 *data,
+       u32 len)
 {
 	if (unlikely(!len || !data)) {
 		yassert(0);
@@ -148,7 +148,7 @@ ycrc16(register unsigned short crc,
  * reflect input bytes = true
  * reflect output bytes = true
  */
-static const unsigned int _crc32_table[256] = {
+static const u32 _crc32_table[256] = {
 	0x00000000L, 0xF26B8303L, 0xE13B70F7L, 0x1350F3F4L,
 	0xC79A971FL, 0x35F1141CL, 0x26A1E7E8L, 0xD4CA64EBL,
 	0x8AD958CFL, 0x78B2DBCCL, 0x6BE22838L, 0x9989AB3BL,
@@ -221,10 +221,10 @@ static const unsigned int _crc32_table[256] = {
  * Steps through buffer one byte at at time, calculates reflected
  * crc using table.
  */
-unsigned int
-ycrc32(register unsigned int crc,
-       register const unsigned char *data,
-       unsigned int len)
+u32
+ycrc32(register u32 crc,
+       register const u8 *data,
+       u32 len)
 {
 	if (unlikely(!len || !data)) {
 		yassert(0);

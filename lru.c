@@ -63,20 +63,21 @@
 
 struct ylru {
 	struct ylistl_link head; /* linked list */
-	struct yhash *h;
-	unsigned int maxsz;
-	unsigned int sz;
-	struct ylru_cb cbs;
+	struct yhash      *h;
+	u32                maxsz;
+	u32                sz;
+	struct ylru_cb     cbs;
 };
 
 /* list node */
 struct lnode {
 	struct ylistl_link lk;
-	const void *key; /* point key memory in internal hash - shallow copy */
-	unsigned int keysz;
-	void *data; /* cached data */
-	unsigned int data_size;
-	void (*free)(void *); /* free cached data */
+	/* point key memory in internal hash - shallow copy */
+	const void        *key;
+	u32                keysz;
+	void              *data; /* cached data */
+	u32                data_size;
+	void             (*free)(void *); /* free cached data */
 };
 
 static inline void
@@ -87,7 +88,7 @@ lnode_free(struct lnode *n) {
 }
 
 struct ylru *
-ylru_create(unsigned int maxsz,
+ylru_create(u32 maxsz,
 	    const struct ylru_cb *cbs) {
 	struct ylru *lru = ymalloc(sizeof(*lru));
 	if (unlikely(!lru))
@@ -123,8 +124,8 @@ ylru_destroy(struct ylru *lru) {
 
 int
 ylru_put(struct ylru *lru,
-	 const void *key, unsigned int keysz,
-	 void *data, unsigned int data_size) {
+	 const void *key, u32 keysz,
+	 void *data, u32 data_size) {
 	struct lnode *n, *tmp;
 	if (unlikely(data_size > lru->maxsz / 2))
 		/* too large data to be in the cache */
@@ -167,10 +168,10 @@ ylru_put(struct ylru *lru,
 
 void *
 ylru_get(struct ylru *lru,
-	 unsigned int *data_size, /* returned data size */
-	 const void *key, unsigned int keysz) {
+	 u32 *data_size, /* returned data size */
+	 const void *key, u32 keysz) {
 	struct lnode *n;
-	unsigned int sztmp = 0;
+	u32 sztmp = 0;
 	void *data = NULL;
 	if (0 < yhash_del2(lru->h, (void **)&n, key, keysz)) {
 		/* found */
@@ -195,7 +196,7 @@ ylru_get(struct ylru *lru,
 	return data;
 }
 
-unsigned int
+u32
 ylru_sz(struct ylru *lru) {
 	return lru->sz;
 }

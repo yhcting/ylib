@@ -48,8 +48,8 @@ vfree(void *v) {
 }
 
 static void *
-vcreate(unsigned int *data_size,
-	const void *key, unsigned int keysz) {
+vcreate(u32 *data_size,
+	const void *key, u32 keysz) {
 	int *i;
 	*data_size = sizeof(int);
 	i = ymalloc(sizeof(*i));

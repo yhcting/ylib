@@ -39,25 +39,25 @@
 #ifndef __YDYNb_h__
 #define __YDYNb_h__
 
-#include <stdint.h>
 #include <memory.h>
 #include <string.h>
 #include <errno.h>
 
 #include "ydef.h"
+#include "ycommon.h"
 
 /* DYNmaic Buffer - White box structure. */
 struct ydynb {
-	uint32_t  limit;
-	uint32_t  sz;
-	void     *b;
+	u32   limit;
+	u32   sz;
+	void *b;
 };
 
 /**
  * @return: 0 if success otherwise error number.
  */
 static inline int
-ydynb_init(struct ydynb *b, uint32_t init_limit) {
+ydynb_init(struct ydynb *b, u32 init_limit) {
 	b->sz = 0;
 	b->b = ymalloc(init_limit);
 	if (unlikely(!b->b))
@@ -70,7 +70,7 @@ ydynb_init(struct ydynb *b, uint32_t init_limit) {
  * @return: NULL if fails (usually, Out Of Memory)
  */
 static inline struct ydynb *
-ydynb_create(uint32_t init_limit) {
+ydynb_create(u32 init_limit) {
 	struct ydynb *b = (struct ydynb *)ymalloc(sizeof(*b));
 	if (likely(!ydynb_init(b, init_limit)))
 		return b;
@@ -90,7 +90,7 @@ ydynb_clean(struct ydynb *b) {
  * @return: 0 if success, otherwise error number.
  */
 static inline int
-ydynb_reset(struct ydynb *b, uint32_t init_limit) {
+ydynb_reset(struct ydynb *b, u32 init_limit) {
 	if (unlikely(b->limit == init_limit)) {
 		b->sz = 0;
 		return 0;
@@ -105,17 +105,17 @@ ydynb_destroy(struct ydynb *b) {
 	yfree(b);
 }
 
-static inline uint32_t
+static inline u32
 ydynb_limit(const struct ydynb *b) {
 	return b->limit;
 }
 
-static inline uint32_t
+static inline u32
 ydynb_freesz(const struct ydynb *b) {
 	return b->limit - b->sz;
 }
 
-static inline uint32_t
+static inline u32
 ydynb_sz(const struct ydynb *b) {
 	return b->sz;
 }
@@ -151,7 +151,7 @@ ydynb_expand(struct ydynb *b) {
  * @return: TRUE if free size is larger than required, otherwise FALSE
  */
 static inline int
-ydynb_secure(struct ydynb *b, uint32_t sz_required) {
+ydynb_secure(struct ydynb *b, u32 sz_required) {
 	while (sz_required > ydynb_freesz(b)
 	       && (!ydynb_expand(b))) {}
 	return sz_required <= ydynb_freesz(b);
@@ -162,7 +162,7 @@ ydynb_secure(struct ydynb *b, uint32_t sz_required) {
  * @return: 0 if success, otherwise error number
  */
 static inline int
-ydynb_shrink(struct ydynb *b, uint32_t sz_to) {
+ydynb_shrink(struct ydynb *b, u32 sz_to) {
 	void *tmp;
 	if (unlikely(b->limit <= sz_to
 		     || b->sz > sz_to))
@@ -181,7 +181,7 @@ ydynb_shrink(struct ydynb *b, uint32_t sz_to) {
 }
 
 static inline int
-ydynb_append(struct ydynb *b, const void *d, uint32_t dsz) {
+ydynb_append(struct ydynb *b, const void *d, u32 dsz) {
 	int r = ydynb_secure(b, dsz);
 	if (unlikely(!r))
 		return ENOMEM;

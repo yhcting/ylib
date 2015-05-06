@@ -80,15 +80,15 @@ enum {
 
 struct ymtconcur {
 	struct ygraph	    g;
-	struct yvertex	   *targetv;	 /* target vertex */
+	struct yvertex	   *targetv; /* target vertex */
 	struct ymq	   *mq;
-	unsigned int	    maxjobs;	 /* # jobs can be run in parallel */
+	u32	            maxjobs; /* # jobs can be run in parallel */
 	/* Below this line : variables foro runtime information.
 	 * That is, they become dirty while running - ymtconcur_run()
 	 */
 	struct ylistl_link  readyQ;
-	unsigned int	    runningjobs; /* # jobs now running */
-	int		    err;	 /* error value. 0 means "OK" */
+	u32	            runningjobs; /* # jobs now running */
+	int		    err;     /* error value. 0 means "OK" */
 };
 
 /* ccjob : ConCurrent JOB */
@@ -124,7 +124,7 @@ static const char *_mcode_name[] = {
 #endif /* LIB_DEBUG */
 
 #define _MCODE_DEF(x, y) y,
-static const uint8_t _mcode_pri[] = {
+static const u8 _mcode_pri[] = {
 	MCODE_DEF_LIST
 };
 #undef _MCODE_DEF
@@ -657,7 +657,7 @@ mhndr_job_error(struct ymtconcur *m, struct ccjob *j) {
  *
  *****************************************************************************/
 struct ymtconcur *
-ymtconcur_create(unsigned int maxjobs) {
+ymtconcur_create(u32 maxjobs) {
 	struct ymtconcur *m = NULL;
 	if (unlikely(!(m = ymalloc(sizeof(*m)))))
 		return NULL;
@@ -671,7 +671,7 @@ ymtconcur_create(unsigned int maxjobs) {
 }
 
 int
-ymtconcur_init(struct ymtconcur *m, unsigned int maxjobs) {
+ymtconcur_init(struct ymtconcur *m, u32 maxjobs) {
 	if (unlikely(!m))
 		return -1;
 

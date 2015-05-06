@@ -45,12 +45,12 @@ struct ylru_cb {
 	/* free user data evicted from cache. */
 	void  (*free)(void *);
 	/* create data if cache miss */
-	void *(*create)(unsigned int *data_size, /* size of created data */
-			const void *key, unsigned int keysz);
+	void *(*create)(u32 *data_size, /* size of created data */
+			const void *key, u32 keysz);
 };
 
 EXPORT struct ylru *
-ylru_create(unsigned int maxsz,
+ylru_create(u32 maxsz,
 	    const struct ylru_cb *cbs);
 
 /**
@@ -70,8 +70,8 @@ ylru_destroy(struct ylru *);
  */
 EXPORT int
 ylru_put(struct ylru *,
-	 const void *key, unsigned int keysz,
-	 void *data, unsigned int data_size);
+	 const void *key, u32 keysz,
+	 void *data, u32 data_size);
 
 /**
  * NOTE: value is remove from cache!
@@ -81,14 +81,14 @@ ylru_put(struct ylru *,
  */
 EXPORT void *
 ylru_get(struct ylru *,
-	 unsigned int *data_size, /* returned data size */
-	 const void *key, unsigned int keysz);
+	 u32 *data_size, /* returned data size */
+	 const void *key, u32 keysz);
 
 /**
  * Get size of cached data.
  * This is based on 'size' of 'ylru_put'.
  */
-EXPORT unsigned int
+EXPORT u32
 ylru_sz(struct ylru *);
 
 

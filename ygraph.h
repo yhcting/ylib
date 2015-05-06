@@ -39,6 +39,7 @@
 
 #include <string.h>
 
+#include "ycommon.h"
 #include "ylistl.h"
 #include "yhash.h"
 
@@ -133,7 +134,7 @@ struct ygraph {
 /**
  * return
  *     0: success
- *    <0: fails (ex. too long name)
+ *    <0: fails (ex. too s64 name)
  */
 int
 ygraph_vertex_set_name(struct yvertex *v, const char *name);
@@ -149,7 +150,7 @@ ygraph_vertex_get_data(const struct yvertex *v) {
 }
 
 static inline void
-ygraph_vertex_set_data(struct yvertex *v, void *d, unsigned int sz) {
+ygraph_vertex_set_data(struct yvertex *v, void *d, u32 sz) {
 	memcpy(ygraph_vertex_get_data(v), d, sz);
 }
 
@@ -160,7 +161,7 @@ ygraph_vertex_set_data(struct yvertex *v, void *d, unsigned int sz) {
  *     Otherwise : Success
  */
 struct yvertex *
-ygraph_vertex_create(unsigned int datasz);
+ygraph_vertex_create(u32 datasz);
 
 /**
  * return
@@ -242,7 +243,7 @@ ygraph_has_vertex(const struct ygraph *, const struct yvertex *);
  *
  * return
  *	0: success
- *     <0: fails (ex. vertex doesn't belongs to ygraph)
+ *     <0: fails (ex. vertex doesn't bes64s to ygraph)
  */
 int
 ygraph_remove_vertex(struct ygraph *, struct yvertex *);
@@ -254,7 +255,7 @@ ygraph_remove_vertex(struct ygraph *, struct yvertex *);
  *	    'false' for just removing vertex (NOT destroied)
  * return
  *	0: success
- *     <0: fails (ex. vertex doesn't belongs to ygraph)
+ *     <0: fails (ex. vertex doesn't bes64s to ygraph)
  */
 int
 ygraph_remove_vertex2(struct ygraph *, struct yvertex *, int destroy);
@@ -277,7 +278,7 @@ ygraph_find_vertex(const struct ygraph *, const char *name);
  * return
  *     0: success
  *    <0: fails
- *	  * one of vertex doesn't belongs to ygraph.
+ *	  * one of vertex doesn't bes64s to ygraph.
  *	  * edge already exists.
  */
 int
@@ -340,7 +341,7 @@ ygraph_get_edge_weight(const struct ygraph *,
  * Edge weight is not defined for this operation.
  * Note that, 'basev' SHOULD NOT be same with 'v'
  * @basev : vertex already in the graph.
- * @v : vertex to add (NOT int the graph yet.)
+ * @v : vertex to add (NOT in the graph yet.)
  * return
  *     0 : success
  *    <0 : fails (ex. invalid parameter)

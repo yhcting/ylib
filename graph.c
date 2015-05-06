@@ -131,7 +131,7 @@ ygraph_vertex_init(struct yvertex *v) {
 }
 
 struct yvertex *
-ygraph_vertex_create(unsigned int datasz) {
+ygraph_vertex_create(u32 datasz) {
 	struct yvertex *v = ymalloc(sizeof(*v) + datasz);
 	if (unlikely(!v))
 		return NULL;

@@ -52,7 +52,7 @@
  *            mean
  *
  * @fd        file to write.
- * @vs        array of values 
+ * @vs        array of values
  * @vsz       size of value array
  * @height    height of longest bar
  * @idxs      index array to add comment at.
@@ -66,12 +66,12 @@
 EXPORT int
 ystpr_bargraph(int                 fd,
 	       const double       *vs,
-	       unsigned int        vsz,
-	       unsigned int        height,
-	       const unsigned int *idxs,
+	       u32                 vsz,
+	       u32                 height,
+	       const u32          *idxs,
 	       const char * const *cmts,
-	       unsigned int        isz,
-	       unsigned int        isp,
+	       u32                 isz,
+	       u32                 isp,
 	       char                barc);
 
 
@@ -108,10 +108,10 @@ ystpr_bargraph(int                 fd,
 EXPORT int
 ystpr_distgraph(int           fd,
 		const double *vs,
-		unsigned int  vsz,
-		unsigned int  w,
-		unsigned int  h,
-		unsigned int  isp,
+		u32           vsz,
+		u32           w,
+		u32           h,
+		u32           isp,
 		char          barc);
 
 #endif /* __YSTATPRINt_h__ */

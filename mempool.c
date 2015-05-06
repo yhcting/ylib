@@ -138,7 +138,7 @@ struct blk {
 
 struct ymp {
 #ifndef CONFIG_MEMPOOL_DYNAMIC
-	unsigned char **grp;    /* groups of blocks */
+	u8            **grp;    /* groups of blocks */
 #endif
 	int             grpsz;  /* size of grp - number of element in group*/
 	int             nrgrp;  /* number of group allocated */
@@ -348,7 +348,7 @@ blkdump(struct ymp *mp) {
 static int
 expand(struct ymp *mp) {
 	int             i;
-	unsigned char **newgrp;
+	u8 **newgrp;
 	struct blk   ***newfbp;
 	int             bsz;
 
@@ -507,7 +507,7 @@ void
 ymp_put(struct ymp *mp, void *block) {
 	struct blk *b;
 	struct blk *ub; /* used block */
-	int          ti;
+	int         ti;
 
 	b = containerof(block, struct blk, d);
 	lock(mp);

@@ -180,10 +180,10 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
 	     (pos) = (n),						\
 		     (n) = containerof((pos)->member.prev, type, member))
 
-static inline unsigned int
+static inline u32
 ylistl_size(const struct ylistl_link *head) {
 	struct ylistl_link *pos;
-	unsigned int size = 0;
+	u32 size = 0;
 	ylistl_foreach(pos, head)
 		size++;
 	return size;

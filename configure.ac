@@ -14,6 +14,8 @@ AC_PROG_MAKE_SET
 
 AC_GNU_SOURCE
 
+AM_PROG_AR
+
 # libtool is used for shared library
 AC_PROG_LIBTOOL
 
@@ -83,3 +85,4 @@ AC_SUBST([AM_CFLAGS])
 AC_CONFIG_FILES([Makefile])
 
 AC_OUTPUT
+

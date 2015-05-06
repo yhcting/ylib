@@ -46,15 +46,15 @@
  *
  *****************************************************************************/
 struct ysm_imean {
-	unsigned int n; /* # of elements accumulated */
-	double       u; /* current mean */
+	u32    n; /* # of elements accumulated */
+	double u; /* current mean */
 };
 
 /*
  * u(n) = u(n-1) + (x(n) - u(n-1)) / n
  */
 static inline double
-__imean_add(unsigned int n, /* # of elements - including given new value 'v' */
+__imean_add(u32 n, /* # of elements - including given new value 'v' */
 	    double u,       /* mean of 'n-1' elements */
 	    double v) {     /* new value */
 	/* n is never 0 */
@@ -98,7 +98,7 @@ ysm_imean(const struct ysm_imean *im) {
 /**
  * get number of elements participated.
  */
-static inline unsigned int
+static inline u32
 ysm_imean_n(const struct ysm_imean *im) {
 	return im->n;
 }
@@ -136,9 +136,9 @@ ysm_imean_combine(struct ysm_imean *out,
  *
  *****************************************************************************/
 struct ysm_ivar {
-	unsigned int n; /* # of elements accumulated */
-	double       s; /* S(n) */
-	double       u; /* mean */
+	u32    n; /* # of elements accumulated */
+	double s; /* S(n) */
+	double u; /* mean */
 };
 
 static inline void
@@ -200,7 +200,7 @@ ysm_ivar(const struct ysm_ivar *iv) {
 /**
  * get number of elements participated.
  */
-static inline unsigned int
+static inline u32
 ysm_ivar_n(const struct ysm_ivar *iv) {
 	return iv->n;
 }

@@ -45,7 +45,7 @@
  */
 static void
 test_bitops(void) {
-	unsigned long x;
+	u64 x;
 	x = 0xabcffcda;
 	yassert(0xc == bits(x, 8, 4));
 	yassert(0xa == bits(x, 0, 4));

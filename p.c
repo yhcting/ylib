@@ -40,26 +40,26 @@
 
 /*
  * [ Assumption ]
- * sizeof(int) <= sizeof(void *) && sizeof(long) <= sizeof(void *).
+ * sizeof(s32) <= sizeof(void *) && sizeof(s64) >= sizeof(void *).
  * (This is true for all-known popular platform)
  *
  * should be align with pointer size.
  *
  * Memory layout is
  * +-----------------+
- * | sizeof(int)     |
+ * | sizeof(s32)     |
  * | reference count |
  * +-----------------+
- * | sizeof(long)    |
+ * | sizeof(s64)     |
  * | size allocated  |
  * +-----------------+
- * | sizeof(int32_t  |
+ * | sizeof(s32)     |
  * | magic number    |
  * +-----------------+
  * | user memory     |
  * | area            |
  * +-----------------+
- * | sizeof(int32_t) |
+ * | sizeof(s32)     |
  * | magic number    |
  * +-----------------+
  *
@@ -70,18 +70,18 @@
  */
 
 struct ypmblk {
-	int            refcnt; /* reference count */
+	s32       refcnt; /* reference count */
 #ifdef CONFIG_DEBUG
-	unsigned long  sz;     /* Size of user memory allocated
-				* Excluding overheads
-				*/
-	uint32_t       magic;
+	u64       sz;     /* Size of user memory allocated
+			   * Excluding overheads
+			   */
+	u32       magic;
 #endif /* CONFIG_DEBUG */
 	/* to make 8-byte-alignment for user memory block */
-	uint64_t       blk[0]; /* User memory block position.
-				* In case of DEBUG, 4-byte-magic-number is
-				*   added at the end
-				*/
+	uintptr_t blk[0]; /* User memory block position.
+			   * In case of DEBUG, 4-byte-magic-number is
+			   *   added at the end
+			   */
 };
 
 
@@ -96,7 +96,7 @@ static const char _magicn[sizeof(((struct ypmblk *)0)->magic)] =
 	{[0 ... (arrsz(_magicn) - 1)] = YP_MAGIC };
 
 void *
-ypmalloc(unsigned int sz) {
+ypmalloc(u32 sz) {
 	struct ypmblk *p;
 	p = ymalloc(sizeof(*p) + sz + sizeof(p->magic));
 	if (unlikely(!p))
@@ -145,7 +145,7 @@ ypget(void *v) {
 #else /* CONFIG_DEBUG */
 
 void *
-ypmalloc(unsigned int sz) {
+ypmalloc(u32 sz) {
 	struct ypmblk *p;
 	p = ymalloc(sizeof(*p) + sz);
 	if (unlikely(!p))

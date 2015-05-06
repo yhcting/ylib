@@ -46,7 +46,7 @@
  *****************************************************************************/
 
 EXPORT void *
-ypmalloc(unsigned int sz);
+ypmalloc(u32 sz);
 
 /**
  * Free memory allocated by 'ypmalloc' in force.

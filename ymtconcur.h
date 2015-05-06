@@ -115,7 +115,7 @@ ymtconcur_is_empty_jobarg(const struct ymtconcurjobarg *a) {
  *     NULL if fails. Otherwise success.
  */
 struct ymtconcur *
-ymtconcur_create(unsigned int maxjobs);
+ymtconcur_create(u32 maxjobs);
 
 /**
  * return
@@ -123,7 +123,7 @@ ymtconcur_create(unsigned int maxjobs);
  *    <0: fails (ex. NOMEM)
  */
 int
-ymtconcur_init(struct ymtconcur *, unsigned int maxjobs);
+ymtconcur_init(struct ymtconcur *, u32 maxjobs);
 
 /**
  * ymtconcur itself isn't destroied.

@@ -73,12 +73,12 @@ enum {
 struct ymsg {
 	/* For internal use. DO NOT access 'lk' at out side library! */
 	struct ylistl_link lk;
-	uint64_t when; /* nsec since boot */
-	uint8_t  type; /* message type [0-255] */
-	uint8_t  pri;  /* priority [0-255] */
-	uint16_t opt;  /* option - reserved. */
-	void    *data; /* data or argument of action */
-	void   (*free)(void *); /* function to free passing data/arg */
+	u64    when; /* nsec since boot */
+	u8     type; /* message type [0-255] */
+	u8     pri;  /* priority [0-255] */
+	u16    opt;  /* option - reserved. */
+	void  *data; /* data or argument of action */
+	void (*free)(void *); /* function to free passing data/arg */
 	union {
 		/* message code - int type to use as switch argument. */
 		int    code;
@@ -95,9 +95,9 @@ struct ymsg {
  * ==========================================================================*/
 static inline void
 ymsg_init_common(struct ymsg *m,
-		 uint8_t type,
-		 uint8_t pri,
-		 uint16_t opt,
+		 u8    type,
+		 u8    pri,
+		 u16   opt,
 		 void *data) {
 	m->when = 0; /* set to invalid value */
 	m->type = type;
@@ -108,7 +108,7 @@ ymsg_init_common(struct ymsg *m,
 
 static inline void
 ymsg_init_data(struct ymsg *m,
-	       uint8_t pri,
+	       u8      pri,
 	       int     code,
 	       void   *data) {
 	ymsg_init_common(m, YMSG_TYP_DATA, pri, 0, data);
@@ -117,7 +117,7 @@ ymsg_init_data(struct ymsg *m,
 
 static inline void
 ymsg_init_exec(struct ymsg *m,
-	       uint8_t pri,
+	       u8      pri,
 	       void   *data,
 	       void  (*run)(void *, void (*)(void *))) {
 	ymsg_init_common(m, YMSG_TYP_EXEC, pri, 0, data);
@@ -164,7 +164,7 @@ ymq_en(struct ymq *, struct ymsg *);
 EXPORT struct ymsg *
 ymq_de(struct ymq *);
 
-EXPORT unsigned int
+EXPORT u32
 ymq_sz(const struct ymq *);
 
 #endif /* __YMSGq_h__ */

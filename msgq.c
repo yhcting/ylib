@@ -48,9 +48,9 @@
 
 struct ymq {
 	struct ylistl_link q[YMSG_PRI_NR];
-	unsigned int sz;
-	pthread_mutex_t m;
-	pthread_cond_t cond;
+	u32                sz;
+	pthread_mutex_t    m;
+	pthread_cond_t     cond;
 };
 
 
@@ -63,7 +63,7 @@ struct ymq {
  * return 0 if error otherwise CLOCK_MONOTONIC_RAW is returned.
  * (nano-seconds - OVERFLOW is NOT considered)
  */
-static inline uint64_t
+static inline u64
 monotonic_time(void) {
 	struct timespec ts = {0, 0};
 	/* ignore return value intentionally */
@@ -155,7 +155,7 @@ ymq_de(struct ymq *q) {
 	return containerof(lk, struct ymsg, lk);
 }
 
-unsigned int
+u32
 ymq_sz(const struct ymq *q) {
 	/* In most platform, read int is atomic operation.
 	 * That's why 'lock' is NOT used here.

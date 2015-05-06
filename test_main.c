@@ -63,7 +63,7 @@ dregister_tstfn(void (*fn)(void), const char *mod) {
 
 
 void *
-dmalloc(unsigned int sz) {
+dmalloc(u32 sz) {
 	pthread_mutex_lock(&_mem_count_lock);
 	_mem_count++;
 	pthread_mutex_unlock(&_mem_count_lock);
@@ -71,7 +71,7 @@ dmalloc(unsigned int sz) {
 }
 
 void *
-dcalloc(unsigned int n, unsigned int sz) {
+dcalloc(u32 n, u32 sz) {
 	pthread_mutex_lock(&_mem_count_lock);
 	_mem_count++;
 	pthread_mutex_unlock(&_mem_count_lock);

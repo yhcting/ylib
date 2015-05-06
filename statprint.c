@@ -58,7 +58,7 @@ stats_double(double       *omin, /* [out] */
 	     double       *mean, /* [out] */
 	     double       *var,  /* [out] variance */
 	     const double *vs,
-	     unsigned int  vsz) {
+	     u32  vsz) {
 	const double *d, *de;
 	double r, min, max;
 	struct ysm_ivar iv;
@@ -95,13 +95,13 @@ stats_double(double       *omin, /* [out] */
 
 /* assmes that buffer is large enough */
 static void
-bargraph_prline(int          fd,
-		char        *buf,
-		unsigned int bufsz,
-		unsigned int sz,
-		double       v) {
-	unsigned int i;
-	int r;
+bargraph_prline(int    fd,
+		char  *buf,
+		u32    bufsz,
+		u32    sz,
+		double v) {
+	u32 i;
+	int r __unused;
 	char *p, *pe;
 
 	/* print top line */
@@ -119,20 +119,20 @@ bargraph_prline(int          fd,
 int
 ystpr_bargraph(int                 fd,
 	       const double       *vs,
-	       unsigned int        vsz,
-	       unsigned int        height,
-	       const unsigned int *idxs,
+	       u32                 vsz,
+	       u32                 height,
+	       const u32          *idxs,
 	       const char * const *cmts,
-	       unsigned int        isz,
-	       unsigned int        isp,
+	       u32                 isz,
+	       u32                 isp,
 	       char                barc) {
 	const double *d, *de;
 	char *p;
-	unsigned int i, j, n;
+	u32 i, j, n;
 	int iv;
 	int r;
 	double min, max;
-	char  ln[4096]; /* large enough line buffer */
+	char ln[4096]; /* large enough line buffer */
 
 	assert(sizeof(ln) > BAR_GRAPH_MAX_VALUE_SZ);
 	if (unlikely(BAR_GRAPH_MIN_HEIGHT > height
@@ -208,7 +208,7 @@ ystpr_bargraph(int                 fd,
 		memset(ln, ' ', sizeof(ln));
 		for (i = j; i < isz; i += 2) {
 			int len = strlen(cmts[i]);
-			int pos = idxs[i] * (isp + 1) + strlen(cmts[i]);
+			u32 pos = idxs[i] * (isp + 1) + strlen(cmts[i]);
 			if (pos > n)
 				n = pos;
 			memcpy(&ln[idxs[i] * (isp + 1)], cmts[i], len);
@@ -223,10 +223,10 @@ ystpr_bargraph(int                 fd,
 int
 ystpr_distgraph(int           fd,
 		const double *vs,
-		unsigned int  vsz,
-		unsigned int  w,
-		unsigned int  h,
-		unsigned int  isp,
+		u32           vsz,
+		u32           w,
+		u32           h,
+		u32           isp,
 		char          barc) {
 	/*
 	 * Comment text will be something like
@@ -247,7 +247,7 @@ ystpr_distgraph(int           fd,
 
 	const double *d;
 	double min, max, var, sigma, mean, interval, *dist;
-	unsigned int tmp, r, i, j, sigminus, sigplus, nrcmt, *idxs;
+	u32 tmp, r, i, j, sigminus, sigplus, nrcmt, *idxs;
 	char **cmts;
 	const double * const de = vs + vsz;
 

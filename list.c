@@ -85,7 +85,7 @@ remove_node(struct ylist *l, struct ylistl_link *lk, int free) {
  * ==========================================================================*/
 void
 ylist_init(struct ylist *l,
-	   unsigned int  max,
+	   u32  max,
 	   void(*freecb)(void *)) {
 	ylistl_init_link(&l->head);
 	l->sz = 0;
@@ -96,7 +96,7 @@ ylist_init(struct ylist *l,
 }
 
 struct ylist *
-ylist_create(unsigned int max,
+ylist_create(u32 max,
 	     void (*freecb)(void *)) {
 	struct ylist *l = (struct ylist *)ymalloc(sizeof(*l));
 	if (unlikely(!l))

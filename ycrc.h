@@ -45,15 +45,15 @@
  * @buffer  : data pointer
  * @len     : number of bytes in the buffer.
  */
-EXPORT uint16_t
-ycrc16(uint16_t crc, const uint8_t *data, uint32_t len);
+EXPORT u16
+ycrc16(u16 crc, const u8 *data, u32 len);
 
 
 /**
  * See above 'ycrc16' for details.
  */
-EXPORT uint32_t
-ycrc32(uint32_t crc, const uint8_t *data, uint32_t len);
+EXPORT u32
+ycrc32(u32 crc, const u8 *data, u32 len);
 
 
 #endif /* __YCRc_h__ */

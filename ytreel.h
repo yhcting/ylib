@@ -165,7 +165,7 @@ ytreel_last_child(const struct ytreel_link *l) {
  * return number of siblings of this tree link.
  * (including itself)
  */
-static inline unsigned int
+static inline u32
 ytreel_sibling_size(const struct ytreel_link *l) {
 	/* even if &l->sibling is not head of list, counting size is ok */
 	return ylistl_size(&l->sibling);
@@ -174,7 +174,7 @@ ytreel_sibling_size(const struct ytreel_link *l) {
 /**
  * return number of children of this tree link.
  */
-static inline unsigned int
+static inline u32
 ytreel_child_size(const struct ytreel_link *l) {
 	return ylistl_size(&l->child);
 }

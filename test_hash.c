@@ -55,9 +55,9 @@ test_hash_normal(void) {
 	int    i;
 	char   buf[4096];
 	char  *v;
-	unsigned int r;
+	u32 r;
 	const char *keys[4096];
-	unsigned int keyssz[4096];
+	u32 keyssz[4096];
 
 	/*
 	 * Test normal hash.
@@ -76,7 +76,7 @@ test_hash_normal(void) {
 	r = yhash_keys(h, (const void **)keys, keyssz, 10);
 	yassert(10 == r);
 	for (i = 0; i < r; i++)
-		yassert(keyssz[i] == ((unsigned int)strlen((char *)keys[i]) + 1));
+		yassert(keyssz[i] == ((u32)strlen((char *)keys[i]) + 1));
 	/*
 	for (i = 0; i < r; i++)
 		printf("%s\n", keys[i]);
@@ -84,7 +84,7 @@ test_hash_normal(void) {
 	r = yhash_keys(h, (const void **)keys, keyssz, 4096);
 	yassert(1024 == r);
 	for (i = 0; i < r; i++)
-		yassert(keyssz[i] == ((unsigned int)strlen((char *)keys[i]) + 1));
+		yassert(keyssz[i] == ((u32)strlen((char *)keys[i]) + 1));
 
 	for (i = 256; i < 512; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);

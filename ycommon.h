@@ -134,4 +134,36 @@
 
 #define sec2ns(x) ((x) * 1000 * 1000 * 1000)
 
+/*****************************************************************************
+ *
+ * Debugging
+ *
+ *****************************************************************************/
+/* For debugging */
+#ifdef CONFIG_DEBUG
+
+#	include <malloc.h>
+#	include <assert.h>
+
+#	define ymalloc   dmalloc
+#	define ycalloc   dcalloc
+#	define yfree     dfree
+#	define yassert(x)   assert(x)
+
+extern void * dmalloc(u32);
+extern void * dcalloc(u32, u32);
+extern void   dfree(void *);
+
+#else /* CONFIG_DEBUG */
+
+#	include <malloc.h>
+
+#	define ymalloc   malloc
+#	define ycalloc   calloc
+#	define yfree     free
+#	define yassert(x)   do { } while (0)
+
+#endif /* CONFIG_DEBUG */
+
+
 #endif /* __YCOMMOn_h__ */

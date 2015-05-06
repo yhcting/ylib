@@ -54,60 +54,60 @@
 struct hn {
 	struct ylistl_link lk;
 	void              *key;   /* full key */
-	unsigned int	   keysz; /* size of key */
-	uint32_t	   v32;   /* 32bit hash value */
+	u32	           keysz; /* size of key */
+	u32	           v32;   /* 32bit hash value */
 	void              *v;     /* user value */
 };
 
 struct yhash {
 	struct ylistl_link *map;
-	unsigned int	    sz;	   /* hash size */
-	uint8_t	            mapbits;	   /* bits of map table = 1<<mapbits */
+	u32	            sz;     /* hash size */
+	u8	            mapbits;/* bits of map table = 1<<mapbits */
 	void		  (*fcb)(void *);/* free callback */
 };
 
-static inline unsigned int
+static inline u32
 hmapsz(const struct yhash *h) {
 	return (1 << h->mapbits);
 }
 
-static inline unsigned int
-hv__(unsigned int mapbits, uint32_t v32) {
+static inline u32
+hv__(u32 mapbits, u32 v32) {
 	return v32 >> (32 - mapbits);
 }
 
-static inline unsigned int
-hv_(const struct yhash *h, uint32_t v32) {
+static inline u32
+hv_(const struct yhash *h, u32 v32) {
 	return hv__(h->mapbits, v32);
 }
 
-static inline unsigned int
+static inline u32
 hv(const struct yhash *h, const struct hn *n) {
 	return hv_(h, n->v32);
 }
 
-static inline uint32_t
-hv32(const void *key, unsigned int keysz) {
+static inline u32
+hv32(const void *key, u32 keysz) {
 	if (keysz)
 		return ycrc32(0, key, keysz);
 	else
 		/*
 		 * special case
-		 * To improve portability, 'uint64_t' is used.
+		 * To improve portability, 'uintptr_t' is used.
 		 */
-		return (uint32_t)((uintptr_t)key & (uintptr_t)0xffffffff);
+		return (u32)((uintptr_t)key & (uintptr_t)0xffffffff);
 }
 
 /*
  * 0 for success othersize error number
  */
 static int
-hmodify(struct yhash *h, unsigned int bits) {
-	unsigned int	    i;
+hmodify(struct yhash *h, u32 bits) {
+	u32	            i;
 	struct hn	   *n, *tmp;
 	struct ylistl_link *oldmap;
-	unsigned int	    oldmapsz;
-	unsigned int        oldbits;
+	u32	            oldmapsz;
+	u32                 oldbits;
 
 	if (bits < MIN_HBITS)
 		bits = MIN_HBITS;
@@ -148,9 +148,9 @@ hmodify(struct yhash *h, unsigned int bits) {
 }
 
 static struct hn *
-hfind(const struct yhash *h, const void *key, unsigned int keysz) {
+hfind(const struct yhash *h, const void *key, u32 keysz) {
 	struct hn          *n;
-	uint32_t	    v32 = hv32(key, keysz);
+	u32	            v32 = hv32(key, keysz);
 	struct ylistl_link *hd = &h->map[hv_(h, v32)];
 	ylistl_foreach_item(n, hd, struct hn, lk)
 		if (keysz == n->keysz
@@ -170,7 +170,7 @@ vdestroy(const struct yhash *h, void *v) {
  * return NULL for failure (usually, Out Of Memory.
  */
 static struct hn *
-ncreate(const void *key, unsigned int keysz, void *v) {
+ncreate(const void *key, u32 keysz, void *v) {
 	struct hn *n = ymalloc(sizeof(*n));
 	if (unlikely(!n))
 		return NULL;
@@ -203,7 +203,7 @@ ndestroy(const struct yhash *h, struct hn *n) {
 
 static inline void
 hclean_nodes(struct yhash *h) {
-	unsigned int i;
+	u32 i;
 	struct hn  *n, *tmp;
 	for (i = 0; i < hmapsz(h); i++) {
 		ylistl_foreach_item_removal_safe(n,
@@ -219,7 +219,7 @@ hclean_nodes(struct yhash *h) {
 
 int
 yhash_init(struct yhash *h, void (*fcb)(void *)) {
-	unsigned int i;
+	u32 i;
 	h->sz = 0;
 	h->mapbits = MIN_HBITS;
 	h->map = (struct ylistl_link *)ymalloc(sizeof(*h->map) * hmapsz(h));
@@ -257,17 +257,17 @@ yhash_destroy(struct yhash *h) {
 	yfree(h);
 }
 
-unsigned int
+u32
 yhash_sz(const struct yhash *h) {
 	return h->sz;
 }
 
-unsigned int
+u32
 yhash_keys(const struct yhash *h,
 	   const void **keysbuf,
-	   unsigned int *keysszbuf,
-	   unsigned int bufsz) {
-	unsigned int r, i;
+	   u32 *keysszbuf,
+	   u32 bufsz) {
+	u32 r, i;
 	struct hn *n;
 	r = 0;
 	for (i = 0; i < hmapsz(h); i++) {
@@ -290,7 +290,7 @@ yhash_keys(const struct yhash *h,
 int
 yhash_add2(struct yhash *h,
 	   const void ** const pkey,
-	   const void *key, unsigned int keysz,
+	   const void *key, u32 keysz,
 	  void *v) {
 	struct hn *n = hfind(h, key, keysz);
 	if (n) {
@@ -319,7 +319,7 @@ yhash_add2(struct yhash *h,
 
 int
 yhash_add(struct yhash *h,
-	  const void *key, unsigned int keysz,
+	  const void *key, u32 keysz,
 	  void *v) {
 	return yhash_add2(h, NULL, key, keysz, v);
 }
@@ -327,7 +327,7 @@ yhash_add(struct yhash *h,
 int
 yhash_del2(struct yhash *h,
 	   void **value,
-	   const void *key, unsigned int keysz) {
+	   const void *key, u32 keysz) {
 	struct hn *n = hfind(h, key, keysz);
 	if (!n)
 		return 0;
@@ -350,13 +350,13 @@ yhash_del2(struct yhash *h,
 
 int
 yhash_del(struct yhash *h,
-	  const void *key, unsigned int keysz) {
+	  const void *key, u32 keysz) {
 	return yhash_del2(h, NULL, key, keysz);
 }
 
 void *
 yhash_find(const struct yhash *h,
-	   const void *key, unsigned int keysz) {
+	   const void *key, u32 keysz) {
 	struct hn *n = hfind(h, key, keysz);
 	return n? n->v: NULL;
 }

@@ -356,7 +356,7 @@ ytree_last_child(const struct ytree_node *n) {
  * return number of siblings of this tree link.
  * (including itself)
  */
-static inline unsigned int
+static inline u32
 ytree_sibling_size(const struct ytree_node *n) {
 	return ytreel_sibling_size(&n->link);
 }
@@ -364,7 +364,7 @@ ytree_sibling_size(const struct ytree_node *n) {
 /**
  * return number of children of this tree link.
  */
-static inline unsigned int
+static inline u32
 ytree_child_size(const struct ytree_node *n) {
 	return ytreel_child_size(&n->link);
 }

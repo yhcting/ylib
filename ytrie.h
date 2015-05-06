@@ -55,13 +55,13 @@ struct ytrie;
  */
 extern void **
 ytrie_getref(struct ytrie *t,
-	     const uint8_t *key, uint32_t sz);
+	     const u8 *key, u32 sz);
 
 /**
  * get element
  */
 extern void*
-ytrie_get(struct ytrie *t, const uint8_t *key, uint32_t sz);
+ytrie_get(struct ytrie *t, const u8 *key, u32 sz);
 
 
 /**
@@ -71,19 +71,21 @@ ytrie_get(struct ytrie *t, const uint8_t *key, uint32_t sz);
  *	 But if @cb returns 0, walker stops and 'ytrie_walk' is done.
  */
 extern int
-ytrie_walk(struct ytrie *t, void *user,
-	   const uint8_t *from, uint32_t fromsz,
+ytrie_walk(struct ytrie *t,
+	   void         *user,
+	   const u8     *from,
+	   u32           fromsz,
 	   /* return 1 for keep going, 0 for stop and don't do anymore */
-	   int(*cb)(void *, const uint8_t *, uint32_t, void *));
+	   int         (*cb)(void *, const u8 *, u32, void *));
 
 /**
  * insert element
  */
 extern int
 ytrie_insert(struct ytrie *t,
-	     const uint8_t *key,
-	     uint32_t sz,
-	     void *v);
+	     const u8     *key,
+	     u32           sz,
+	     void         *v);
 
 /**
  * @fcb : callback to free element.
@@ -107,7 +109,7 @@ ytrie_destroy(struct ytrie *);
  * delete node.
  */
 extern int
-ytrie_delete(struct ytrie *, const uint8_t *key, uint32_t sz);
+ytrie_delete(struct ytrie *, const u8 *key, u32 sz);
 
 /**
  * get free callback of trie
@@ -146,7 +148,7 @@ ytrie_clone(const struct ytrie *,
  */
 extern int
 ytrie_auto_complete(struct ytrie *,
-		    const uint8_t *start_with, uint32_t sz,
-		    uint8_t *buf, uint32_t bufsz);
+		    const u8 *start_with, u32 sz,
+		    u8 *buf, u32 bufsz);
 
 #endif /* __YTRIe_h__ */

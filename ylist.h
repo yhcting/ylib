@@ -51,6 +51,7 @@
 #include <errno.h>
 #include <malloc.h>
 
+#include "ycommon.h"
 #include "ylistl.h"
 
 /*============================
@@ -65,11 +66,11 @@ struct ylist_node {
 };
 
 struct ylist {
-	void              (*freecb)(void *);
-	struct ylistl_link  head;
-	unsigned int        sz;  /**< current list size */
-	unsigned int        max; /**< maximum list size allowed,
-				      0 means 'no limit' */
+	void             (*freecb)(void *);
+	struct ylistl_link head;
+	u32                sz;  /**< current list size */
+	u32                max; /**< maximum list size allowed,
+				     0 means 'no limit' */
 };
 
 struct ylisti {
@@ -99,11 +100,11 @@ ylist_free_item(struct ylist *l, void *item) {
  */
 EXPORT void
 ylist_init(struct ylist *l,
-	   unsigned int  max,
+	   u32  max,
 	   void(*freecb)(void *));
 
 EXPORT struct ylist *
-ylist_create(unsigned int max,
+ylist_create(u32 max,
 	     void (*freecb)(void *));
 
 /* Items are freed too. */
@@ -133,7 +134,7 @@ ylist_is_empty(const struct ylist *l) {
 	return !l->sz;
 }
 
-static inline unsigned int
+static inline u32
 ylist_size(const struct ylist *l) {
 	return l->sz;
 }

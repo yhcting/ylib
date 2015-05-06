@@ -60,17 +60,17 @@ test_bargraph(void) {
 		= {-1, -3 };
 	double v2[]
 		= {1.0f, 2.5f, 0.0f, 5.0f, -1.0f, 9.0f, 0.0f };
-	unsigned int ix0[]
+	u32 ix0[]
 		= {};
-	unsigned int ix1[]
+	u32 ix1[]
 		= {0};
-	unsigned int ix2[]
+	u32 ix2[]
 		= {0, 1, 1000};
-	unsigned int ix3[]
+	u32 ix3[]
 		= {0, 2, 4};
-	unsigned int ix4[]
+	u32 ix4[]
 		= {0, 0, 2, 4, 4};
-	unsigned int ix5[]
+	u32 ix5[]
 		= {0, 0, 0, 2, 4, 4};
 	const char *is[]
 		= {"is0", "is1", "is2", "is3", "is4", "is5" };

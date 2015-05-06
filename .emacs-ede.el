@@ -3,36 +3,46 @@
 (set 'yhc.topdir (concat (getenv "PWD") "/"))
 (set 'yhc.target "y")
 
+(defun yhc.compile.clean ()
+    "Using make file in top directory"
+    (interactive)
+    (let ((cmd ""))
+        (set 'cmd (concat "cd " yhc.topdir "; make clean; rm -rf bin/; rm -rf lib/; rm -rf include/"))
+        (compile cmd)))
+
 (defun yhc.compile.debug ()
     "Using make file in top directory"
     (interactive)
     (let ((cmd ""))
-        (set 'cmd (concat "cd " yhc.topdir "; make CFLAGS=-g DEFS=-DYDBG debug"))
+        (set 'cmd (concat "cd " yhc.topdir "; make CFLAGS=-g DEFS=-DYDBG install"))
         (compile cmd)))
 
 (defun yhc.compile.release ()
     "Using make file in top directory"
     (interactive)
     (let ((cmd ""))
-        (set 'cmd (concat "cd " yhc.topdir "; make release"))
+        (set 'cmd (concat "cd " yhc.topdir "; make install"))
         (compile cmd)))
 
 (defun yhc.gdb ()
     "gdb wrapper"
     (interactive)
-    (let ((cmd ""))
-        (set 'cmd (concat "gdb --annotate=3 " yhc.topdir yhc.target))
-        ;(message cmd)))
-        (gdb cmd)))
+    (if (file-exists-p yhc.target)
+        (let ((cmd ""))
+            (set 'cmd (concat "gdb -i=mi --annotate=3 " yhc.topdir "bin/" yhc.target))
+            ;(message cmd)))
+            (gdb cmd))
+        (message (concat "target: '" yhc.target "' is not compiled yet."))))
 
 ;; override ede's key map for compile...
-(global-set-key [f9]  'yhc.compile.debug)
-(global-set-key [f10] 'yhc.compile.release)
-(global-set-key [f8]  'yhc.gdb)
+(global-set-key [f7] 'yhc.compile.clean)
+(global-set-key [f8] 'yhc.compile.debug)
+(global-set-key [f9] 'yhc.compile.release)
+(global-set-key [f5] 'yhc.gdb)
 
 (ede-cpp-root-project (concat yhc.target "-root")
                 :name (concat yhc.target "-root")
-                :file (concat "~/dev/cedetws/" yhc.target "/Makefile")
+                :file (concat yhc.topdir "Makefile")
                 :include-path '(
                                 ;;"../include"
                                )

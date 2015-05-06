@@ -209,7 +209,7 @@ int
 ygraph_has_vertex(const struct ygraph *g, const struct yvertex *v) {
 	if (unlikely(!(g && v)))
 		return 0;
-	return !!yhash_find(g->vh, v, 0);
+	return !!yhash_find(g->vh, &v, sizeof(v));
 }
 
 int
@@ -233,7 +233,7 @@ ygraph_remove_vertex2(struct ygraph *g, struct yvertex *v, int destroy) {
 	yassert(v->ie.next == v->ie.prev
 		&& v->oe.next == v->oe.prev);
 
-	if (unlikely(1 != yhash_del(g->vh, v, 0)))
+	if (unlikely(1 != yhash_del(g->vh, &v, sizeof(v))))
 		return -1;
 	ylistl_del(&v->lk);
 

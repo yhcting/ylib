@@ -452,6 +452,7 @@ check_cyclic_link(struct ymtconcur *m, struct yvertex *basev) {
 		ylist_destroy(vs);
 	if (likely(es))
 		ylist_destroy(es);
+	dfpr("returns : %d\n", r);
 	return r;
 
 #undef __is_discovered
@@ -773,16 +774,19 @@ ymtconcur_run(struct ymtconcur *m,
 	void *mdata;
 	int r;
 
+	dfpr("%p, %p\n", m, targetv);
 	dfpr("!!!!!!!!!!!!!!!!!!!!!!!!!!! start run !!!!!!!!!!!!!!!!!!!!\n");
 	if (unlikely(!(targetv && m)))
 		return -1;
 
+	dchkpt();
 	mtconcur_init_rtinfo(m);
 
 	/* Cyclic loop is NOT allowed */
 	if (unlikely(check_cyclic_link(m, targetv)))
 		return -1;
 
+	dchkpt();
 	if (unlikely(0 > post_message(m, MCODE_START, NULL, NULL)))
 		return -1;
 

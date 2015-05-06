@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -51,18 +51,18 @@ vfree(void *v) {
 }
 
 static void
-test_hash_normal(void) {
+test_hash_normal(int hftype) {
 	int    i;
 	char   buf[4096];
 	char  *v;
-	u32 r;
+	unsigned int r;
 	const char *keys[4096];
-	u32 keyssz[4096];
+	unsigned int keyssz[4096];
 
 	/*
 	 * Test normal hash.
 	 */
-	struct yhash *h = yhash_create(&vfree);
+	struct yhash *h = yhash_create2(&vfree, hftype);
 
 	for (i = 0; i < 1024; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
@@ -76,7 +76,7 @@ test_hash_normal(void) {
 	r = yhash_keys(h, (const void **)keys, keyssz, 10);
 	yassert(10 == r);
 	for (i = 0; i < r; i++)
-		yassert(keyssz[i] == ((u32)strlen((char *)keys[i]) + 1));
+		yassert(keyssz[i] == ((unsigned int)strlen((char *)keys[i]) + 1));
 	/*
 	for (i = 0; i < r; i++)
 		printf("%s\n", keys[i]);
@@ -84,7 +84,7 @@ test_hash_normal(void) {
 	r = yhash_keys(h, (const void **)keys, keyssz, 4096);
 	yassert(1024 == r);
 	for (i = 0; i < r; i++)
-		yassert(keyssz[i] == ((u32)strlen((char *)keys[i]) + 1));
+		yassert(keyssz[i] == ((unsigned int)strlen((char *)keys[i]) + 1));
 
 	for (i = 256; i < 512; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
@@ -105,8 +105,74 @@ test_hash_normal(void) {
 }
 
 static void
+test_hash_address(void) {
+	int   i;
+	char  buf[4096];
+	char *ptsv[1024];
+	char *v;
+	/*
+	 * Test address hash.
+	 */
+	struct yhash *h = yhash_create2(&vfree, HASH_FUNC_INT);
+
+	for (i = 0; i < 1024; i++) {
+		snprintf(buf, sizeof(buf), "this is key %d", i);
+		v = ymalloc(strlen(buf)+1);
+		strcpy(v, buf);
+		/* key and value is same */
+		yhash_add(h, (void *)&v, sizeof(char *), v);
+		ptsv[i] = v;
+		yassert(i+1 == yhash_sz(h));
+	}
+
+	for (i = 256; i < 512; i++) {
+		snprintf(buf, sizeof(buf), "this is key %d", i);
+		v = yhash_find(h, (void *)&ptsv[i], sizeof(char *));
+		yassert(v && 0 == strcmp(v, buf));
+	}
+
+	for (i = 1023; i >= 0; i--) {
+		yhash_del(h, (void *)&ptsv[i], sizeof(char *));
+		yassert(i == yhash_sz(h));
+	}
+
+	yhash_destroy(h);
+}
+
+static void
+test_hash_int(void) {
+	int   i, j;
+	int   v[1024];
+	/*
+	 * Test address hash.
+	 */
+	struct yhash *h = yhash_create2(NULL, HASH_FUNC_INT);
+
+	for (i = 0; i < 1024; i++) {
+		v[i] = i;
+		yhash_add(h, (void *)&v[i], sizeof(v[i]), (void *)(intptr_t)i);
+		yassert(i + 1 == yhash_sz(h));
+	}
+
+	for (i = 256; i < 512; i++) {
+		j = (int)(intptr_t)yhash_find(h, (void *)&v[i], sizeof(v[i]));
+		yassert(i == j);
+	}
+
+	for (i = 1023; i >= 0; i--) {
+		yhash_del(h, (void *)&v[i], sizeof(v[i]));
+		yassert(i == yhash_sz(h));
+	}
+
+	yhash_destroy(h);
+}
+
+
+static void
 test_hash(void) {
-	test_hash_normal();
+	test_hash_normal(HASH_FUNC_CRC);
+	test_hash_address();
+	test_hash_int();
 }
 
 TESTFN(test_hash, hash)

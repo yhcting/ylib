@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -41,20 +41,36 @@
 
 #include "ydef.h"
 
+enum {
+	HASH_FUNC_CRC = 0,
+	HASH_FUNC_INT,  /* 32bit integer is used as hash key.
+			 * This is good to use mem. address as hash key.
+			 */
+	HASH_FUNC_END,  /* end of hash function type */
+};
+
 struct yhash;
 
 /**
- * @return : 0 if success, otherwise error number.
- */
-EXPORT int
-yhash_init(struct yhash *h, void (*fcb)(void *));
-
-/**
+ * See comments of corresponding 'yhash_init'
  * @fcb : callback to free user value(item)
  *	  (NULL means, item doesn't need to be freed.)
  */
 EXPORT struct yhash *
 yhash_create(void (*fcb)(void *));
+
+/**
+ * See comments of corresponding 'yhash_init'
+ */
+EXPORT struct yhash *
+yhash_create2(void (*fcb)(void *), int hfunc_type);
+
+/**
+ * See comments of corresponding 'yhash_init'
+ */
+EXPORT struct yhash *
+yhash_create3(void (*fcb)(void *),
+	      u32 (*hfunc)(const void *key, u32 keysz));
 
 EXPORT void
 yhash_clean(struct yhash *h);
@@ -71,7 +87,7 @@ yhash_sz(const struct yhash *h);
 /**
  * @keysbuf: Buffer to contain pointer of key.
  *           'shallow copy' of key is stored at buffer.
- *           So, DO NOT free 'key' pointer.
+ *           So, DO NOT free/modify key-value pointed.
  * @keysszbuf: Buffer to contain each key's length.
  *             So, size should be same with @keysbuf.
  *             if NULL, this is ignored.

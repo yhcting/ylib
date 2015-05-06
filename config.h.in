@@ -6,6 +6,9 @@
 /* Debug is enabled. */
 #undef CONFIG_DEBUG
 
+/* More verbose debugging is enabled. */
+#undef CONFIG_DEBUG2
+
 /* Dynamic mempool is used instead of static mempool. */
 #undef CONFIG_MEMPOOL_DYNAMIC
 

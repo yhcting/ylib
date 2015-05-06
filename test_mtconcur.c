@@ -120,8 +120,10 @@ alloc_job(struct ymtconcurjob *ccj,
 	  int id,
 	  const char *name) {
 	struct workarg *wa = ymalloc(sizeof(*wa));
+	yassert(wa);
 	wa->id = id;
 	wa->str = ymalloc(strlen(name) + 1);
+	yassert(wa->str);
 	strcpy(wa->str, name);
 	ccj->arg = wa;
 	strcpy(ccj->name, name);
@@ -146,34 +148,57 @@ test_mtconcur(void) {
 	ymtconcurjob_node_t nA, nB, nC, nD, nE, nF, nG, nH, nI, nJ, nK, nL;
 
 	m = ymtconcur_create(0);
-
+	yassert(m);
 	init_testjob(&ccj);
 	srand(time(NULL));
 
 	alloc_job(&ccj, 1, "A");
 	nA = ymtconcur_add_job(m, &ccj);
+	yassert(nA);
+
 	alloc_job(&ccj, 2, "B");
 	nB = ymtconcur_add_job(m, &ccj);
+	yassert(nB);
+
 	alloc_job(&ccj, 3, "C");
 	nC = ymtconcur_add_job(m, &ccj);
+	yassert(nC);
+
 	alloc_job(&ccj, 4, "D");
 	nD = ymtconcur_add_job(m, &ccj);
+	yassert(nD);
+
 	alloc_job(&ccj, 5, "E");
 	nE = ymtconcur_add_job(m, &ccj);
+	yassert(nE);
+
 	alloc_job(&ccj, 6, "F");
 	nF = ymtconcur_add_job(m, &ccj);
+	yassert(nF);
+
 	alloc_job(&ccj, 7, "G");
 	nG = ymtconcur_add_job(m, &ccj);
+	yassert(nG);
+
 	alloc_job(&ccj, 8, "H");
 	nH = ymtconcur_add_job(m, &ccj);
+	yassert(nH);
+
 	alloc_job(&ccj, 9, "I");
 	nI = ymtconcur_add_job(m, &ccj);
+	yassert(nI);
+
 	alloc_job(&ccj, 10, "J");
 	nJ = ymtconcur_add_job(m, &ccj);
+	yassert(nJ);
+
 	alloc_job(&ccj, 11, "K");
 	nK = ymtconcur_add_job(m, &ccj);
+	yassert(nK);
+
 	alloc_job(&ccj, 12, "L");
 	nL = ymtconcur_add_job(m, &ccj);
+	yassert(nL);
 
 	ymtconcur_add_dependency(m, nA, nD);
 	ymtconcur_add_dependency(m, nA, nE);
@@ -202,6 +227,19 @@ test_mtconcur(void) {
 	ymtconcur_add_dependency(m, nJ, nK);
 
 	workout = NULL;
+
+	/* make simple cyclic link */
+	ymtconcur_add_dependency(m, nK, nJ);
+	yassert(-1 == ymtconcur_run(m, (void **)&workout, nK));
+	yassert(!workout);
+	ymtconcur_remove_dependency(m, nK, nJ);
+
+	/* make simple cyclic link */
+	ymtconcur_add_dependency(m, nK, nI);
+	yassert(-1 == ymtconcur_run(m, (void **)&workout, nK));
+	yassert(!workout);
+	ymtconcur_remove_dependency(m, nK, nI);
+
 	/* make cyclic link */
 	ymtconcur_add_dependency(m, nH, nA);
 	yassert(-1 == ymtconcur_run(m, (void **)&workout, nA));

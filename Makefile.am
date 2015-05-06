@@ -45,7 +45,6 @@ y_SOURCES = \
 	test_hash.c \
 	test_mempool.c \
 	test_bitops.c \
-	test_set.c \
 	test_dynb.c \
 	test_p.c \
 	test_lru.c \

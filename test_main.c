@@ -42,6 +42,10 @@
 #include "ydef.h"
 #include "ylistl.h"
 
+#ifndef CONFIG_DEBUG
+#	error "CONFIG_DEBUG SHOULD be enabled to run 'test'!"
+#endif
+
 struct tstfn {
 	void             (*fn)(void);
 	const char        *modname;

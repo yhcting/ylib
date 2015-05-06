@@ -73,10 +73,18 @@ AC_ARG_WITH(dynamic-mempool,
 
 AC_ARG_WITH(debug,
 [  --with-debug
-        build with debugging feature. Test can be used with this arguement.],
+        Build with debugging feature. This arguement should be enabled for testing.],
 [AC_DEFINE([CONFIG_DEBUG],
 	   [1],
 	   [Debug is enabled.])],
+[])
+
+AC_ARG_WITH(debug2,
+[  --with-debug2
+        Debugging level 2 - more verbose debugging.],
+[AC_DEFINE([CONFIG_DEBUG2],
+	   [1],
+	   [ More verbose debugging is enabled.])],
 [])
 
 AM_CFLAGS="-Wall -Werror"

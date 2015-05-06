@@ -170,7 +170,7 @@ ylru_get(struct ylru *lru,
 	 unsigned int *data_size, /* returned data size */
 	 const void *key, unsigned int keysz) {
 	struct lnode *n;
-	unsigned int sztmp;
+	unsigned int sztmp = 0;
 	void *data = NULL;
 	if (0 < yhash_del2(lru->h, (void **)&n, key, keysz)) {
 		/* found */

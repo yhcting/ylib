@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [[ -z $(which aclocal) \
+     || -z $(which autoheader) \
+     || -z $(which autoconf) \
+     || -z $(which automake) ]]; then
+    echo "ERROR: aclocal, autoheader, autoconf and automake are required."
+    exit 1
+fi
+
+aclocal
+autoheader
+autoconf
+automake
+
+./configure $@
+

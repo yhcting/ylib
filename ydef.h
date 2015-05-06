@@ -113,6 +113,9 @@
 #	define barrier()       __asm__ __volatile__("": : :"memory")
 #endif
 
+#ifndef __unused
+#	define __unused        __attribute__((unused))
+#endif
 
 /*****************************************************************************
  *

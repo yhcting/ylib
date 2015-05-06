@@ -71,7 +71,7 @@ free_workout(struct workout *a) {
 }
 
 static useconds_t
-get_rand_usleep(const struct workarg *wa __attribute__((unused))) {
+get_rand_usleep(const struct workarg *wa __unused) {
 	/* min : 100 ms + random 0 ~ 1000 ms */
 	return 100000 + (((long)rand() * 1000L) / RAND_MAX) * 1000;
 }
@@ -82,7 +82,7 @@ worker_func(void **out,
 	    const struct ymtconcurjobarg *jargs) {
 	useconds_t usec;
 	struct workout *wout;
-	const struct workout *jad __attribute__((unused));
+	const struct workout *jad __unused;
 	const struct workarg *wa = arg;
 	dpr(">>>>> %s (%d)\n", wa->str, wa->id);
 	while (!ymtconcur_is_empty_jobarg(jargs)) {

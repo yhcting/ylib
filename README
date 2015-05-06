@@ -1,0 +1,5 @@
+TODO
+----
+* module for timer
+* module for stack heap
+* module implementing 'collection' and 'set' - like python 'set', 'list', 'dict'

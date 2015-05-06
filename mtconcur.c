@@ -335,7 +335,7 @@ walk_depending_vertices_dfs(struct ymtconcur *m,
 
 static int
 prepare_concur_run_cb(struct yvertex *v,
-		      void *user __attribute__((unused))) {
+		      void *user __unused) {
 	struct ccjob *j = v2job(v);
 	ccjob_init(j, &j->j); /* initialize with existing job info */
 	v2job(v)->wjcnt = ylistl_size(&v->ie);
@@ -463,7 +463,7 @@ check_cyclic_link(struct ymtconcur *m, struct yvertex *basev) {
 
 static void *
 job_thread_routine(void *arg) {
-	int r __attribute__((unused));
+	int r __unused;
 	int sz;
 	struct ccjob *j;
 	struct ymtconcur *m;
@@ -756,7 +756,7 @@ ymtconcur_jobnode_set_job(struct yvertex *v,
 
 static int
 ymtconcur_run_cleanup_jobout_cb(struct yvertex *v,
-				void *user __attribute__((unused))) {
+				void *user __unused) {
 	struct ccjob *j = v2job(v);
 	if (j->jobout && j->j.free_out) {
 		(*j->j.free_out)(j->jobout);

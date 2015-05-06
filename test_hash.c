@@ -105,44 +105,8 @@ test_hash_normal(void) {
 }
 
 static void
-test_hash_address(void) {
-	int   i;
-	char  buf[4096];
-	char *ptsv[1024];
-	char *v;
-	/*
-	 * Test address hash.
-	 */
-	struct yhash *h = yhash_create(&vfree);
-
-	for (i = 0; i < 1024; i++) {
-		snprintf(buf, sizeof(buf), "this is key %d", i);
-		v = ymalloc(strlen(buf)+1);
-		strcpy(v, buf);
-		/* key and value is same */
-		yhash_add(h, (void *)v, 0, v);
-		ptsv[i] = v;
-		yassert(i+1 == yhash_sz(h));
-	}
-
-	for (i = 256; i < 512; i++) {
-		snprintf(buf, sizeof(buf), "this is key %d", i);
-		v = yhash_find(h, (void *)ptsv[i], 0);
-		yassert(v && 0 == strcmp(v, buf));
-	}
-
-	for (i = 1023; i >= 0; i--) {
-		yhash_del(h, (void *)ptsv[i], 0);
-		yassert(i == yhash_sz(h));
-	}
-
-	yhash_destroy(h);
-}
-
-static void
 test_hash(void) {
 	test_hash_normal();
-	test_hash_address();
 }
 
 TESTFN(test_hash, hash)

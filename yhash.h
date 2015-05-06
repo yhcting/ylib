@@ -101,11 +101,6 @@ yhash_add2(struct yhash *h,
  * @v	   : user value(item)
  * @key    : hash key
  * @keysz  : size of hash key
- *           NOTE!
- *               0 == keysz hash special meaning.
- *               '0 == keysz' means, value of key itself - not pointed one -
- *               is key value.
- *               This is useful when hashing memory address.
  * @return : -1 for error
  *           otherwise # of newly added item. (0 means overwritten).
  */

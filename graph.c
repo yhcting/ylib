@@ -199,7 +199,7 @@ int
 ygraph_add_vertex(struct ygraph *g, struct yvertex *v) {
 	if (unlikely(!(g && v)))
 		return -1;
-	if (unlikely(1 != yhash_add(g->vh, (void *)v, 0, (void *)1)))
+	if (unlikely(1 != yhash_add(g->vh, &v, sizeof(v), (void *)1)))
 		return -1;
 	ylistl_add_last(&g->vs, &v->lk);
 	return 0;

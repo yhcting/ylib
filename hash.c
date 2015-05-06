@@ -152,21 +152,11 @@ hfind(const struct yhash *h, const void *key, unsigned int keysz) {
 	struct hn          *n;
 	uint32_t	    v32 = hv32(key, keysz);
 	struct ylistl_link *hd = &h->map[hv_(h, v32)];
-	if (keysz) {
-		ylistl_foreach_item(n, hd, struct hn, lk)
-			if (keysz == n->keysz
-			    && n->v32 == v32
-			    && 0 == memcmp(key, n->key, keysz))
+	ylistl_foreach_item(n, hd, struct hn, lk)
+		if (keysz == n->keysz
+		    && n->v32 == v32
+		    && 0 == memcmp(key, n->key, keysz))
 				break;
-	} else {
-		/*
-		 * special case : 'n->key' value itself is key.
-		 */
-		ylistl_foreach_item(n, hd, struct hn, lk)
-			if (keysz == n->keysz
-			    && key == n->key)
-				break;
-	}
 	return (&n->lk == hd)? NULL: n;
 }
 

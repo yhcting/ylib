@@ -62,14 +62,14 @@ yset_sz(const yset_t s) {
 /**
  * @elemsbuf: Buffer to contain pointer of element.
  *            'shallow copy' of elements are stored at buffer.
- *            So, DO NOT free 'elements' pointer.
+ *            So, DO NOT free/modify element's value pointed
  * @elemsszbuf: Buffer to contain each element's length.
  *              So, size should be same with @elemsbuf.
  *              if NULL, this is ignored.
  * @bufsz: sizeof @elemsbuf and @elemsszbuf.
  * @return: number keys assigned to @elemsbuf
- *          return value == @bufsz means @elemsbuf is not large enough to
- *            contains all elements in the set.
+ *          'return value == @bufsz' may mean that @elemsbuf is not large
+ *          enough to contains all elements in the set.
  */
 static inline u32
 yset_elements(const yset_t s,
@@ -83,11 +83,6 @@ yset_elements(const yset_t s,
  * @v: user value(item)
  * @elem: hash key
  * @elemsz: size of element
- *          NOTE!
- *              0 == elemsz hash special meaning.
- *              '0 == elemsz' means, value of key itself - not pointed one -
- *              is element.
- *              This is useful when hashing memory address.
  * @return: -1 for error
  *          otherwise # of newly added item. (0 means overwritten).
  */
@@ -113,5 +108,28 @@ static inline int
 yset_contains(const yset_t s, const void *elem, u32 elemsz) {
 	return !!yhash_find(s, elem, elemsz);
 }
+
+EXPORT yset_t
+yset_clone(const yset_t s);
+
+/**
+ * @return newly created 'yset' for success, otherwise NULL.
+ */
+EXPORT yset_t
+yset_intersect(const yset_t s0, const yset_t s1);
+
+/**
+ *
+ */
+EXPORT yset_t
+yset_union(const yset_t s0, const yset_t s1);
+
+/**
+ *
+ */
+EXPORT yset_t
+yset_diff(const yset_t s0, const yset_t s1);
+
+
 
 #endif /* __YSEt_h__ */

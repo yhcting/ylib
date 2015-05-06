@@ -5,23 +5,23 @@
 #
 
 mods="
-	crc
-	dynb
-	listl
-	list
-	treel
-	tree
-	hash
-	trie
-	mempool
-	set
-	lru
-	msgq
-	statmath
-	statprint
-	graph
-	p
-	mtconcur
+crc
+dynb
+listl
+list
+treel
+tree
+hash
+trie
+mempool
+set
+lru
+msgq
+statmath
+statprint
+graph
+p
+mtconcur
 "
 
 
@@ -29,9 +29,9 @@ mods="
 # Headers
 ##############################################################################
 common_headers="
-	ydef.h
-	ycommon.h
-	ylib.h
+ydef.h
+ycommon.h
+ylib.h
 "
 
 inc_headers=
@@ -47,7 +47,7 @@ done
 # Library
 ##############################################################################
 common_sources="
-	libmain.c
+libmain.c
 "
 
 lib_sources=
@@ -63,7 +63,7 @@ done
 # Program
 ##############################################################################
 common_sources="
-	test_main.c
+test_main.c
 "
 prog_sources=
 for s in $common_sources; do

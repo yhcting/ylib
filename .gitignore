@@ -25,11 +25,12 @@ include/
 # files for build system
 Makefile
 Makefile.in
+Makefile.am
 autom4te.cache/
 config.status
-/config.h
-/configure
-/aclocal.m4
-/config.h.in
+config.h
+configure
+aclocal.m4
+config.h.in
 stamp-h1
 libtool

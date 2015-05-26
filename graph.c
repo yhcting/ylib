@@ -161,7 +161,7 @@ ygraph_init(struct ygraph *g,
 		return -EINVAL;
 	g->fcb = fcb;
 	ylistl_init_link(&g->vs);
-	if (unlikely(!(g->vh = yhash_create(NULL))))
+	if (unlikely(!(g->vh = yhashi_create(NULL))))
 		return -ENOMEM;
 	return 0;
 }
@@ -199,7 +199,7 @@ int
 ygraph_add_vertex(struct ygraph *g, struct yvertex *v) {
 	if (unlikely(!(g && v)))
 		return -1;
-	if (unlikely(1 != yhash_add(g->vh, &v, sizeof(v), (void *)1)))
+	if (unlikely(1 != yhash_add(g->vh, (void *)v, (void *)1)))
 		return -1;
 	ylistl_add_last(&g->vs, &v->lk);
 	return 0;
@@ -209,7 +209,7 @@ int
 ygraph_has_vertex(const struct ygraph *g, const struct yvertex *v) {
 	if (unlikely(!(g && v)))
 		return 0;
-	return !!yhash_find(g->vh, &v, sizeof(v));
+	return !yhash_find(g->vh, NULL, (void *)v);
 }
 
 int
@@ -233,7 +233,7 @@ ygraph_remove_vertex2(struct ygraph *g, struct yvertex *v, int destroy) {
 	yassert(v->ie.next == v->ie.prev
 		&& v->oe.next == v->oe.prev);
 
-	if (unlikely(1 != yhash_del(g->vh, &v, sizeof(v))))
+	if (unlikely(1 != yhash_del(g->vh, (void *)v)))
 		return -1;
 	ylistl_del(&v->lk);
 

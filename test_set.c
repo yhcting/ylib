@@ -47,24 +47,24 @@ static void
 test_set(void) {
 	int i, r;
 	int *elems[100];
-	yset_t s = yset_create();
+	yset_t s = yseti_create();
 
 	for (i = 0; i < 100; i++)
-		yassert(1 == yset_add(s, &i, sizeof(i)));
+		yassert(1 == yset_add(s, (void *)(intptr_t)i));
 	for (i = 0; i < 50; i++)
-		yassert(0 == yset_add(s, &i, sizeof(i)));
+		yassert(0 == yset_add(s, (void *)(intptr_t)i));
 	for (i = 0; i < 25; i++)
-		yassert(1 == yset_del(s, &i, sizeof(i)));
+		yassert(1 == yset_del(s, (void *)(intptr_t)i));
 	for (i = 0; i < 25; i++)
-		yassert(0 == yset_del(s, &i, sizeof(i)));
+		yassert(0 == yset_del(s, (void *)(intptr_t)i));
 	for (i = 0; i < 25; i++)
-		yassert(!yset_contains(s, &i, sizeof(i)));
+		yassert(!yset_contains(s, (void *)(intptr_t)i));
 	for (; i < 50; i++)
-		yassert(yset_contains(s, &i, sizeof(i)));
-	r = yset_elements(s, (const void **)elems, NULL, arrsz(elems));
+		yassert(yset_contains(s, (void *)(intptr_t)i));
+	r = yset_elements(s, (const void **)elems, arrsz(elems));
 	yassert(75 == r);
 	for (i = 0; i < r; i++)
-		yassert(25 <= *elems[i] && *elems[i] < 100);
+		yassert(25 <= (intptr_t)elems[i] && (intptr_t)elems[i] < 100);
 	yset_destroy(s);
 }
 

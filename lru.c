@@ -42,7 +42,6 @@
 #include "ylistl.h"
 #include "yhash.h"
 
-
 /*
  * Design
  *
@@ -62,11 +61,17 @@
  */
 
 struct ylru {
+	/* members that may be different according to hash contents */
 	struct ylistl_link head; /* linked list */
-	struct yhash      *h;
-	u32                maxsz;
-	u32                sz;
-	struct ylru_cb     cbs;
+	struct yhash *h;
+	u32     sz;
+	/* contents-independent members (hash attributes)
+	 * 'maxsz' SHOULD be top of 'hash attributes'
+	 */
+	u32     maxsz;
+	void  (*dfree)(void *);
+	void *(*dcreate)(const void *key);
+	u32   (*dsize)(const void *);
 };
 
 /* list node */
@@ -74,41 +79,155 @@ struct lnode {
 	struct ylistl_link lk;
 	/* point key memory in internal hash - shallow copy */
 	const void        *key;
-	u32                keysz;
 	void              *data; /* cached data */
-	u32                data_size;
-	void             (*free)(void *); /* free cached data */
+	struct ylru       *lru;  /* owner lru */
 };
+
+static void
+lru_free_default(void *v) {
+        if (likely(v))
+                yfree(v);
+}
+
+static inline u32
+data_size(struct ylru *l, void *d) {
+	return (l->dsize)? (*l->dsize)(d): 1;
+}
+
+static inline void
+data_free(struct ylru *l, void *d) {
+	if (l->dfree)
+		(*l->dfree)(d);
+}
 
 static inline void
 lnode_free(struct lnode *n) {
-	if (n->free)
-		(*n->free)(n->data);
+	data_free(n->lru, n->data);
 	yfree(n);
 }
 
 struct ylru *
-ylru_create(u32 maxsz,
-	    const struct ylru_cb *cbs) {
+lru_create(struct yhash *h, /* hash used in lru cache */
+	   u32     maxsz,
+	   void  (*datafree)(void *),
+	   void *(*datacreate)(const void *key),
+	   u32   (*datasize)(const void *)) {
 	struct ylru *lru = ymalloc(sizeof(*lru));
 	if (unlikely(!lru))
 		return NULL;
-	lru->h = yhash_create((void(*)(void *))&lnode_free);
-	if (unlikely(!lru->h)) {
-		yfree(lru);
-		return NULL;
-	}
 
-	/* Allocation is done - initialize it.*/
-	ylistl_init_link(&lru->head);
-	lru->maxsz = maxsz;
-	memcpy(&lru->cbs, cbs, sizeof(*cbs));
+	if (!maxsz)
+		maxsz = 0xffffffff; /* maximum unsigned u32 */
+	if (YLRU_PREDEFINED_FREE == datafree)
+		datafree = &lru_free_default;
+
+	lru->h = h;
 	lru->sz = 0;
+	ylistl_init_link(&lru->head);
+
+	lru->maxsz = maxsz;
+	lru->dfree = datafree;
+	lru->dcreate = datacreate;
+	lru->dsize = datasize;
+
 	return lru;
+
+}
+
+/****************************************************************************
+ *
+ *
+ *
+ ****************************************************************************/
+struct ylru *
+ylrui_create(u32 maxsz,
+	     void  (*datafree)(void *),
+	     void *(*datacreate)(const void *key),
+	     u32   (*datasize)(const void *)) {
+	struct ylru *l;
+	struct yhash *h = yhashi_create((void(*)(void *))&lnode_free);
+	if (unlikely(!h))
+		return NULL;
+	if (unlikely(!(l = lru_create(h,
+				      maxsz,
+				      datafree,
+				      datacreate,
+				      datasize))))
+		yhash_destroy(h);
+	return l;
+}
+
+struct ylru *
+ylrus_create(u32 maxsz,
+	     void  (*datafree)(void *),
+	     void *(*datacreate)(const void *key),
+	     u32   (*datasize)(const void *)) {
+	struct ylru *l;
+	struct yhash *h = yhashs_create((void(*)(void *))&lnode_free, TRUE);
+	if (unlikely(!h))
+		return NULL;
+	if (unlikely(!(l = lru_create(h,
+				      maxsz,
+				      datafree,
+				      datacreate,
+				      datasize))))
+		yhash_destroy(h);
+	return l;
+}
+
+struct ylru *
+ylruo_create(u32 maxsz,
+	     void  (*datafree)(void *),
+	     void *(*datacreate)(const void *key),
+	     u32   (*datasize)(const void *),
+	     void  (*keyfree)(void *),
+	     int   (*keycopy)(void **newkey, const void *),
+	     int   (*keycmp)(const void *, const void *),
+	     u32   (*hfunc)(const void *key)) {
+	struct ylru *l;
+	struct yhash *h;
+
+	if (YLRU_PREDEFINED_FREE == keyfree)
+		keyfree = YHASH_PREDEFINED_FREE;
+
+	h = yhasho_create((void(*)(void *))&lnode_free,
+			  keyfree,
+			  keycopy,
+			  keycmp,
+			  hfunc);
+	if (unlikely(!h))
+		return NULL;
+	if (unlikely(!(l = lru_create(h,
+				      maxsz,
+				      datafree,
+				      datacreate,
+				      datasize))))
+		yhash_destroy(h);
+	return l;
+}
+
+struct ylru *
+ylru_create(const struct ylru *lru) {
+	struct ylru *l;
+	struct yhash *h;
+	if (unlikely(!lru))
+		return NULL;
+	h = yhash_create(lru->h);
+	if (unlikely(!h))
+		return NULL;
+	if (unlikely(!(l = lru_create(h,
+				      lru->maxsz,
+				      lru->dfree,
+				      lru->dcreate,
+				      lru->dsize))))
+		yhash_destroy(h);
+	return l;
 }
 
 void
 ylru_clean(struct ylru *lru) {
+	if (unlikely(!lru))
+		return;
 	yhash_clean(lru->h);
 	/* list node is already destroied in yhash_clean */
 	ylistl_init_link(&lru->head);
@@ -117,17 +236,21 @@ ylru_clean(struct ylru *lru) {
 
 void
 ylru_destroy(struct ylru *lru) {
+	if (unlikely(!lru))
+		return;
 	yhash_destroy(lru->h);
 	/* list node is already destroied in yhash_destroy */
 	yfree(lru);
 }
 
 int
-ylru_put(struct ylru *lru,
-	 const void *key, u32 keysz,
-	 void *data, u32 data_size) {
+ylru_put(struct ylru *lru, const void *key, void *data) {
 	struct lnode *n, *tmp;
-	if (unlikely(data_size > lru->maxsz / 2))
+	u32 dsz;
+	if (unlikely(!lru))
+		return EINVAL;
+	dsz = data_size(lru, data);
+	if (unlikely(dsz > lru->maxsz))
 		/* too large data to be in the cache */
 		return EINVAL;
 
@@ -140,60 +263,52 @@ ylru_put(struct ylru *lru,
 						  &lru->head,
 						  struct lnode,
 						  lk) {
-		if (unlikely(lru->sz + data_size > lru->maxsz)) {
+		if (unlikely(lru->sz + dsz > lru->maxsz)) {
 			ylistl_del(&n->lk);
-			lru->sz -= n->data_size;
-			yhash_del(lru->h, n->key, n->keysz);
+			lru->sz -= data_size(lru, n->data);
+			yhash_del(lru->h, n->key);
 		} else
 			break;
 	}
-	yassert(lru->sz >= 0);
-
 	if (unlikely(!(n = ymalloc(sizeof(*n)))))
 		return ENOMEM;
-	n->keysz = keysz;
 	n->data = data;
-	n->data_size = data_size;
-	n->free = lru->cbs.free;
-	if (unlikely(-1 == yhash_add2(lru->h, &n->key, key, keysz, n))) {
+	n->lru = lru;
+	if (unlikely(-1 == yhash_add3(lru->h, &n->key, (void *)key, n))) {
 		yfree(n);
 		return ENOMEM;
 	}
 
 	/* put at the first (newlest) */
 	ylistl_add_first(&lru->head, &n->lk);
-	lru->sz += data_size;
+	lru->sz += dsz;
 	return 0;
 }
 
-void *
-ylru_get(struct ylru *lru,
-	 u32 *data_size, /* returned data size */
-	 const void *key, u32 keysz) {
+int
+ylru_get(struct ylru *lru, void **data, const void *key) {
 	struct lnode *n;
-	u32 sztmp = 0;
-	void *data = NULL;
-	if (0 < yhash_del2(lru->h, (void **)&n, key, keysz)) {
+	int  r = 0; /* See comment for 'return' at ylru.h */
+	void *nd = NULL;
+	if (unlikely(!data))
+		return -EINVAL;
+	if (0 < yhash_del2(lru->h, (void **)&n, key)) {
 		/* found */
 		ylistl_del(&n->lk);
-		lru->sz -= n->data_size;
-		yassert(lru->sz >= 0);
-		sztmp = n->data_size;
-		data = n->data;
+		lru->sz -= data_size(lru, n->data);
+		nd = n->data;
 		/* free only 'node' structure. */
 		yfree(n);
 	} else {
 		/* Fail to find in the cache */
-		if (lru->cbs.create)
-			data = lru->cbs.create(&sztmp,
-					       key,
-					       keysz);
+		if (lru->dcreate)
+			nd = lru->dcreate(key);
+		else
+			r = 1;
 	}
-
-	if (likely(data_size))
-		*data_size = sztmp;
-
-	return data;
+	if (!r)
+		*data = nd;
+	return r;
 }
 
 u32

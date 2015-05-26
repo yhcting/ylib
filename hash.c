@@ -53,37 +53,103 @@
 /* hash node */
 struct hn {
 	struct ylistl_link lk;
-	void              *key;   /* full key */
-	u32	           keysz; /* size of key */
-	u32	           hv32;  /* 32bit hash value */
-	void              *v;     /* user value */
+	void *key;   /* full key */
+	u32   hv32;  /* 32bit hash value */
+	void *v;     /* user value */
 };
 
+/* order of struct member has meaning */
 struct yhash {
+	/* members that may be different according to hash contents */
 	struct ylistl_link *map;
-	u32	            sz;      /* hash size */
-	u8	            mapbits; /* bits of map table = 1<<mapbits */
-	void		  (*fcb)(void *); /* free callback */
-	u32               (*hfunc)(const void *, u32); /* hash function */
+	u32     sz;      /* hash size */
+	u8      mapbits; /* bits of map table = 1<<mapbits */
+
+	/* contents-independent members (hash attributes)
+	 * 'mode' SHOULD be top of 'hash attributes'
+	 */
+        int     mode;    /* hash mode - DO NOT move to other position */
+	void  (*vfree)(void *); /* free for hash value */
+        void  (*kfree)(void *); /* free for hash key */
+        /* return copied object */
+        int   (*kcp)(void **, const void *);  /* copy hash key */
+        /* return 0 if same, otherwise, non-zero value. */
+        int   (*kcmp)(const void *, const void *); /* compare two keys */
+	u32   (*hfunc)(const void *); /* hash function NOT NULL */
 };
 
 
 /****************************************************************************
- * Predefined hash functions
+ *
+ * Predefined functions for hash
+ *
  ****************************************************************************/
-static u32
-hfunc_crc32(const void *key, u32 keysz) {
-	return ycrc32(0, (const u8 *)key, keysz);
+/*---------------------------------------------------------------------------
+ * Common
+ *--------------------------------------------------------------------------*/
+static void
+hfree_default(void *v) {
+        if (likely(v))
+                yfree(v);
+}
+
+static void
+(*hfree_get_func(void (*free_func)(void *)))(void *) {
+	if (YHASH_PREDEFINED_FREE == free_func)
+		return &hfree_default;
+	else
+		return free_func;
+}
+
+/*---------------------------------------------------------------------------
+ *
+ *--------------------------------------------------------------------------*/
+static int
+kcp_i(void **ni, const void *i) {
+        /* return address value itself */
+	*ni = (void *)i;
+        return 0;
 }
 
 static u32
-hfunc_int(const void *key, u32 keysz) {
-	yassert(keysz >= sizeof(u32));
-	return *(u32 *)key & 0xffffffff;
+hfunc_i(const void *k) {
+        return (intptr_t)k & 0xffffffff;
+}
+
+/**
+ * @return NULL for errors or '0' is returned.
+ */
+static int
+kcp_s(void **news, const void *s) {
+        size_t sz = strlen((const char *)s);
+        void *ns = ymalloc(sz + 1);
+        if (unlikely(!ns))
+                return ENOMEM;
+        memcpy(ns, s, sz + 1);
+        *news = ns;
+	return 0;
+}
+
+static void
+kfree_s(void *s) {
+        if (unlikely(s))
+                yfree(s);
+}
+
+static int
+kcmp_s(const void *s0, const void *s1) {
+        return strcmp((const char *)s0, (const char *)s1);
+}
+
+static u32
+hfunc_s(const void *k) {
+        return ycrc32(0, (const u8 *)k, (u32)strlen((const char *)k) + 1);
 }
 
 
 /****************************************************************************
+ *
+ *
  *
  ****************************************************************************/
 static inline u32
@@ -109,45 +175,39 @@ hv(const struct yhash *h, const struct hn *n) {
 
 /****************************************************************************
  *
+ *
+ *
  ****************************************************************************/
-static inline const void *
-nkey(const struct hn *n) {
-	return n->keysz > sizeof(void *)? n->key: (void *)&n->key;
-}
-
 /*
- * create clone(deep-copy) of given key
+ * create copy of given key
  * @newkey : variable where newly created key is set.
  */
 static int
-nkey_create(void **newkey, const void *key, u32 keysz) {
-	void *nkey;
-	if (keysz > sizeof(void *)) {
-		if (unlikely(!(nkey = ymalloc(keysz))))
-			return ENOMEM;
-		memcpy(nkey, key, keysz);
-	} else
-		/* keysz is smaller than size of pointer.
-		 * Then, whole key value can be stored at 'key' pointer.
-		 * (memory allocation is not required.)
-		 */
-		memcpy((void *)&nkey, key, keysz);
-	*newkey = nkey;
+nkey_create(const struct yhash *h, void **newkey, const void *key) {
+	if (h->kcp)
+		return (*h->kcp)(newkey, key);
+	else
+		*newkey = (void *)key;
 	return 0;
 }
 
 static void
-nkey_destroy(struct hn *n) {
-	/* if keysz is smaller than size of pointer,
-	 * memory is NOT allocated to store key.
-	 * See 'nkey_create' function for details
-	 */
-	if (n->keysz > sizeof(void *))
-		yfree(n->key);
+nkey_destroy(const struct yhash *h, struct hn *n) {
+	if (h->kfree)
+		return (*h->kfree)(n->key);
 }
 
+static int
+nkey_cmp(const struct yhash *h, const void *k0, const void *k1) {
+	if (h->kcmp)
+		return (*h->kcmp)(k0, k1);
+	else
+		return k0 != k1;
+}
 
 /****************************************************************************
+ *
+ *
  *
  ****************************************************************************/
 /*
@@ -200,14 +260,13 @@ hmodify(struct yhash *h, u32 bits) {
 }
 
 static struct hn *
-hfind(const struct yhash *h, const void *key, u32 keysz) {
+hfind(const struct yhash *h, const void *key) {
 	struct hn          *n;
-	u32	            hv32 = (*h->hfunc)(key, keysz);
+	u32	            hv32 = (*h->hfunc)(key);
 	struct ylistl_link *hd = &h->map[hv_(h, hv32)];
 	ylistl_foreach_item(n, hd, struct hn, lk) {
-		if (keysz == n->keysz
-		    && n->hv32 == hv32
-		    && !memcmp(key, nkey(n), keysz))
+		if (n->hv32 == hv32
+		    && !nkey_cmp(h, key, n->key))
 			break;
 	}
 	return (&n->lk == hd)? NULL: n;
@@ -215,8 +274,8 @@ hfind(const struct yhash *h, const void *key, u32 keysz) {
 
 static inline void
 vdestroy(const struct yhash *h, void *v) {
-	if (h->fcb && v)
-		(*h->fcb)(v);
+	if (h->vfree)
+		(*h->vfree)(v);
 }
 
 /*
@@ -225,26 +284,25 @@ vdestroy(const struct yhash *h, void *v) {
 static struct hn *
 ncreate(struct yhash *h,
 	const void *key,
-	u32 keysz,
 	void *v) {
 	struct hn *n = ymalloc(sizeof(*n));
 	if (unlikely(!n))
 		return NULL;
-	if (unlikely(nkey_create(&n->key, key, keysz))) {
+	if (unlikely(nkey_create(h, &n->key, key))) {
 		yfree(n);
 		return NULL;
 	}
-	n->keysz = keysz;
-	n->hv32 = (*h->hfunc)(key, keysz);
+	n->hv32 = (*h->hfunc)(key);
 	n->v = v;
 	ylistl_init_link(&n->lk);
 	return n;
 }
 
 static inline void
-ndestroy(const struct yhash *h, struct hn *n) {
-	nkey_destroy(n);
-	vdestroy(h, n->v);
+ndestroy(const struct yhash *h, struct hn *n, int destroyv) {
+	nkey_destroy(h, n);
+	if (destroyv)
+		vdestroy(h, n->v);
 	yfree(n);
 }
 
@@ -259,19 +317,26 @@ hclean_nodes(struct yhash *h) {
 						 struct hn,
 						 lk) {
 			ylistl_del(&n->lk);
-			ndestroy(h, n);
+			ndestroy(h, n, TRUE);
 		}
 	}
 }
 
 /****************************************************************************
  *
+ *
+ *
  ****************************************************************************/
 static int
 hash_init(struct yhash *h,
-	  void (*fcb)(void *),
-	  u32 (*hfunc)(const void *, u32)) {
+          int     mode,
+          void  (*vfree)(void *),
+          void  (*kfree)(void *),
+          int   (*kcp)(void **, const void *),
+          int   (*kcmp)(const void *, const void *),
+	  u32   (*hfunc)(const void *)) {
 	u32 i;
+        h->mode = mode;
 	h->sz = 0;
 	h->mapbits = MIN_HBITS;
 	h->map = (struct ylistl_link *)ymalloc(sizeof(*h->map) * hmapsz(h));
@@ -279,55 +344,139 @@ hash_init(struct yhash *h,
 		return ENOMEM;
 	for (i = 0; i < hmapsz(h); i++)
 		ylistl_init_link(&h->map[i]);
+        h->vfree = hfree_get_func(vfree);
+        h->kfree = hfree_get_func(kfree);
+        h->kcp = kcp;
+        h->kcmp = kcmp;
 	h->hfunc = hfunc;
-	h->fcb = fcb;
 	return 0;
 }
 
 static struct yhash *
-hash_create_internal(void (*fcb)(void *), u32 (*hfunc)(const void *, u32)) {
+hash_create_internal(int     mode,
+                     void  (*vfree)(void *),
+                     void  (*kfree)(void *),
+                     int   (*kcp)(void **, const void *),
+                     int   (*kcmp)(const void *, const void *),
+                     u32   (*hfunc)(const void *)) {
+	if (unlikely(!hfunc))
+		return NULL;
+
 	struct yhash *h = ymalloc(sizeof(*h));
 	if (unlikely(!h))
 		return NULL;
 
-	if (unlikely(hash_init(h, fcb, hfunc))) {
+	if (unlikely(hash_init(h,
+                               mode,
+                               vfree,
+                               kfree,
+                               kcp,
+                               kcmp,
+                               hfunc))) {
 		yfree(h);
 		return NULL;
 	}
 	return h;
 }
 
+int
+hash_add(struct yhash *h,
+	 const void ** const phkey,
+	 void *key,
+	 void **oldv,
+	 void *v) {
+	struct hn *n = hfind(h, key);
+	if (n) {
+		/* overwrite value */
+		if (oldv)
+			*oldv = n->v;
+		else
+			vdestroy(h, n->v);
+		n->v = v;
+		return 0;
+	}
+
+	/* We need to expand hash map size if hash seems to be full */
+	if (h->sz > hmapsz(h))
+		/* return value is ignored intentionally.
+		 * Actually, even if hmodify fails, hash can still
+		 *   continue to add new value.
+		 */
+		hmodify(h, h->mapbits + 1);
+	n = ncreate(h, key, v);
+	if (unlikely(!n))
+		return -1;
+	if (phkey)
+		*phkey = n->key;
+	ylistl_add_last(&h->map[hv(h, n)], &n->lk);
+	h->sz++;
+	return 1;
+}
 
 /****************************************************************************
  *
+ *
+ *
  ****************************************************************************/
 struct yhash *
-yhash_create(void (*fcb)(void *)) {
-	return hash_create_internal(fcb, &hfunc_crc32);
+yhashi_create(void (*vfree)(void *)) {
+        return hash_create_internal(YHASH_KEYTYPE_I,
+                                    vfree, /* vfree */
+                                    NULL, /* kfree */
+                                    &kcp_i, /* kcp */
+                                    NULL, /* kcmp */
+                                    &hfunc_i);
 }
 
 struct yhash *
-yhash_create2(void (*fcb)(void *), int hfunc_type) {
-	switch (hfunc_type) {
-	case HASH_FUNC_CRC:
-		return hash_create_internal(fcb, &hfunc_crc32);
-	case HASH_FUNC_INT:
-		return hash_create_internal(fcb, &hfunc_int);
-	default:
-		return NULL;
-	}
+yhashs_create(void (*vfree)(void *),
+              int key_deepcopy) {
+        return hash_create_internal(YHASH_KEYTYPE_S,
+                                    vfree, /* vfree */
+                                    &kfree_s, /* kfree */
+                                    key_deepcopy? &kcp_s: NULL, /* kcp */
+                                    &kcmp_s, /* kcmp */
+                                    &hfunc_s);
 }
 
 struct yhash *
-yhash_create3(void (*fcb)(void *), u32 (*hfunc)(const void *, u32)) {
-	return hash_create_internal(fcb, hfunc);
+yhasho_create(void  (*vfree)(void *),
+              void  (*keyfree)(void *),
+              int   (*keycopy)(void **, const void *),
+              int   (*keycmp)(const void *, const void *),
+              u32   (*hfunc)(const void *key)) {
+        return hash_create_internal(YHASH_KEYTYPE_O,
+                                    vfree, /* vfree */
+                                    keyfree, /* kfree */
+                                    keycopy, /* kcp */
+                                    keycmp, /* kcmp */
+                                    hfunc);
 }
 
-void
+/*---------------------------------------------------------------------------
+ *
+ *--------------------------------------------------------------------------*/
+struct yhash *
+yhash_create(const struct yhash *h) {
+	return hash_create_internal(h->mode,
+				    h->vfree,
+				    h->kfree,
+				    h->kcp,
+				    h->kcmp,
+				    h->hfunc);
+}
+
+int
 yhash_clean(struct yhash *h) {
 	hclean_nodes(h);
 	yfree(h->map);
-	hash_init(h, h->fcb, h->hfunc);
+	return hash_init(h,
+                         h->mode,
+                         h->vfree,
+                         h->kfree,
+                         h->kcp,
+                         h->kcmp,
+                         h->hfunc);
 }
 
 void
@@ -342,10 +491,17 @@ yhash_sz(const struct yhash *h) {
 	return h->sz;
 }
 
+int
+yhash_is_sametype(const struct yhash *h0, const struct yhash *h1) {
+	size_t modeoff = offsetof(struct yhash, mode);
+	return !!memcmp((const char *)h0 + modeoff,
+			(const char *)h1 + modeoff,
+			sizeof(struct yhash) - modeoff);
+}
+
 u32
 yhash_keys(const struct yhash *h,
 	   const void **keysbuf,
-	   u32 *keysszbuf,
 	   u32 bufsz) {
 	u32 r, i;
 	struct hn *n;
@@ -356,9 +512,7 @@ yhash_keys(const struct yhash *h,
 				    struct hn,
 				    lk) {
 			if (r < bufsz) {
-				keysbuf[r] = nkey(n);
-				if (keysszbuf)
-					keysszbuf[r] = n->keysz;
+				keysbuf[r] = n->key;
 				++r;
 			} else
 				return r;
@@ -368,56 +522,36 @@ yhash_keys(const struct yhash *h,
 }
 
 int
-yhash_add2(struct yhash *h,
-	   const void ** const pkey,
-	   const void *key, u32 keysz,
-	   void *v) {
-	struct hn *n = hfind(h, key, keysz);
-	if (n) {
-		/* overwrite value */
-		vdestroy(h, n->v);
-		n->v = v;
-		return 0;
-	}
+yhash_add(struct yhash *h, void *key, void *v) {
+	return hash_add(h, NULL, key, NULL, v);
+}
 
-	/* we need to expand hash map size if hash seems to be full */
-	if (h->sz > hmapsz(h))
-		/* return value is ignored intentionally.
-		 * Actually, even if hmodify fails, hash can still
-		 *   continue to add new value.
-		 */
-		hmodify(h, h->mapbits + 1);
-	n = ncreate(h, key, keysz, v);
+int
+yhash_add2(struct yhash *h, void *key, void **oldv, void *v) {
+	return hash_add(h, NULL, key, oldv, v);
+}
+
+int
+yhash_add3(struct yhash *h,
+          const void ** const phkey,
+          void *key,
+          void *v) {
+	return hash_add(h, phkey, key, NULL, v);
+}
+
+int
+yhash_del2(struct yhash *h, void **value, const void *key) {
+	int destroyv = TRUE;
+	struct hn *n = hfind(h, key);
 	if (unlikely(!n))
-		return -1;
-	if (pkey)
-		*pkey = nkey(n);
-	ylistl_add_last(&h->map[hv(h, n)], &n->lk);
-	h->sz++;
-	return 1;
-}
-
-int
-yhash_add(struct yhash *h,
-	  const void *key, u32 keysz,
-	  void *v) {
-	return yhash_add2(h, NULL, key, keysz, v);
-}
-
-int
-yhash_del2(struct yhash *h,
-	   void **value,
-	   const void *key, u32 keysz) {
-	struct hn *n = hfind(h, key, keysz);
-	if (!n)
 		return 0;
 
 	ylistl_del(&n->lk);
 	if (value) {
 		*value = n->v;
-		n->v = NULL; /* to avoid freeing data in 'ndestroy' */
+		destroyv = FALSE;
 	}
-	ndestroy(h, n);
+	ndestroy(h, n, destroyv);
 	h->sz--;
 	if (h->sz < hmapsz(h) / 4)
 		/* return value is ignored intentionally.
@@ -429,14 +563,17 @@ yhash_del2(struct yhash *h,
 
 
 int
-yhash_del(struct yhash *h,
-	  const void *key, u32 keysz) {
-	return yhash_del2(h, NULL, key, keysz);
+yhash_del(struct yhash *h, const void *key) {
+	return yhash_del2(h, NULL, key);
 }
 
-void *
-yhash_find(const struct yhash *h,
-	   const void *key, u32 keysz) {
-	struct hn *n = hfind(h, key, keysz);
-	return n? n->v: NULL;
+int
+yhash_find(const struct yhash *h, void **value, const void *key) {
+	struct hn *n = hfind(h, key);
+	if (likely(n)) {
+		if (value)
+			*value = n->v;
+		return 0;
+	}
+	return ENOENT;
 }

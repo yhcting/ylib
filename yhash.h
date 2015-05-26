@@ -34,123 +34,182 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-
+/*
+ * This is NOT MT-safe.
+ */
 
 #ifndef __YHASh_h__
 #define __YHASh_h__
 
 #include "ydef.h"
 
+/**
+ * Hash key type.
+ */
 enum {
-	HASH_FUNC_CRC = 0,
-	HASH_FUNC_INT,  /* 32bit integer is used as hash key.
-			 * This is good to use mem. address as hash key.
-			 */
-	HASH_FUNC_END,  /* end of hash function type */
+        YHASH_KEYTYPE_I,
+        YHASH_KEYTYPE_S,
+        YHASH_KEYTYPE_O
 };
+
+
+/**
+ * predefined function IDs
+ */
+/* 'free()' function for malloc() */
+#define YHASH_PREDEFINED_FREE ((void (*)(void *))1)
+
+
 
 struct yhash;
 
+/******************************************************************************
+ *
+ * Interfaces for integer-key hash
+ * prefix : 'yhashi_'
+ *
+ *****************************************************************************/
 /**
- * See comments of corresponding 'yhash_init'
- * @fcb : callback to free user value(item)
- *	  (NULL means, item doesn't need to be freed.)
+ * Create hash that uses integer value as key(YHASH_KEYTYPE_I).
+ * In this hash, mem. address of key is interpreted as integer value.
+ * ex. (void *)0x01 => integer '1'
+ * @vfree function to free hash value.
+ *        'NULL' not to free.
+ *        'HFREE_FREE' to use standard 'free' function.
  */
 EXPORT struct yhash *
-yhash_create(void (*fcb)(void *));
+yhashi_create(void (*vfree)(void *));
 
+/******************************************************************************
+ *
+ * Interfaces for string-key hash
+ * prefix : 'yhashs_'
+ *
+ *****************************************************************************/
 /**
- * See comments of corresponding 'yhash_init'
+ * Create hash that uses string value as key(YHASH_KEYTYPE_S).
+ * In this hash, mem. address of key is interpreted as string that has null
+ * terminator.
+ * @vfree function to free hash value.
+ *        'NULL' not to free.
+ *        'HFREE_FREE' to use standard 'free' function.
+ * @key_deepcopy TRUE for using deepcopy for hash 'key', otherwise FALSE.
  */
 EXPORT struct yhash *
-yhash_create2(void (*fcb)(void *), int hfunc_type);
+yhashs_create(void (*vfree)(void *), int key_deepcopy);
 
+/******************************************************************************
+ *
+ * Interfaces for general-object-key hash
+ * prefix : 'yhasho_'
+ *
+ *****************************************************************************/
 /**
- * See comments of corresponding 'yhash_init'
+ * Create hash that uses general object value as key(YHASH_KEYTYPE_O).
+ * Actions when "argument == NULL":
+ * @vfree   memory is NOT freed (can be 'HFREE_FREE')
+ * @keyfree memory is NOT freed (can be 'HFREE_FREE')
+ * @keycopy shallow copy (pointer address is copied).
+ * @keycmp  mem-addresses of key-objects are compared.
  */
 EXPORT struct yhash *
-yhash_create3(void (*fcb)(void *),
-	      u32 (*hfunc)(const void *key, u32 keysz));
+yhasho_create(void  (*vfree)(void *),
+              void  (*keyfree)(void *),
+	      /* return: 0 for success. Otherwise errno. */
+              int   (*keycopy)(void **newkey, const void *),
+	      /* return: 0 if same. Otherewise non-zero */
+              int   (*keycmp)(const void *, const void *),
+              u32   (*hfunc)(const void *key));
+
+/******************************************************************************
+ *
+ * Common Interfaces
+ * prefix : 'yhash_'
+ *
+ *****************************************************************************/
+/**
+ * Create new empty hash that is same with given hash.
+ * (All are same except for it is empty)
+ */
+EXPORT struct yhash *
+yhash_create(const struct yhash *);
 
 EXPORT void
-yhash_clean(struct yhash *h);
+yhash_destroy(struct yhash *);
 
-EXPORT void
-yhash_destroy(struct yhash *h);
+EXPORT int
+yhash_clean(struct yhash *);
+
+EXPORT u32
+yhash_sz(const struct yhash *);
 
 /**
- * @return : number of elements in hash.
+ * 'sametype' means all hash attributes (ex. key type, free function etc) are
+ * same.
+ * @return TRUE/FALSE
+ */
+EXPORT int
+yhash_is_sametype(const struct yhash *, const struct yhash *);
+
+/**
+ * @return YHASH_KEYTYPE_X (X can be I, S or O)
+ */
+EXPORT int
+yhash_keytype(const struct yhash *);
+
+/**
+ * @return number of keys stored in keysbuf.
  */
 EXPORT u32
-yhash_sz(const struct yhash *h);
+yhash_keys(const struct yhash *, const void **keysbuf, u32 bufsz);
 
 /**
- * @keysbuf: Buffer to contain pointer of key.
- *           'shallow copy' of key is stored at buffer.
- *           So, DO NOT free/modify key-value pointed.
- * @keysszbuf: Buffer to contain each key's length.
- *             So, size should be same with @keysbuf.
- *             if NULL, this is ignored.
- * @bufsz: size of @keysbuf and @keysszbuf
- * @return : number keys assigned to @keysbuf
- *           return value == @bufsz means @keysbuf is not enough large to
- *             contains all keys in the hash.
+ * @return -1 for error
+ *         otherwise # of newly added item. (0 means overwritten).
  */
-EXPORT u32
-yhash_keys(const struct yhash *h,
-	   const void **keysbuf, /* in/out */
-	   u32 *keysszbuf, /* in/out */
-	   u32 bufsz);
+EXPORT int
+yhash_add(struct yhash *, void *key, void *v);
 
 /**
- * For hash internal access.
+ * @oldv Existing overwritten hash value matching given key, is stored.
+ *       If operation doesn't overwrite anything, this is un-touched.
+ *       if NULL, this is exactly same with 'yhash_add'.
+ * @return -1 for error
+ *         otherwise # of newly added item. (0 means overwritten).
+ */
+EXPORT int
+yhash_add2(struct yhash *, void *key, void **oldv, void *v);
+
+/**
+ * This accesses hash-internal-data directly
  * DO NOT use unless you know exactly what you are doing.
+ * This is useful to reuse key as read-only value.
+ * @phkey address of key used in hash.
+ *        if NULL, this exactly same with yhashs_add
+ * @return -1 for error
+ *         otherwise # of newly added item. (0 means overwritten).
  */
 EXPORT int
-yhash_add2(struct yhash *h,
-	   /* pointing internally generated-deep-copied address */
-	   const void ** const pkey,
-	   const void *key, u32 keysz,
-	   void *v);
+yhash_add3(struct yhash *, const void ** const phkey, void *key, void *v);
 
 /**
- * @v	   : user value(item)
- * @key    : hash key
- * @keysz  : size of hash key
- * @return : -1 for error
- *           otherwise # of newly added item. (0 means overwritten).
+ * @return number of deleted elements. (0 means nothing deleted)
  */
 EXPORT int
-yhash_add(struct yhash *h,
-	  const void *key, u32 keysz,
-	  void *v);
+yhash_del(struct yhash *h, const void *key);
 
 /**
- * If these is no matched item, nothing happened.
- * @keysz  : size of hash key
- *           See, comment of yhash_add for details.
- * @return : -1 for error otherwise # of deleted. (0 means nothing to delete)
+ * @return number of deleted elements. (0 means nothing deleted)
  */
 EXPORT int
-yhash_del(struct yhash *h,
-	  const void *key, u32 keysz);
+yhash_del2(struct yhash *, void **value, const void *key);
 
 /**
- * @value: if NULL, yhash_del2 is exactly same with yhash_del.
- *         otherwise, data value is NOT freed and stored in it.
+ * @value value matching given key. NULL is allowed
+ * @return 0 if key is in hash. Otherwise non-zero.
  */
 EXPORT int
-yhash_del2(struct yhash *h,
-	   void **value,
-	   const void *key, u32 keysz);
+yhash_find(const struct yhash *, void **value, const void *key);
 
-/**
- * @keysz  : size of hash key
- *           See, comment of yhash_add for details.
- * @return : NULL if fails.
- */
-EXPORT void *
-yhash_find(const struct yhash *h,
-	   const void *key, u32 keysz);
 
 #endif /* __YHASh_h__ */

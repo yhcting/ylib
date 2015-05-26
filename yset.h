@@ -41,9 +41,42 @@
 /* yset structure is dummy wrapper of struct yash * */
 typedef struct yhash * yset_t;
 
+/**
+ * integer set.
+ */
 static inline yset_t
-yset_create(void) {
-	return yhash_create(NULL);
+yseti_create(void) {
+	return yhashi_create(NULL);
+}
+
+/**
+ * string set
+ */
+static inline yset_t
+ysets_create(void) {
+	return yhashs_create(NULL, TRUE);
+}
+
+/**
+ * object set
+ * See, yhasho_create for details
+ */
+static inline yset_t
+yseto_create(void  (*elemfree)(void *),
+	     /* return: 0 for success. Otherwise errno. */
+             int   (*elemcopy)(void **newelem, const void *),
+	     /* return: 0 if same. Otherewise non-zero */
+             int   (*elemcmp)(const void *, const void *),
+             u32   (*hfunc)(const void *elem)) {
+	return yhasho_create(NULL, elemfree, elemcopy, elemcmp, hfunc);
+}
+
+/**
+ * Create empty set that is same type with given set s.
+ */
+static inline yset_t
+yset_create(yset_t s) {
+	return yhash_create(s);
 }
 
 static inline void
@@ -63,9 +96,6 @@ yset_sz(const yset_t s) {
  * @elemsbuf: Buffer to contain pointer of element.
  *            'shallow copy' of elements are stored at buffer.
  *            So, DO NOT free/modify element's value pointed
- * @elemsszbuf: Buffer to contain each element's length.
- *              So, size should be same with @elemsbuf.
- *              if NULL, this is ignored.
  * @bufsz: sizeof @elemsbuf and @elemsszbuf.
  * @return: number keys assigned to @elemsbuf
  *          'return value == @bufsz' may mean that @elemsbuf is not large
@@ -74,21 +104,19 @@ yset_sz(const yset_t s) {
 static inline u32
 yset_elements(const yset_t s,
 	      const void **elemsbuf, /* in/out */
-	      u32         *elemsszbuf, /* in/out */
 	      u32          bufsz) {
-	return yhash_keys(s, elemsbuf, elemsszbuf, bufsz);
+	return yhash_keys(s, elemsbuf, bufsz);
 }
 
 /**
  * @v: user value(item)
  * @elem: hash key
- * @elemsz: size of element
  * @return: -1 for error
  *          otherwise # of newly added item. (0 means overwritten).
  */
 static inline int
-yset_add(yset_t s, const void *elem, u32 elemsz) {
-	return yhash_add(s, elem, elemsz, (void *)1);
+yset_add(yset_t s, void *elem) {
+	return yhash_add(s, elem, (void *)1);
 }
 
 /**
@@ -97,16 +125,16 @@ yset_add(yset_t s, const void *elem, u32 elemsz) {
  * @return: -1 for error otherwise # of deleted. (0 means nothing to delete)
  */
 static inline int
-yset_del(yset_t s, const void *elem, u32 elemsz) {
-	return yhash_del(s, elem, elemsz);
+yset_del(yset_t s, const void *elem) {
+	return yhash_del(s, elem);
 }
 
 /**
  * @return: boolean.
  */
 static inline int
-yset_contains(const yset_t s, const void *elem, u32 elemsz) {
-	return !!yhash_find(s, elem, elemsz);
+yset_contains(const yset_t s, const void *elem) {
+	return !yhash_find(s, NULL, elem);
 }
 
 EXPORT yset_t

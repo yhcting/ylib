@@ -43,87 +43,89 @@
 
 
 static void
-vfree(void *v) {
+data_free(void *v) __unused;
+
+static void
+data_free(void *v) {
 	yfree(v);
 }
 
 static void *
-vcreate(u32 *data_size,
-	const void *key, u32 keysz) {
+data_create(const void *key) {
 	int *i;
-	*data_size = sizeof(int);
 	i = ymalloc(sizeof(*i));
 	*i = 10;
 	return i;
 }
 
+static u32
+data_size(const void *d) {
+	return sizeof(int);
+}
+
 static void
 test_lru(void) {
 	int *pi;
-	struct ylru_cb cbs = {
-		.free = &vfree,
-		.create = NULL
-	};
-	struct ylru *lru = ylru_create(sizeof(int) * 3, &cbs);
+	struct ylru *lru = ylrus_create(sizeof(int) * 3,
+					YLRU_PREDEFINED_FREE,
+					NULL,
+					&data_size);
 
-	pi = (int *)ylru_get(lru, NULL, "key0", 5);
-	yassert(!pi);
-
+	yassert(1 == ylru_get(lru, (void **)&pi, "key0"));
 	pi = ymalloc(sizeof(*pi));
 	*pi = 100;
-	ylru_put(lru, "k100", 5, pi, sizeof(*pi));
+	ylru_put(lru, "k100", pi);
 	yassert(sizeof(int) == ylru_sz(lru));
 
-	pi = (int *)ylru_get(lru, NULL, "k100", 5);
+	yassert(0 == ylru_get(lru, (void **)&pi, "k100"));
 	yassert(100 == *pi);
 	yassert(0 == ylru_sz(lru));
-	ylru_put(lru, "k100", 5, pi, sizeof(*pi));
+	ylru_put(lru, "k100", pi);
 
 	pi = ymalloc(sizeof(*pi));
 	*pi = 200;
-	ylru_put(lru, "k200", 5, pi, sizeof(*pi));
+	ylru_put(lru, "k200", pi);
 	yassert(sizeof(int) * 2 == ylru_sz(lru));
 
 	pi = ymalloc(sizeof(*pi));
 	*pi = 300;
-	ylru_put(lru, "k300", 5, pi, sizeof(*pi));
+	ylru_put(lru, "k300", pi);
 	yassert(sizeof(int) * 3 == ylru_sz(lru));
 
 	pi = ymalloc(sizeof(*pi));
 	*pi = 400;
-	ylru_put(lru, "k400", 5, pi, sizeof(*pi));
+	ylru_put(lru, "k400", pi);
 	yassert(sizeof(int) * 3 == ylru_sz(lru));
 
 	/* Now lru is [ 200 - 300 - 400 (newest) ] */
 
-	pi = (int *)ylru_get(lru, NULL, "k100", 5);
-	yassert(!pi);
-	pi = (int *)ylru_get(lru, NULL, "k200", 5);
+	yassert(1 == ylru_get(lru, (void **)&pi, "k100"));
+	yassert(0 == ylru_get(lru, (void **)&pi, "k200"));
 	yassert(200 == *pi);
 	yassert(sizeof(int) * 2 == ylru_sz(lru));
-	ylru_put(lru, "k200", 5, pi, sizeof(*pi));
+	ylru_put(lru, "k200", pi);
 
 	/* Now, [ 300 - 400 - 200 (newest) ] */
 
 	pi = ymalloc(sizeof(*pi));
 	*pi = 500;
-	ylru_put(lru, "k500", 5, pi, sizeof(*pi));
+	ylru_put(lru, "k500", pi);
 	yassert(sizeof(int) * 3 == ylru_sz(lru));
 
 	/* Should be [ 400 - 200 - 500 ] */
 
-	pi = (int *)ylru_get(lru, NULL, "k300", 5);
-	yassert(!pi);
+	yassert(1 == ylru_get(lru, (void **)&pi, "k300"));
 
 	ylru_clean(lru);
 	ylru_destroy(lru);
 
-	cbs.create = &vcreate;
-	lru = ylru_create(sizeof(int) * 3, &cbs);
-	pi = (int *)ylru_get(lru, NULL, "k000", 5);
-	yassert(pi);
+	lru = ylrus_create(sizeof(int) * 3,
+			   YLRU_PREDEFINED_FREE,
+			   &data_create,
+			   &data_size);
+	yassert(0 == ylru_get(lru, (void **)&pi, "k000"));
 	yassert(10 == *pi);
-	ylru_put(lru, "k000", 5, pi, sizeof(*pi));
+	ylru_put(lru, "k000", pi);
 	ylru_destroy(lru);
 }
 

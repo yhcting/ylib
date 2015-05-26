@@ -44,11 +44,12 @@ yset_intersect(const yset_t s0, const yset_t s1) {
 	yset_t ts; /* target set - larger set */
 	u32 sz0, sz1, sssz, i;
 	const void **ebuf = NULL;
-	u32 *eszbuf = NULL;
 	yset_t s = NULL;
-	if (unlikely(!s0 || !s1))
+	if (unlikely(!s0
+		     || !s1
+		     || !yhash_is_sametype(s0, s1)))
 		return NULL;
-	if (unlikely(!(s = yset_create())))
+	if (unlikely(!(s = yset_create(s0))))
 		return NULL; /* ENOMEM */
 	sz0 = yset_sz(s0);
 	sz1 = yset_sz(s1);
@@ -67,17 +68,14 @@ yset_intersect(const yset_t s0, const yset_t s1) {
 	}
 	if (unlikely(!(ebuf = (const void **)malloc(sizeof(*ebuf) * sssz))))
 		goto fail; /* ENOMEM */
-	if (unlikely(!(eszbuf = (u32 *)malloc(sizeof(*eszbuf) * sssz))))
-		goto fail; /* ENOMEM */
-
-	if (unlikely(sssz != yset_elements(ss, ebuf, eszbuf, sssz)))
+	if (unlikely(sssz != yset_elements(ss, ebuf, sssz)))
 		/* this is totally unexpected! */
 		goto fail;
 
 	i = sssz;
 	while (i--) {
-		if (yset_contains(ts, ebuf[i], eszbuf[i])) {
-			if (unlikely(0 > yset_add(s, ebuf[i], eszbuf[i])))
+		if (yset_contains(ts, ebuf[i])) {
+			if (unlikely(0 > yset_add(s, (void *)ebuf[i])))
 				goto fail; /* ENOMEM */
 		}
 	}
@@ -91,8 +89,6 @@ yset_intersect(const yset_t s0, const yset_t s1) {
  done:
 	if (likely(ebuf))
 		free(ebuf);
-	if (likely(eszbuf))
-		free(eszbuf);
 	return s;
 
 }

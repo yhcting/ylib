@@ -39,19 +39,56 @@
 
 #include "ydef.h"
 
+#define YLRU_PREDEFINED_FREE ((void (*)(void *))1)
+
 struct ylru;
 
-struct ylru_cb {
-	/* free user data evicted from cache. */
-	void  (*free)(void *);
-	/* create data if cache miss */
-	void *(*create)(u32 *data_size, /* size of created data */
-			const void *key, u32 keysz);
-};
+/**
+ * @maxsz Maximum size that cache can keep (NOT bytes).
+ *        '0' means infinite (as many as possible)
+ * @datafree Function to free user data evicted from cache
+ *           'NULL' means 'DO NOT free'
+ * @datacreate Function to create data if cache miss
+ *             'NULL' means 'DO NOT create'
+ * @datasize Function to calculate data size.
+ *           This is to compare with 'maxsz' of cache
+ *           'NULL' means fixed value (1).
+ * @return NULL for fails (ex. there is NULL in arguments)
+ */
+EXPORT struct ylru *
+ylrui_create(u32 maxsz,
+	     void  (*datafree)(void *),
+	     void *(*datacreate)(const void *key),
+	     u32   (*datasize)(const void *));
+
 
 EXPORT struct ylru *
-ylru_create(u32 maxsz,
-	    const struct ylru_cb *cbs);
+ylrus_create(u32 maxsz,
+	     void  (*datafree)(void *),
+	     void *(*datacreate)(const void *key),
+	     u32   (*datasize)(const void *));
+
+/**
+ * See comment of 'ylrui_create' and 'yhasho_create' for details
+ */
+EXPORT struct ylru *
+ylruo_create(u32 maxsz,
+	     /* functions to handle cache data */
+	     void  (*datafree)(void *),
+	     void *(*datacreate)(const void *key),
+	     u32   (*datasize)(const void *),
+	     /* functions to handle key object */
+	     void  (*keyfree)(void *),
+	     int   (*keycopy)(void **newkey, const void *),
+	     int   (*keycmp)(const void *, const void *),
+	     u32   (*hfunc)(const void *key));
+
+/**
+ * Create empty lru cache that has same attributes with given one.
+ * See 'yhash_create' for details.
+ */
+EXPORT struct ylru *
+ylru_create(const struct ylru *);
 
 /**
  * Make cache empty.
@@ -64,25 +101,21 @@ EXPORT void
 ylru_destroy(struct ylru *);
 
 /**
- * @data_size: size of user defined unit. NOT memory size of data.
- *     This value is used to calculate lru cache size.
  * @return: 0 for success, otherwise error number
  */
 EXPORT int
-ylru_put(struct ylru *,
-	 const void *key, u32 keysz,
-	 void *data, u32 data_size);
+ylru_put(struct ylru *, const void *key, void *data);
 
 /**
  * NOTE: value is remove from cache!
  * So, after using it, user SHOULD put it again for future use.
- * @data_size: NULL is ignored.
- * @return: NULL if cache miss and fail to create new data by 'ylru_cb.create'
+ * @data 'NULL' is NOT allowed.
+ * @return  0 for getting data(existing one, or newly created one)
+ *          1 cache missed and not newly created.
+ *         <0 error (-errno)
  */
-EXPORT void *
-ylru_get(struct ylru *,
-	 u32 *data_size, /* returned data size */
-	 const void *key, u32 keysz);
+EXPORT int
+ylru_get(struct ylru *, void **data, const void *key);
 
 /**
  * Get size of cached data.

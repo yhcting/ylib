@@ -12,7 +12,7 @@ aclocal
 autoheader
 autoconf
 
-./Makefile.sh > Makefile.am
+./Makefile.sh
 automake
 
 ./configure $@

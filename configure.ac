@@ -3,10 +3,10 @@
 
 AC_PREREQ([2.67])
 AC_INIT([ylib], [1.0], [yhcting77@gmail.com])
-AC_CONFIG_SRCDIR([ylib.h])
+AC_CONFIG_SRCDIR([Makefile.sh])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([-Wall -Werror])
+AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects])
 
 # Checks for programs.
 AC_PROG_CC
@@ -50,26 +50,6 @@ AC_CHECK_FUNCS([memmove memset malloc memcpy],
     [],
     [AC_MSG_ERROR([sorry, these function is required. \
     		   But portability will be improved later!])])
-
-AC_ARG_WITH(dynamic-mempool,
-[  --with-dynamic-mempool
-        Dynamic mempool(henceforth DMP) is used instead of static mempool(henceforth SMP)
-        DMP is suitable for the case that,
-          frequent memory alloc/free within certain arrange.
-        DMP uses 'malloc' for each memory block.
-        (cf. SMP uses 'malloc' for each memory block group.)
-	So, at some moment, getting memory block may take long time.
-        (expanding pool - 'malloc' for each expanded block.)
-	But, DMP supports shrinking pool in short time.
-	In summay,
-	  SMP is "fast for allocating block - even in worst case (one malloc) -,
-	    very slow for shrinking pool."
-	  DMP is "slow for allocating block - expanding pool requires lots of malloc call -,
-	    fast for shirinking pool.],
-[AC_DEFINE([CONFIG_MEMPOOL_DYNAMIC],
-	   [1],
-	   [Dynamic mempool is used instead of static mempool.])],
-[])
 
 AC_ARG_WITH(debug,
 [  --with-debug

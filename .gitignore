@@ -16,11 +16,16 @@ install/
 lib/
 bin/
 include/
+doxy/
 
 
 # configuration files
 !.gitignore
 !.emacs-ede.el
+
+# auto-generated files
+Android.mk
+src/ylib.h
 
 # files for build system
 Makefile

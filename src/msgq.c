@@ -141,13 +141,17 @@ mdestroy(struct ymsg_ *m) {
 
 static int
 qen(struct ymq *q, struct ymsg_ *m) {
+	int r;
 	m->m.when = monotonic_time();
-	pthread_mutex_lock(&q->m);
+	r = pthread_mutex_lock(&q->m);
+	yassert(!r);
 	ylistl_add_last(&q->q[m->m.pri], &m->lk);
 	++q->sz;
-	pthread_cond_broadcast(&q->cond);
-	pthread_mutex_unlock(&q->m);
-	return 0;
+	r = pthread_cond_broadcast(&q->cond);
+	yassert(!r);
+	r = pthread_mutex_unlock(&q->m);
+	yassert(!r);
+	return r;
 }
 
 /******************************************************************************

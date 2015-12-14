@@ -79,8 +79,8 @@ enum {
 struct ymsg {
 	uint64_t when; /**< Nsec since boot */
 	uint8_t type; /**< Message type [0-255] */
-	uint8_t pri;  /**< Priority [0-255] */
-	uint16_t opt;  /**< Option - reserved for future use */
+	uint8_t pri; /**< Priority [0-255] */
+	uint16_t opt; /**< Option - reserved for future use */
 	void *data; /**< Data or argument of action */
 	void (*dfree)(void *); /**< Function to free \a data */
 	union {

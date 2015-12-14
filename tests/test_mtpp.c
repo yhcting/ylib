@@ -139,7 +139,6 @@ test_mtpp(void) {
 	int r, i;
 	struct ymtpp *m;
 	struct workout *workout;
-	struct ymtppjob ccj;
 	ymtpp_task_t nA, nB, nC, nD, nE, nF, nG, nH, nI, nJ, nK, nL;
 
 	m = ymtpp_create(0);

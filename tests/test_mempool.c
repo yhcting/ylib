@@ -149,6 +149,7 @@ test_mempool(void) {
 		b[i] = NULL;
 	}
 
+#if 0 /* ymp_shrink is NOT supported at this moment */
 	/* call shrink here! */
 	ymp_shrink(mp, 0);
 	{ /* just scope */
@@ -162,6 +163,7 @@ test_mempool(void) {
 		}
 		assert(nr == ymp_usedsz(mp));
 	} /* just scope */
+#endif
 	ymp_destroy(mp);
 
 #undef __POISONV

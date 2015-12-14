@@ -67,9 +67,7 @@ struct tn np[TESTN_SZ]; /* Node Pool */
  */
 static struct ytreel_link *
 build_test_treel(void) {
-	struct tn *n;
-	char i;
-
+	int i;
 
 	for (i = 0; i < TESTN_SZ; i++) {
 		ytreel_init_link(&np[i].lk);
@@ -149,7 +147,6 @@ test_operation(void) {
 static void
 verify_test_treel(void) {
 	struct tn *n;
-	struct ytreel_link *lk;
 	n = N(F); /* root */
 	yassert('F' == n->c);
 	/* root should not have sibling! */

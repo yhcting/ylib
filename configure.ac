@@ -32,17 +32,17 @@ AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
 AC_CHECK_SIZEOF(void*)
 if test ${ac_cv_sizeof_char} != 1; then
-	AC_MSG_ERROR([Size of char isn't 8 bit.])
+    AC_MSG_ERROR([Size of char isn't 8 bit.])
 fi
 if test ${ac_cv_sizeof_short} != 2; then
-n	AC_MSG_ERROR([Size of short isn't 16 bit.])
+    AC_MSG_ERROR([Size of short isn't 16 bit.])
 fi
 if test ${ac_cv_sizeof_int} != 4; then
-	AC_MSG_ERROR([Size of int isn't 32 bit.])
+    AC_MSG_ERROR([Size of int isn't 32 bit.])
 fi
 # some codes assumes below condition.
 if test ${ac_cv_sizeof_long} != ${ac_cv_sizeof_voidp}; then
-        AC_MSG_ERROR([Size of long isn't same with size of pointer.])
+    AC_MSG_ERROR([Size of long isn't same with size of pointer.])
 fi
 
 # Checks for library functions.
@@ -52,23 +52,26 @@ AC_CHECK_FUNCS([memmove memset malloc memcpy],
     		   But portability will be improved later!])])
 
 AC_ARG_WITH(debug,
-[  --with-debug
-        Build with debugging feature. This arguement should be enabled for testing.],
-[AC_DEFINE([CONFIG_DEBUG],
-	   [1],
-	   [Debug is enabled.])],
-[])
+    [AS_HELP_STRING([--with-debug],
+        [Build with debugging feature. This arguement should be enabled for testing.])],
+    [AC_DEFINE([CONFIG_DEBUG],
+        [1],
+        [Debug is enabled.])],
+    [with_debug=no])
 
 AC_ARG_WITH(debug2,
-[  --with-debug2
-        Debugging level 2 - more verbose debugging.],
-[AC_DEFINE([CONFIG_DEBUG2],
-	   [1],
-	   [ More verbose debugging is enabled.])],
-[])
+    [AS_HELP_STRING([--with-debug2],
+        [Debugging level 2 - more verbose debugging.])],
+    [AC_DEFINE([CONFIG_DEBUG2],
+        [1],
+        [ More verbose debugging is enabled.])],
+    [with_debug2=no])
 
-AM_CFLAGS="-Wall -Werror"
-AC_SUBST([AM_CFLAGS])
+AS_IF([test "x$with_debug" != xno -o "x$with_debug2" != xno ],
+    [CFLAGS="-g -O0"],
+    [CFLAGS="-O2"])
+CFLAGS="${CFLAGS} -Wall -Werror"
+AC_SUBST([CFLAGS])
 
 AC_CONFIG_FILES([Makefile])
 

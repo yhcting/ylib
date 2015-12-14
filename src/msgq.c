@@ -39,12 +39,15 @@
 #include <errno.h>
 
 #include "common.h"
+#include "yutils.h"
 #include "ymsgq.h"
 
 /* Android NDK doesn't define CLOCK_MONOTONIC_RAW */
 #ifndef CLOCK_MONOTONIC_RAW
 #define CLOCK_MONOTONIC_RAW 4
 #endif
+
+#define sec2ns(x) ((x) * 1000 * 1000 * 1000)
 
 /*
  * char MAGIC[] = { 'w', 'x', 'y', 'z' };
@@ -186,7 +189,7 @@ ymq_create(void) {
 	struct ymq *q = ymalloc(sizeof(*q));
 	if (unlikely(!q))
 		return NULL; /* OOM */
-	for (i = 0; i < arrsz(q->q); i++)
+	for (i = 0; i < yut_arrsz(q->q); i++)
 		ylistl_init_link(&q->q[i]);
 	q->sz = 0;
 	pthread_mutex_init(&q->m, NULL);
@@ -198,7 +201,7 @@ void
 ymq_destroy(struct ymq *q) {
 	int i;
 	struct ymsg_ *pos, *tmp;
-	for (i = 0; i < arrsz(q->q); i++) {
+	for (i = 0; i < yut_arrsz(q->q); i++) {
 		ylistl_foreach_item_removal_safe(pos,
 						 tmp,
 						 &q->q[i],
@@ -237,7 +240,7 @@ ymq_de(struct ymq *q) {
 	yassert(q->sz > 0);
 	lk = NULL;
 	/* Highest priority = index 0 */
-	for (i = 0 ; i < arrsz(q->q); i++) {
+	for (i = 0 ; i < yut_arrsz(q->q); i++) {
 		if (!ylistl_is_empty(&q->q[i])) {
 			/* dequeue */
 			lk = q->q[i].next;

@@ -44,6 +44,7 @@
 
 
 #include "common.h"
+#include "yutils.h"
 #include "test.h"
 #include "ystatprint.h"
 
@@ -91,7 +92,7 @@ test_bargraph(void) {
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
 	r = ystpr_bargraph(fd,
 			   v1,
-			   arrsz(v1),
+			   yut_arrsz(v1),
 			   10,
 			   NULL,
 			   NULL,
@@ -125,11 +126,11 @@ test_bargraph(void) {
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
 	r = ystpr_bargraph(fd,
 			   v2,
-			   arrsz(v2),
+			   yut_arrsz(v2),
 			   20,
 			   ix2,
 			   is,
-			   arrsz(ix2),
+			   yut_arrsz(ix2),
 			   1,
 			   '*');
 	close(fd);
@@ -138,11 +139,11 @@ test_bargraph(void) {
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
 	r = ystpr_bargraph(fd,
 			   v2,
-			   arrsz(v2),
+			   yut_arrsz(v2),
 			   20,
 			   ix0,
 			   is,
-			   arrsz(ix0),
+			   yut_arrsz(ix0),
 			   1,
 			   '*');
 	close(fd);
@@ -181,11 +182,11 @@ test_bargraph(void) {
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
 	r = ystpr_bargraph(fd,
 			   v2,
-			   arrsz(v2),
+			   yut_arrsz(v2),
 			   20,
 			   ix1,
 			   is,
-			   arrsz(ix1),
+			   yut_arrsz(ix1),
 			   1,
 			   '*');
 	close(fd);
@@ -236,11 +237,11 @@ test_bargraph(void) {
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
 	r = ystpr_bargraph(fd,
 			   v2,
-			   arrsz(v2),
+			   yut_arrsz(v2),
 			   20,
 			   ix3,
 			   is,
-			   arrsz(ix3),
+			   yut_arrsz(ix3),
 			   1,
 			   '*');
 	close(fd);
@@ -283,11 +284,11 @@ test_bargraph(void) {
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
 	r = ystpr_bargraph(fd,
 			   v2,
-			   arrsz(v2),
+			   yut_arrsz(v2),
 			   20,
 			   ix4,
 			   is,
-			   arrsz(ix4),
+			   yut_arrsz(ix4),
 			   1,
 			   '*');
 	close(fd);
@@ -330,11 +331,11 @@ test_bargraph(void) {
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
 	r = ystpr_bargraph(fd,
 			   v2,
-			   arrsz(v2),
+			   yut_arrsz(v2),
 			   20,
 			   ix5,
 			   is,
-			   arrsz(ix5),
+			   yut_arrsz(ix5),
 			   1,
 			   '*');
 	close(fd);
@@ -394,7 +395,7 @@ test_distgraph(void) {
 	fd = open(tmpf, O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	r = ystpr_distgraph(fd,
 			    v0,
-			    arrsz(v0),
+			    yut_arrsz(v0),
 			    20,
 			    15,
 			    1,
@@ -414,7 +415,7 @@ test_distgraph(void) {
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
 	r = ystpr_distgraph(fd,
 			    v1,
-			    arrsz(v1),
+			    yut_arrsz(v1),
 			    20,
 			    15,
 			    1,
@@ -434,7 +435,7 @@ test_distgraph(void) {
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
 	r = ystpr_distgraph(fd,
 			    v2,
-			    arrsz(v2),
+			    yut_arrsz(v2),
 			    20,
 			    15,
 			    1,
@@ -474,7 +475,7 @@ test_distgraph(void) {
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
 	ystpr_distgraph(fd,
 			v3,
-			arrsz(v3),
+			yut_arrsz(v3),
 			20,
 			15,
 			1,

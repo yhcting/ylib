@@ -40,6 +40,7 @@
 #include <assert.h>
 
 #include "common.h"
+#include "yutils.h"
 #include "yset.h"
 #include "test.h"
 
@@ -61,7 +62,7 @@ test_set(void) {
 		yassert(!yset_has(s, (void *)(intptr_t)i));
 	for (; i < 50; i++)
 		yassert(yset_has(s, (void *)(intptr_t)i));
-	r = yset_elements(s, (const void **)elems, arrsz(elems));
+	r = yset_elements(s, (const void **)elems, yut_arrsz(elems));
 	yassert(75 == r);
 	for (i = 0; i < r; i++)
 		yassert(25 <= (intptr_t)elems[i] && (intptr_t)elems[i] < 100);

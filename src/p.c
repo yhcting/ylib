@@ -36,6 +36,7 @@
 #include <string.h>
 #include <stdint.h>
 #include "common.h"
+#include "yutils.h"
 #include "yp.h"
 
 /*
@@ -93,7 +94,7 @@ struct ypmblk {
 	((void *)(((char *)&(p)->blk) + (p)->sz))
 
 static const char _magicn[sizeof(((struct ypmblk *)0)->magic)] =
-	{[0 ... (arrsz(_magicn) - 1)] = YP_MAGIC };
+	{[0 ... (yut_arrsz(_magicn) - 1)] = YP_MAGIC };
 
 void *
 ypmalloc(u32 sz) {

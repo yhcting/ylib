@@ -49,9 +49,10 @@
 
 /*****************************************************************************
  *
- * YLIB specific(internal) type and macros
- * (There are no defacto-standard-definition of symbols.)
- * 'YY' prefix is used.
+ * YLIB specific(internal) type and macros (It's NOT exported interface!)
+ * These are widely used. But there are no defacto-standard-definition.
+ * In ylib, 'YY' prefix is used.
+ * And some of them will be redefined at internal-headers.
  *
  * The reason why these symbols are needed, is to support static(usually
  * YYINLINE) functions in API header file.

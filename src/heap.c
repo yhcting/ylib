@@ -56,8 +56,7 @@
 #include "yheap.h"
 #include "ydynb.h"
 
-#define ELEMSZ sizeof(void *)
-#define MIN_INIT_CAPACITY (4096 / ELEMSZ)
+#define MIN_INIT_CAPACITY (4096 / sizeof(void *))
 
 struct yheap {
 	struct ydynb *b;
@@ -100,8 +99,7 @@ has_parent(u32 i) {
 static INLINE u32
 lasti(const struct yheap *h) {
 	/* -1 to remove overhead comes from virtual root(element[0]) */
-	yassert(!(h->b->sz % ELEMSZ));
-	return h->b->sz / ELEMSZ - 1;
+	return h->b->sz - 1;
 }
 
 static INLINE int
@@ -117,20 +115,20 @@ gete(const struct yheap *h, u32 i) {
 
 static INLINE void
 sete(struct yheap *h, u32 i, void *e) {
-	yassert(i < h->b->limit / ELEMSZ);
+	yassert(i < h->b->limit);
 	((void **)h->b->b)[i] = e;
 }
 
 static INLINE void
 adde(struct yheap *h, void *e) {
 	/* To improve performance, ydynb_append is NOT used to avoid memcpy */
-	h->b->sz += ELEMSZ;
+	h->b->sz++;
 	sete(h, lasti(h), e);
 }
 
 static INLINE void
 rmlaste(struct yheap *h) {
-	h->b->sz -= ELEMSZ;
+	h->b->sz--;
 }
 
 static INLINE void
@@ -156,14 +154,15 @@ yheap_create(u32 capacity,
 		return NULL;
 	if (capacity < MIN_INIT_CAPACITY)
 		capacity = MIN_INIT_CAPACITY;
-	if (unlikely(0 > (h->b = ydynb_create(capacity))))
+	/* 'void *' type is not needed to be align. */
+	if (unlikely(0 > (h->b = ydynb_create2(capacity, sizeof(void *)))))
 		goto fail;
 	h->vfree = vfree;
 	h->cmp = cmp;
 
 	/* element 0 is fixed virtual root */
 	sete(h, 0, NULL);
-	h->b->sz = ELEMSZ;
+	h->b->sz = 1;
 
 	return h;
 
@@ -174,16 +173,16 @@ yheap_create(u32 capacity,
 
 void
 yheap_reset(struct yheap *h) {
-	yassert(h->b->sz >= ELEMSZ);
+	yassert(h->b->sz >= 1);
 	if (h->vfree) {
 		void **p = (void **)h->b->b;
-		void **pend = (void **)ydynb_freebuf(h->b);
+		void **pend = (void **)ydynb_getfree(h->b);
 		p++; /* skip first virtual root(NULL) */
 		while (p < pend)
 			(*h->vfree)(*p++);
 	}
 	sete(h, 0, NULL);
-	h->b->sz = ELEMSZ;
+	h->b->sz = 1;
 }
 
 void
@@ -196,14 +195,14 @@ yheap_destroy(struct yheap *h) {
 u32
 yheap_sz(const struct yheap *h) {
 	/* Empty heap only has 1 virtual root(element[0]) */
-	yassert(h->b->sz >= ELEMSZ);
+	yassert(h->b->sz >= 1);
 	return lasti(h);
 }
 
 int
 yheap_add(struct yheap *h, void *e) {
 	u32 i, r;
-	if (unlikely(0 > (r = ydynb_expand2(h->b, ELEMSZ))))
+	if (unlikely(0 > (r = ydynb_expand2(h->b, 1))))
 		return r;
 	adde(h, e);
 

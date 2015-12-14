@@ -38,24 +38,47 @@
 #include "common.h"
 #include "ydynb.h"
 
+static inline u32
+padsz(u16 esz, u8 align) {
+	return (align - esz % align) % align;
+}
+
+/* Element size including paddings */
+static inline u32
+elemsz(u16 esz, u8 align) {
+	return esz + padsz(esz, align);
+}
+
 /****************************************************************************
  *
  * Interfaces
  *
  ****************************************************************************/
+YYEXPORT void
+ydynb_dump(const struct ydynb *b) {
+	dpr(
+"limit: %u\n"
+"sz   : %u\n"
+"esz  : %u\n"
+"eszex: %u\n",
+	b->limit, b->sz, b->esz, b->eszex);
+}
+
 struct ydynb *
-ydynb_create(u32 init_limit) {
+ydynb_create(u32 init_limit, uint16_t esz, uint8_t align) {
 	struct ydynb *b;
 	if (unlikely(0 == init_limit))
 		return NULL;
 	if (unlikely(!(b = (struct ydynb *)ymalloc(sizeof(*b)))))
 		return NULL;
-	if (unlikely(!(b->b = ymalloc(init_limit)))) {
+	b->limit = init_limit;
+	b->sz = 0;
+	b->esz = esz;
+	b->eszex = elemsz(esz, align);
+	if (unlikely(!(b->b = ymalloc(init_limit * b->eszex)))) {
 		yfree(b);
 		return NULL;
 	}
-	b->sz = 0;
-	b->limit = init_limit;
 	return b;
 }
 
@@ -68,7 +91,7 @@ ydynb_destroy(struct ydynb *b) {
 
 int
 ydynb_expand(struct ydynb *b) {
-	void *tmp = yrealloc(b->b, b->limit * 2);
+	void *tmp = yrealloc(b->b, b->limit * b->eszex * 2);
 	if (unlikely(!tmp))
 		return -ENOMEM;
 	b->b = tmp;
@@ -82,7 +105,7 @@ ydynb_shrink(struct ydynb *b, u32 sz_to) {
 	if (unlikely(b->limit <= sz_to
 		     || b->sz > sz_to))
 		return -EINVAL;
-	tmp = yrealloc(b->b, sz_to);
+	tmp = yrealloc(b->b, sz_to * b->eszex);
 	if (unlikely(!tmp))
 		return -ENOMEM;
 	b->b = tmp;
@@ -91,11 +114,18 @@ ydynb_shrink(struct ydynb *b, u32 sz_to) {
 }
 
 int
-ydynb_append(struct ydynb *b, const void *d, uint32_t dsz) {
-	int r = ydynb_expand2(b, dsz);
+ydynb_appends(struct ydynb *b, const void *ea, u32 easz) {
+	int r;
+	u32 cpbytes;
+	if (unlikely(!easz))
+		return 0; /* Nothing to do */
+	r = ydynb_expand2(b, easz);
 	if (unlikely(0 > r))
 		return r;
-	memcpy(ydynb_freebuf(b), d, dsz);
-	b->sz += dsz;
+	cpbytes = b->eszex * (easz - 1);
+	memcpy(ydynb_getfree(b), ea, cpbytes);
+	b->sz += (easz - 1);
+	memcpy(ydynb_getfree(b), (char *)ea + cpbytes, b->esz);
+	b->sz++;
 	return 0;
 }

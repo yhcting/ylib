@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -36,30 +36,83 @@
 
 #include <string.h>
 #include <assert.h>
+#include <inttypes.h>
 
-#include "common.h"
 #include "ydynb.h"
+#include "common.h"
 #include "test.h"
 
+struct elem {
+	short v;
+	char c;
+};
 
 static void
 test_dynb(void) {
-	struct ydynb *b = ydynb_create(2);
+	int i;
+	char c;
+	char *pc;
+	struct ydynb *b;
+	struct elem es[10];
+	struct elem *pe;
+	/* Simple byte(character) array.
+	 * =============================
+	 */
+	b = ydynb_create2(2, 1);
 	yassert(2 == ydynb_freesz(b));
-	ydynb_append(b, "ab ", 3);
+	ydynb_appends(b, "ab ", 3);
 	yassert(1 == ydynb_freesz(b));
-	ydynb_append(b, "cde fgh ", 8);
+	ydynb_appends(b, "cde fgh ", 8);
 	/* include trailing 0 */
-	ydynb_append(b, "1234567890123456789012345678901234567890", 41);
-	yassert(52 == b->sz);
+	ydynb_appends(b, "1234567890123456789012345678901234567890", 41);
+	yassert(52 == ydynb_sz(b));
 	yassert(!strcmp("ab cde fgh 1234567890123456789012345678901234567890",
 			(const char *)b->b));
 	yassert(-EINVAL == ydynb_shrink(b, 0));
 	yassert(-EINVAL == ydynb_shrink(b, 0xffff));
 	yassert(-EINVAL == ydynb_shrink(b, b->sz - 1));
-	ydynb_shrink(b, b->sz);
+	ydynb_shrink(b, ydynb_sz(b));
 	yassert(0 == ydynb_freesz(b));
 	ydynb_destroy(b);
+
+	/* Struct array.
+	 * =============
+	 */
+	b = ydynb_create2(2, sizeof(struct elem));
+	/* ydynb_dump(b); */
+	yassert(2 == ydynb_freesz(b));
+	es[0].v = 0;
+	es[0].c = 'A';
+	ydynb_append(b, &es[0]);
+	yassert(1 == ydynb_sz(b));
+	pe = ydynb_get(b, 0);
+	yassert(0 == pe->v && 'A' == pe->c);
+	for (i = 1; i < 10; i++) {
+		es[i].v = i;
+		es[i].c = 'A' + i;
+	}
+	ydynb_appends(b, &es[1], 9);
+        yassert(10 == ydynb_sz(b));
+	pe = ydynb_get(b, 2);
+	yassert(2 == pe->v && 'C' == pe->c);
+
+	ydynb_destroy(b);
+
+	/* 4-bytes aligned char
+	 * ====================
+	 */
+	b = ydynb_create(2, 1, 4);
+	c = 'A';
+	ydynb_append(b, &c);
+	c = 'B';
+	ydynb_append(b, &c);
+	c = 'C';
+	ydynb_append(b, &c);
+	pc = ydynb_get(b, 1);
+	yassert(*pc == 'B');
+	yassert((uintptr_t)pc % 4 == 0);
+	ydynb_destroy(b);
+
 }
 
 

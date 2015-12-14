@@ -50,19 +50,36 @@
 
 /** DYNmaic Buffer - White box structure. */
 struct ydynb {
-	uint32_t limit; /**< maximum capacity */
-	uint32_t sz; /**< current buffer size in bytes */
+	uint32_t limit; /**< maximum capacity (# of elements) */
+	uint32_t sz; /**< current used (# of elements) */
+	uint16_t esz; /**< size of element in bytes */
+	/** size of element in bytes including paddings for alignment */
+	uint32_t eszex;
 	void *b; /**< data buffer pointer */
 };
 
+YYEXPORT void
+ydynb_dump(const struct ydynb *b);
+
 /**
- * Create new dynamic-buffer
- *
- * @param init_limit initial buffer capacity that should be >0.
+ * Create new dynamic-buffer.
+ * 
+ * @param init_limit Initial buffer capacity(# of elements) that should be >0.
+ * @param esz Element sz in bytes
+ * @param align Alignment(bytes) of each element in the buffer.
  * @return NULL if fails (usually, Out Of Memory, Invalid parameter)
  */
 YYEXPORT struct ydynb *
-ydynb_create(uint32_t init_limit);
+ydynb_create(uint32_t init_limit, uint16_t esz, uint8_t align);
+
+/**
+ * Create new dynamic-buffer without alignment.
+ * See {@link ydynb_create} for details
+ */
+static YYINLINE struct ydynb *
+ydynb_create2(uint32_t init_limit, uint16_t esz) {
+	return ydynb_create(init_limit, esz, 1);
+}
 
 /**
  * Reset dynamic-buffer-object to empty.
@@ -83,8 +100,14 @@ ydynb_reset(struct ydynb *b) {
 YYEXPORT void
 ydynb_destroy(struct ydynb *);
 
+/** Get used size(# of elements)  */
+static YYINLINE uint32_t
+ydynb_sz(const struct ydynb *b) {
+	return b->sz;
+}
+
 /**
- * Get free size in bytes.
+ * Get free size(# of elements).
  *
  * @param b Dynamic buffer object
  * @return Free size in bytes
@@ -95,15 +118,28 @@ ydynb_freesz(const struct ydynb *b) {
 }
 
 /**
- * Get raw pointer of free buffer
- * Address of next byte of used bytes.
+ * Get element with array index.
  *
  * @param b Dynamic buffer object
- * @return Pointer of first free byte.
+ * @param i Index that should be less then buffer size.
+ * @return Pointer of i-th element.
  */
 static YYINLINE void *
-ydynb_freebuf(const struct ydynb *b) {
-	return (void *)(((char *)b->b) + b->sz);
+ydynb_get(const struct ydynb *b, uint32_t i) {
+	YYassert(i < b->sz);
+	return (void *)((char *)b->b + i * b->eszex);
+}
+
+/**
+ * Get raw pointer of head of free buffer
+ * (Address of next byte of used bytes.)
+ *
+ * @param b Dynamic buffer object
+ * @return Pointer to free space for elements.
+ */
+static YYINLINE void *
+ydynb_getfree(const struct ydynb *b) {
+	return (void *)((char *)b->b + b->sz * b->eszex);
 }
 
 /**
@@ -118,7 +154,7 @@ ydynb_expand(struct ydynb *);
  * Increase buffer size until it can cover \a sz_required.
  *
  * @param b Dynamic buffer object
- * @param sz_required Free size required to the buffer.
+ * @param sz_required Free size(# of elements) required to the buffer.
  * @return 0 if success. Otherwise -errno.
  */
 static YYINLINE int
@@ -131,20 +167,33 @@ ydynb_expand2(struct ydynb *b, uint32_t sz_required) {
 /**
  * Shrink buffer size to \a sz_to to reduce memory consumption.
  *
- * @param sz_to Size that buffer should be shrinked to.
+ * @param sz_to Size(# of elements) that buffer should be shrinked to.
  * @return 0 if success, otherwise -errno.
  */
 YYEXPORT int
 ydynb_shrink(struct ydynb *, uint32_t sz_to);
 
 /**
- * Append new binary data to the buffer.
+ * Append aligned-element-array to buffer.
+ * This function assumes that array is already aligned.
  *
- * @param d Data pointer
- * @param dsz Size of data \a d in bytes
+ * @param ea Aligned array of elements
+ * @param easz Size of element-array(# of elements in array)
  * @return 0 if success. Otherwise -errno.
  */
 YYEXPORT int
-ydynb_append(struct ydynb *, const void *d, uint32_t dsz);
+ydynb_appends(struct ydynb *, const void *ea, uint32_t easz);
+
+/**
+ * Append one element to at the end of list.
+ *
+ * @param ea Element data.
+ * @return 0 if success. Otherwise -errno.
+ */
+static YYINLINE int
+ydynb_append(struct ydynb *b, const void *ea) {
+	return ydynb_appends(b, ea, 1);
+}
+
 
 #endif /* __YDYNb_h__ */

@@ -33,7 +33,8 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-
+#include "test.h"
+#ifdef CONFIG_DEBUG
 
 #include <stdio.h>
 #include <string.h>
@@ -42,7 +43,6 @@
 #include "common.h"
 #include "yhash.h"
 #include "ycrc.h"
-#include "test.h"
 
 #include <assert.h>
 
@@ -226,3 +226,5 @@ test_hash(void) {
 }
 
 TESTFN(test_hash, hash)
+
+#endif /* CONFIG_DEBUG */

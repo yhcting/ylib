@@ -82,12 +82,16 @@ ydynb_create(u32 init_limit, uint16_t esz, uint8_t align) {
 	return b;
 }
 
-void
-ydynb_destroy(struct ydynb *b) {
-	yfree(b->b);
+void *
+ydynb_destroy(struct ydynb *b, bool pop_buf) {
+	void *r = NULL;
+	if (pop_buf)
+		r = b->b;
+	else
+		yfree(b->b);
 	yfree(b);
+	return r;
 }
-
 
 int
 ydynb_expand(struct ydynb *b) {

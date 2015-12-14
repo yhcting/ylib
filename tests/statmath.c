@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,6 +33,8 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+#include "test.h"
+#ifdef CONFIG_DEBUG
 
 #include <string.h>
 #include <assert.h>
@@ -40,7 +42,6 @@
 #include "common.h"
 #include "yutils.h"
 #include "ystatmath.h"
-#include "test.h"
 
 static void
 test_imean(void) {
@@ -131,3 +132,5 @@ test_statmath(void) {
 }
 
 TESTFN(test_statmath, statmath)
+
+#endif /* CONFIG_DEBUG */

@@ -33,12 +33,13 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+#include "test.h"
+#ifdef CONFIG_DEBUG
 
 #include <assert.h>
 
 #include "common.h"
 #include "ylist.h"
-#include "test.h"
 
 struct dummy {
 	int id;
@@ -214,3 +215,5 @@ test_list(void) {
 }
 
 TESTFN(test_list, list)
+
+#endif /* CONFIG_DEBUG */

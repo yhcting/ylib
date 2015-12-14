@@ -48,7 +48,7 @@ struct tstfn {
 	struct ylistl_link lk;
 };
 
-static YLISTL_DECL_HEAD(_tstfnl);
+static YLISTL_DEFINE_HEAD(_tstfnl);
 static int _mem_count = 0;
 static pthread_mutex_t _mem_count_lock = PTHREAD_MUTEX_INITIALIZER;
 

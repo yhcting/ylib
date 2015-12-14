@@ -42,17 +42,10 @@
 EXPORT int dmem_count(void);
 EXPORT void dregister_tstfn(void (*fn)(void), const char *mod);
 
-
-#ifdef CONFIG_DEBUG
 #  define TESTFN(fn, mod)                                               \
 	static void __tst_##fn(void) __attribute__ ((constructor));	\
 	static void __tst_##fn(void) {					\
 		dregister_tstfn(&fn, #mod);				\
 	}
-#else /* CONFIG_DEBUG */
-#  undef yassert
-#  define yassert(x) do { if ((x)) { ; } } while (0)
-#  define TESTFN(fn, mod)
-#endif /* CONFIG_DEBUG */
 
 #endif /* __TESt_h__ */

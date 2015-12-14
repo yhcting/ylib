@@ -57,7 +57,7 @@
  *
  * @param hd Variable name to be declared and initialized.
  */
-#define YLISTL_DECL_HEAD(hd) struct ylistl_link hd = {&hd, &hd}
+#define YLISTL_DEFINE_HEAD(hd) struct ylistl_link hd = {&hd, &hd}
 
 /**
  * link structure.

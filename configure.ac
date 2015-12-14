@@ -64,7 +64,8 @@ AC_ARG_WITH(debug2,
         [Debugging level 2 - more verbose debugging.])],
     [AC_DEFINE([CONFIG_DEBUG2],
         [1],
-        [ More verbose debugging is enabled.])],
+        [ More verbose debugging is enabled.])
+     AC_DEFINE([CONFIG_DEBUG], [1])],
     [with_debug2=no])
 
 AS_IF([test "x$with_debug" != xno -o "x$with_debug2" != xno ],

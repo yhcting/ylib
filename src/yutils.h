@@ -81,18 +81,21 @@
 /**
  * Compare two data.
  *
+ * @param d0small (Out) (bool) small == d0
  * @param small (Out)
  * @param big (Out)
  * @param d0 (In)
  * @param d1 (In)
  * @param suffix Suffix of data.
  */
-#define yut_cmpdat(small, big, d0, d1, suffix)		\
+#define yut_cmpdat(d0small, small, big, d0, d1, suffix)	\
 	do {						\
 		if (((d0)suffix) < ((d1)suffix)) {	\
+			d0small = TRUE;			\
 			(small) = (d0);			\
 			(big) = (d1);			\
 		} else {				\
+			d0small = FALSE;		\
 			(small) = (d1);			\
 			(big) = (d0);			\
 		}					\
@@ -101,25 +104,27 @@
 /**
  * Compare two values.
  *
+ * @param v0small (Out) (bool) small == v0
  * @param vsmall (Out)
  * @param vbig (Out)
  * @param v0 (In)
  * @param v1 (In)
  */
-#define yut_cmpv(small, big, v0, v1) \
-	yut_cmpdat(small, big, v0, v1,)
+#define yut_cmpv(v0small, small, big, v0, v1)	\
+	yut_cmpdat(v0small, small, big, v0, v1,)
 
 /**
  * Compare two struct fields.
  *
+ * @param st0small (Out) (bool) small == st0
  * @param small (Out) Pointer
  * @param big (Out) Pointer
  * @param st0 (In) Pointer
  * @param st1 (In) Pointer
  * @param field Field name to be compared in the struct.
  */
-#define yut_cmpst(small, big, st0, st1, field) \
-	yut_cmpdat(small, big, st0, st1, ->field)
+#define yut_cmpst(st0small, small, big, st0, st1, field) \
+	yut_cmpdat(st0small, small, big, st0, st1, ->field)
 
 
 

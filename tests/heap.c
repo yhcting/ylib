@@ -33,13 +33,14 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+#include "test.h"
+#ifdef CONFIG_DEBUG
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <assert.h>
 
-#include "test.h"
 #include "yheap.h"
 
 #define TESTARRSZ 10000
@@ -129,3 +130,5 @@ test_heap(void) {
 }
 
 TESTFN(test_heap, heap)
+
+#endif /* CONFIG_DEBUG */

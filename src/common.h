@@ -44,10 +44,6 @@
  * Debugging
  *
  *****************************************************************************/
-#ifdef CONFIG_DEBUG2
-#  define CONFIG_DEBUG
-#endif
-
 /* For debugging */
 #ifdef CONFIG_DEBUG
 

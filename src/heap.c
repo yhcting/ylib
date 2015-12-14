@@ -99,7 +99,7 @@ has_parent(u32 i) {
 static INLINE u32
 lasti(const struct yheap *h) {
 	/* -1 to remove overhead comes from virtual root(element[0]) */
-	return h->b->sz - 1;
+	return ydynb_sz(h->b) - 1;
 }
 
 static INLINE int
@@ -110,25 +110,25 @@ is_validi(const struct yheap *h, u32 i) {
 static INLINE void *
 gete(const struct yheap *h, u32 i) {
 	yassert(i <= lasti(h));
-	return ((void **)h->b->b)[i];
+	return ((void **)ydynb_buf(h->b))[i];
 }
 
 static INLINE void
 sete(struct yheap *h, u32 i, void *e) {
-	yassert(i < h->b->limit);
-	((void **)h->b->b)[i] = e;
+	yassert(i < ydynb_limit(h->b));
+	((void **)ydynb_buf(h->b))[i] = e;
 }
 
 static INLINE void
 adde(struct yheap *h, void *e) {
 	/* To improve performance, ydynb_append is NOT used to avoid memcpy */
-	h->b->sz++;
+	ydynb_incsz(h->b, 1);
 	sete(h, lasti(h), e);
 }
 
 static INLINE void
 rmlaste(struct yheap *h) {
-	h->b->sz--;
+	ydynb_decsz(h->b, 1);
 }
 
 static INLINE void
@@ -162,7 +162,7 @@ yheap_create(u32 capacity,
 
 	/* element 0 is fixed virtual root */
 	sete(h, 0, NULL);
-	h->b->sz = 1;
+	ydynb_setsz(h->b, 1);
 
 	return h;
 
@@ -173,29 +173,29 @@ yheap_create(u32 capacity,
 
 void
 yheap_reset(struct yheap *h) {
-	yassert(h->b->sz >= 1);
+	yassert(ydynb_sz(h->b) >= 1);
 	if (h->vfree) {
-		void **p = (void **)h->b->b;
+		void **p = (void **)ydynb_buf(h->b);
 		void **pend = (void **)ydynb_getfree(h->b);
 		p++; /* skip first virtual root(NULL) */
 		while (p < pend)
 			(*h->vfree)(*p++);
 	}
 	sete(h, 0, NULL);
-	h->b->sz = 1;
+	ydynb_setsz(h->b, 1);
 }
 
 void
 yheap_destroy(struct yheap *h) {
 	yheap_reset(h);
-	ydynb_destroy(h->b);
+	ydynb_destroy(h->b, FALSE);
 	yfree(h);
 }
 
 u32
 yheap_sz(const struct yheap *h) {
 	/* Empty heap only has 1 virtual root(element[0]) */
-	yassert(h->b->sz >= 1);
+	yassert(ydynb_sz(h->b) >= 1);
 	return lasti(h);
 }
 

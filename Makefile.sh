@@ -4,26 +4,64 @@
 # This is source of Makefile.am
 #
 
-mods="
-crc
-dynb
-graph
-hash
-heap
-listl
-list
-lru
-mempool
-msgq
-mtpp
-p
-set
-statmath
-statprint
-treel
-trie
-utils
+modenames="
+:crc
+:dynb
+:graph
+:hash
+:heap
+:listl
+:list
+:lru
+:mempool
+:msgq
+:mtpp
+:p
+:set
+:statmath
+:statprint
+:treel
+:trie
+:utils
 "
+
+##############################################################################
+#
+# Utility functions
+#
+##############################################################################
+#
+# $1 (out) component name
+# $2 (out) module name
+# $3 (in) full module name
+#
+function get_comp_mod() {
+    comp=$1
+    mod=$2
+    fullname=$3
+    eval "$comp=$(echo $fullname | cut -d':' -f1)"
+    eval "$mod=$(echo $fullname | cut -d':' -f2)"
+}
+
+# $1 full module name
+function header_file() {
+    get_comp_mod comp mod $1
+    if [[ -z $comp ]]; then
+        echo y${mod}.h
+    else
+        echo ${comp}/y${mod}.h
+    fi
+}
+
+# $1 full module name
+function src_file() {
+    get_comp_mod comp mod $1
+    if [[ -z $comp ]]; then
+        echo ${mod}.c
+    else
+        echo ${comp}/${mod}.c
+    fi
+}
 
 ##############################################################################
 #
@@ -53,8 +91,9 @@ extern "C" {
 #include "ydef.h"
 EOF
 
-for m in $mods; do
-    echo "#include \"y${m}.h\"" >>$autogenfile
+for m in $modenames; do
+    hdrf=$(header_file $m)
+    echo "#include \"$hdrf\"" >>$autogenfile
 done
 
 cat <<EOF >>$autogenfile
@@ -84,8 +123,9 @@ inc_headers=
 for h in $common_headers; do
     inc_headers+=" src/$h"
 done
-for m in $mods; do
-    inc_headers+=" src/y${m}.h"
+for m in $modenames; do
+    hdrf=$(header_file $m)
+    inc_headers+=" src/$hdrf"
 done
 
 
@@ -99,8 +139,9 @@ lib_sources=
 for s in $common_sources; do
     lib_sources+=" src/$s"
 done
-for m in $mods; do
-    lib_sources+=" src/${m}.c"
+for m in $modenames; do
+    srcf=$(src_file $m)
+    lib_sources+=" src/$srcf"
 done
 
 
@@ -114,8 +155,9 @@ prog_sources=
 for s in $common_sources; do
     prog_sources+=" tests/$s"
 done
-for m in $mods; do
-    prog_sources+=" tests/${m}.c"
+for m in $modenames; do
+    srcf=$(src_file $m)
+    prog_sources+=" tests/$srcf"
 done
 
 
@@ -166,8 +208,9 @@ LOCAL_MODULE := y
 LOCAL_SRC_FILES := \\
 EOF
 
-for m in $mods; do
-    echo "	${m}.c \\" >>$autogenfile
+for m in $modenames; do
+    srcf=$(src_file $m)
+    echo "	$srcf \\" >>$autogenfile
 done
 
 cat <<EOF >>$autogenfile

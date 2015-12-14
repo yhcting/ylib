@@ -33,6 +33,8 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+#include "test.h"
+#ifdef CONFIG_DEBUG
 
 #include <string.h>
 #include <assert.h>
@@ -40,7 +42,7 @@
 
 #include "ydynb.h"
 #include "common.h"
-#include "test.h"
+
 
 struct elem {
 	short v;
@@ -67,13 +69,13 @@ test_dynb(void) {
 	ydynb_appends(b, "1234567890123456789012345678901234567890", 41);
 	yassert(52 == ydynb_sz(b));
 	yassert(!strcmp("ab cde fgh 1234567890123456789012345678901234567890",
-			(const char *)b->b));
+			(const char *)ydynb_buf(b)));
 	yassert(-EINVAL == ydynb_shrink(b, 0));
 	yassert(-EINVAL == ydynb_shrink(b, 0xffff));
-	yassert(-EINVAL == ydynb_shrink(b, b->sz - 1));
+	yassert(-EINVAL == ydynb_shrink(b, ydynb_sz(b) - 1));
 	ydynb_shrink(b, ydynb_sz(b));
 	yassert(0 == ydynb_freesz(b));
-	ydynb_destroy(b);
+	ydynb_destroy(b, FALSE);
 
 	/* Struct array.
 	 * =============
@@ -96,7 +98,7 @@ test_dynb(void) {
 	pe = ydynb_get(b, 2);
 	yassert(2 == pe->v && 'C' == pe->c);
 
-	ydynb_destroy(b);
+	ydynb_destroy(b, FALSE);
 
 	/* 4-bytes aligned char
 	 * ====================
@@ -111,9 +113,11 @@ test_dynb(void) {
 	pc = ydynb_get(b, 1);
 	yassert(*pc == 'B');
 	yassert((uintptr_t)pc % 4 == 0);
-	ydynb_destroy(b);
+	ydynb_destroy(b, FALSE);
 
 }
 
 
 TESTFN(test_dynb, dynb)
+
+#endif /* CONFIG_DEBUG */

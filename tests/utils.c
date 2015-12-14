@@ -33,6 +33,7 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+#ifdef CONFIG_DEBUG
 
 #include <assert.h>
 
@@ -41,8 +42,30 @@
 #include "test.h"
 
 static void
+bitops(void) {
+	u64 x;
+	x = 0xabcffcda;
+	yassert(0xc == yut_bits(x, 8, 4));
+	yassert(0xa == yut_bits(x, 0, 4));
+	yassert(0xa == yut_bits(x, 28, 4));
+	yassert(0xabcf0cda == yut_clear_bits(x, 12, 4));
+	yassert(0xabcffcd0 == yut_clear_bits(x, 0, 4));
+	yassert(0xabcffcd1 == yut_set_bits(x, 0, 4, 1));
+	yassert(0xabcf1cda == yut_set_bits(x, 12, 4, 1));
+	yassert(yut_test_bit(x, 1));
+	yassert(yut_test_bit(x, 3));
+	yassert(0xabcffcdb == yut_set_bit(x, 0));
+	yassert(0xabcffcda == yut_set_bit(x, 13));
+	yassert(0xabcfecda == yut_clear_bit(x, 12));
+	yassert(0xabcffcda == yut_clear_bit(x, 26));
+}
+
+static void
 test_utils(void) {
+	bitopts();
 }
 
 
 TESTFN(test_utils, utils)
+
+#endif /* CONFIG_DEBUG */

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,6 +33,8 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+#include "test.h"
+#ifdef CONFIG_DEBUG
 
 #include <assert.h>
 #include <unistd.h>
@@ -45,7 +47,6 @@
 
 #include "common.h"
 #include "yutils.h"
-#include "test.h"
 #include "ystatprint.h"
 
 static void
@@ -522,3 +523,4 @@ test_statprint(void) {
 
 TESTFN(test_statprint, statprint)
 
+#endif /* CONFIG_DEBUG */

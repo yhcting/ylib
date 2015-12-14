@@ -33,13 +33,14 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+#include "test.h"
+#ifdef CONFIG_DEBUG
 
 #include <string.h>
 #include <assert.h>
 
 #include "common.h"
 #include "yp.h"
-#include "test.h"
 
 static void
 test_p(void) {
@@ -62,3 +63,5 @@ test_p(void) {
 }
 
 TESTFN(test_p, p)
+
+#endif /* CONFIG_DEBUG */

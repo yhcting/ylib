@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,13 +33,14 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+#include "test.h"
+#ifdef CONFIG_DEBUG
 
 #include <string.h>
 #include <assert.h>
 
 #include "common.h"
 #include "ygraph.h"
-#include "test.h"
 
 
 /* Test Graph
@@ -179,3 +180,5 @@ test_graph(void) {
 }
 
 TESTFN(test_graph, graph)
+
+#endif /* CONFIG_DEBUG */

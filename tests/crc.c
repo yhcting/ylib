@@ -33,19 +33,20 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-
-#include "common.h"
-#include "ycrc.h"
 #include "test.h"
+#ifdef CONFIG_DEBUG
 
+#include "ycrc.h"
 #include <assert.h>
 
 
 static void
-test_crc(void) {
+test_crc(void)  {
         /* NOT IMPLEMENTED YET */
 }
 
 
 
 TESTFN(test_crc, crc)
+
+#endif /* CONFIG_DEBUG */

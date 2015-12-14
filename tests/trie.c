@@ -33,6 +33,7 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+#ifdef CONFIG_DEBUG
 
 #include "common.h"
 #include "ycrc.h"
@@ -49,3 +50,5 @@ test_trie(void) {
 
 
 TESTFN(test_trie, trie)
+
+#endif /* CONFIG_DEBUG */

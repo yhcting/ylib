@@ -96,15 +96,61 @@ ydynb_reset(struct ydynb *b) {
  * Destroy dynamic-buffer
  * Memory also be freed.
  * So, pointer \a b is not valid anymore.
+ *
+ * @param b Dynamic buffer object
+ * @param pop_buf TRUE to return elements array(memory is preserved).
+ *                FALSE to destroy all memories.
  */
-YYEXPORT void
-ydynb_destroy(struct ydynb *);
+YYEXPORT void *
+ydynb_destroy(struct ydynb *b, bool pop_buf);
 
-/** Get used size(# of elements)  */
+/**
+ * Get buffer's limit(current allocated size in # of elements)
+ */
+static YYINLINE uint32_t
+ydynb_limit(const struct ydynb *b) {
+	return b->limit;
+}
+
+/**
+ * Get used size(# of elements)
+ */
 static YYINLINE uint32_t
 ydynb_sz(const struct ydynb *b) {
 	return b->sz;
 }
+
+/**
+ * Set used size of buffer.
+ * @param sz It should be less than or equal buffer's limit.
+ */
+static YYINLINE void
+ydynb_setsz(struct ydynb *b, uint32_t sz) {
+	YYassert(sz <= b->limit);
+	b->sz = sz;
+}
+
+/**
+ * Increase used size.
+ * At some cases, buffer may be accessed directly.
+ * In this case, after using buffer, used-size should be adjusted.
+ * @param sz Caller must be sure that result of ajdusted size is valid.
+ */
+static YYINLINE void
+ydynb_incsz(struct ydynb *b, uint32_t sz) {
+	b->sz += sz;
+	YYassert(b->sz <= b->limit);
+}
+
+/**
+ * See {@link ydynb_incsz}
+ */
+static YYINLINE void
+ydynb_decsz(struct ydynb *b, uint32_t sz) {
+	YYassert(b->sz >= sz);
+	b->sz -= sz;
+}
+
 
 /**
  * Get free size(# of elements).
@@ -115,6 +161,14 @@ ydynb_sz(const struct ydynb *b) {
 static YYINLINE uint32_t
 ydynb_freesz(const struct ydynb *b) {
 	return b->limit - b->sz;
+}
+
+/**
+ * @return Raw buffer pointer
+ */
+static YYINLINE void *
+ydynb_buf(const struct ydynb *b) {
+	return b->b;
 }
 
 /**

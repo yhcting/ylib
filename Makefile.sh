@@ -23,6 +23,11 @@ modenames="
 :treel
 :trie
 :utils
+geo:point
+geo:line
+geo:band
+geo:rect
+geo:rgn
 "
 
 ##############################################################################

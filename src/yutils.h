@@ -47,28 +47,71 @@
  * Bit operations
  *
  *****************************************************************************/
-#define yut_bits(x, offset, bitsz) \
+/**
+ * Get \a bitsz bits at \a offset from LSB.
+ * Ex. 0xc == %yut_bits(0xfcda, 8, 4)
+ *
+ * @param x Value
+ * @param offset Offset from LSB
+ * @param bitsz Size of bits to get.
+ */
+#define yut_bits(x, offset, bitsz)			\
 	(((x) >> (offset)) & ((1LL << (bitsz)) - 1))
 
-#define yut_bit(x, offset) yut_bits(x, offset, 1)
-
-#define yut_clear_bits(x, offset, bitsz) \
-	((x) & ~(((1LL << (bitsz)) - 1) << (offset)))
-/*
- * replace bits from 'offset' to 'offset' + 'bitsz' of 'x' with bits
- *   from 0 to 'bitsz' of 'v'.
+/**
+ * Get one bit at \a offset from LSB.
+ * See {@link yut_bits}.
+ *
+ * @param x Value
+ * @param offset Offset from LSB.
  */
-#define yut_set_bits(x, offset, bitsz, v) \
+#define yut_bit(x, offset)			\
+	yut_bits(x, offset, 1)
+
+/**
+ * Clear \a bitsz bits at \a offset from LSB.
+ * See {@link yut_bits}.
+ */
+#define yut_clear_bits(x, offset, bitsz)		\
+	((x) & ~(((1LL << (bitsz)) - 1) << (offset)))
+
+/**
+ * Replace \a bitsz bits at \a offset with \a bitsz bits at 0 of x.
+ *
+ * @param x Value
+ * @param offset Offset from LSB
+ * @param bitsz Size of bits to get
+ * @param v New value to be replaced with
+ */
+#define yut_set_bits(x, offset, bitsz, v)			\
 	(yut_clear_bits(x, offset, bitsz)			\
 	 | ((((1LL << (bitsz)) - 1) & (v)) << (offset)))
 
-#define yut_test_bit(x, bit) \
+/**
+ * Test whether bit at \a bit is set.
+ *
+ * @param x Value
+ * @param bit offset from LSB.
+ */
+#define yut_test_bit(x, bit)			\
 	(((x) >> (bit)) & 1LL)
 
-#define yut_set_bit(x, bit) \
+/**
+ * Set bit at offset \a bit
+ *
+ * @param x Value
+ * @param bit offset from LSB.
+ */
+#define yut_set_bit(x, bit)			\
 	((x) | (1LL << (bit)))
 
-#define yut_clear_bit(x, bit) \
+/**
+ * Clear bit at offset \a bit
+ *
+ * @param x Value
+ * @param bit offset from LSB.
+ */
+#define yut_clear_bit(x, bit)			\
 	((x) & ~(1LL << (bit)))
 
 
@@ -81,51 +124,45 @@
 /**
  * Compare two data.
  *
- * @param d0small (Out) (bool) small == d0
- * @param small (Out)
- * @param big (Out)
+ * @param small (Out) Smaller value between \a d0 and \a d1
+ * @param big (Out) Bigger value between \a d0 and \a d1
  * @param d0 (In)
  * @param d1 (In)
  * @param suffix Suffix of data.
  */
-#define yut_cmpdat(d0small, small, big, d0, d1, suffix)	\
+#define yut_cmpst(small, big, d0, d1, suffix)		\
 	do {						\
 		if (((d0)suffix) < ((d1)suffix)) {	\
-			d0small = TRUE;			\
 			(small) = (d0);			\
 			(big) = (d1);			\
 		} else {				\
-			d0small = FALSE;		\
 			(small) = (d1);			\
 			(big) = (d0);			\
 		}					\
 	} while (0)
 
 /**
- * Compare two values.
+ * Compare two data.
  *
- * @param v0small (Out) (bool) small == v0
- * @param vsmall (Out)
- * @param vbig (Out)
- * @param v0 (In)
- * @param v1 (In)
+ * @param d0small (Out) (bool) small == d0
+ * @param small (Out) Smaller value between \a d0 and \a d1
+ * @param big (Out) Bigger value between \a d0 and \a d1
+ * @param d0 (In)
+ * @param d1 (In)
+ * @param suffix Suffix of data.
  */
-#define yut_cmpv(v0small, small, big, v0, v1)	\
-	yut_cmpdat(v0small, small, big, v0, v1,)
-
-/**
- * Compare two struct fields.
- *
- * @param st0small (Out) (bool) small == st0
- * @param small (Out) Pointer
- * @param big (Out) Pointer
- * @param st0 (In) Pointer
- * @param st1 (In) Pointer
- * @param field Field name to be compared in the struct.
- */
-#define yut_cmpst(st0small, small, big, st0, st1, field) \
-	yut_cmpdat(st0small, small, big, st0, st1, ->field)
-
+#define yut_cmpst2(d0small, small, big, d0, d1, suffix)		\
+	do {							\
+		if (((d0)suffix) < ((d1)suffix)) {		\
+			d0small = TRUE;				\
+			(small) = (d0);				\
+			(big) = (d1);				\
+		} else {					\
+			d0small = FALSE;			\
+			(small) = (d1);				\
+			(big) = (d0);				\
+		}						\
+	} while (0)
 
 
 /*****************************************************************************
@@ -134,7 +171,10 @@
  *
  *****************************************************************************/
 /**
+ * Unroll statment to improve performance.
  *
+ * @param count Number of count repeated.
+ * @param stmt Statment run in loop.
  */
 #define yut_unroll16(count, stmt)				\
 	/* Just in case, minimize referencing 'count' argument. \
@@ -169,14 +209,48 @@
 		}						\
 	} while (0)
 
-#define yut_abs(x) (((x)>0)?(x):-(x))
+/**
+ * Get absolute value
+ *
+ * @param x Value
+ */
+#define yut_abs(x)				\
+	(((x)>0)?(x):-(x))
 
-#define yut_swap(x,y,tmp) do { (tmp)=(x);(x)=(y);(y)=(tmp); } while (0)
+/**
+ * Swap two values
+ *
+ * @param x Value
+ * @param y Value
+ * @param tmp Temporal value.
+ */
+#define yut_swap(x,y,tmp)				\
+	do { (tmp)=(x);(x)=(y);(y)=(tmp); } while (0)
 
-#define yut_min(x,y) (((x)<(y))?x:y)
+/**
+ * Get min value.
+ *
+ * @param x Value
+ * @param y Value
+ */
+#define yut_min(x,y)				\
+	(((x)<(y))?x:y)
 
-#define yut_max(x,y) (((x)<(y))?y:x)
+/**
+ * Get max value.
+ *
+ * @param x Value
+ * @param y Value
+ */
+#define yut_max(x,y)				\
+	(((x)<(y))?y:x)
 
-#define yut_arrsz(a) ((int)(sizeof(a)/sizeof((a)[0])))
+/**
+ * Get array size(# of elements in the array).
+ *
+ * @param a Array
+ */
+#define yut_arrsz(a)				\
+	((int)(sizeof(a)/sizeof((a)[0])))
 
 #endif /* __YUTILs_h__ */

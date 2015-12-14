@@ -58,8 +58,11 @@ struct ydynb {
 	void *b; /**< data buffer pointer */
 };
 
+/**
+ * Debug print internal data of this structure.
+ */
 YYEXPORT void
-ydynb_dump(const struct ydynb *b);
+ydynb_dump(const struct ydynb *);
 
 /**
  * Create new dynamic-buffer.
@@ -114,6 +117,9 @@ ydynb_limit(const struct ydynb *b) {
 
 /**
  * Get used size(# of elements)
+ *
+ * @param b Dynamic buffer object
+ * @return # of elements stored at buffer.
  */
 static YYINLINE uint32_t
 ydynb_sz(const struct ydynb *b) {
@@ -122,6 +128,8 @@ ydynb_sz(const struct ydynb *b) {
 
 /**
  * Set used size of buffer.
+ *
+ * @param b Dynamic buffer object
  * @param sz It should be less than or equal buffer's limit.
  */
 static YYINLINE void
@@ -134,6 +142,8 @@ ydynb_setsz(struct ydynb *b, uint32_t sz) {
  * Increase used size.
  * At some cases, buffer may be accessed directly.
  * In this case, after using buffer, used-size should be adjusted.
+ *
+ * @param b Dynamic buffer object
  * @param sz Caller must be sure that result of ajdusted size is valid.
  */
 static YYINLINE void
@@ -241,6 +251,7 @@ ydynb_appends(struct ydynb *, const void *ea, uint32_t easz);
 /**
  * Append one element to at the end of list.
  *
+ * @param b Dynamic buffer object
  * @param ea Element data.
  * @return 0 if success. Otherwise -errno.
  */

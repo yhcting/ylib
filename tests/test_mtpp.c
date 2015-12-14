@@ -70,8 +70,8 @@ free_workout(struct workout *a) {
 
 static useconds_t
 get_rand_usleep(const struct workarg *wa __unused) {
-	/* min : 100 ms + random 0 ~ 1000 ms */
-	return 100000 + (((s64)rand() * 1000L) / RAND_MAX) * 1000;
+	/* min : 10 ms + random 0 ~ 200 ms */
+	return 10000 + (((s64)rand() * 200L) / RAND_MAX) * 1000;
 }
 
 static int

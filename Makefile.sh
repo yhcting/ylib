@@ -108,14 +108,14 @@ done
 # Test program
 # ------------
 common_sources="
-test_main.c
+main.c
 "
 prog_sources=
 for s in $common_sources; do
     prog_sources+=" tests/$s"
 done
 for m in $mods; do
-    prog_sources+=" tests/test_${m}.c"
+    prog_sources+=" tests/${m}.c"
 done
 
 

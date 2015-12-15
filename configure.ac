@@ -68,13 +68,21 @@ AC_ARG_WITH(debug2,
      AC_DEFINE([CONFIG_DEBUG], [1])],
     [with_debug2=no])
 
-AS_IF([test "x$with_debug" != xno -o "x$with_debug2" != xno ],
+if test "x$with_debug" != xno -o "x$with_debug2" != xno; then
+    debug=yes
+else
+    debug=no
+fi
+
+AS_IF([test x$debug == xyes ],
     [CFLAGS="-g -O0"],
     [CFLAGS="-O2"])
 CFLAGS="${CFLAGS} -Wall -Werror"
 AC_SUBST([CFLAGS])
 
-AC_CONFIG_FILES([Makefile])
+AM_CONDITIONAL([DEBUG], [test x$debug = xyes])
+
+AC_CONFIG_FILES([Makefile src/Makefile tests/Makefile])
 
 AC_OUTPUT
 

@@ -57,12 +57,12 @@ fi
 # -------------------
 cfgopts="--with-debug --with-debug2"
 for opt in "" $cfgopts; do
-    make clean
     ./configure-full $opt
     make
     if [ x$skipUnit != xtrue ]; then
-        ./y
+        tests/y
     fi
+    make clean
 done
 
 echo ">> Congraturations !"

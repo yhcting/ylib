@@ -70,7 +70,7 @@
  * @param isz Array size of \a idxs and \a cmts
  * @param isp Inter-space. # of spaces between bar.
  * @param barc Ascii character to represent bar.
- * @return 0 for success otherwise error number.
+ * @return 0 for success otherwise -(error number).
  */
 YYEXPORT int
 ystpr_bargraph(int fd,
@@ -114,7 +114,7 @@ ystpr_bargraph(int fd,
  * @param h Graph height
  * @param isp Inter-space. # of spaces between bar.
  * @param barc Ascii character to represent bar.
- * @return 0 for success otherwise error number.
+ * @return 0 for success otherwise -(error number).
  */
 YYEXPORT int
 ystpr_distgraph(int fd,

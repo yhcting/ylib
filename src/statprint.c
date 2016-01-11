@@ -73,7 +73,7 @@ stats_double(double *omin, /* [out] */
 		r = fpclassify(*d);
 		if (unlikely(r != FP_NORMAL
 			     && r != FP_ZERO))
-			return EINVAL;
+			return -EINVAL;
 		if (unlikely(*d < min))
 			min = *d;
 		if (unlikely(*d > max))
@@ -142,7 +142,7 @@ ystpr_bargraph(int fd,
 		     || fd < 0
 		     || !vs
 		     || !vsz))
-		return EINVAL;
+		return -EINVAL;
 
 	/* check buffer boundary */
 	n = 0; /* previous value */
@@ -152,7 +152,7 @@ ystpr_bargraph(int fd,
 			     /* why + 3?. It is for \r \n \0. */
 			     || (idxs[i] * (isp + 1) + strlen(cmts[i]) + 3
 				 > sizeof(ln))))
-			return EINVAL;
+			return -EINVAL;
 		n = idxs[i];
 	}
 
@@ -267,7 +267,7 @@ ystpr_distgraph(int fd,
 
 	/* allocates memories required */
 	if (unlikely(!(dist = (double *)ycalloc(w, sizeof(*dist)))))
-		return ENOMEM;
+		return -ENOMEM;
 
 	/* calculate distribution */
 	interval = max - min;
@@ -288,12 +288,12 @@ ystpr_distgraph(int fd,
 	nrcmt = sigminus + sigplus + 1 + 2;
 	if (unlikely(!(cmts = ymalloc(sizeof(*cmts) * nrcmt)))) {
 		yfree(dist);
-		return ENOMEM;
+		return -ENOMEM;
 	}
 	if (unlikely(!(idxs = ymalloc(sizeof(*idxs) * nrcmt)))) {
 		yfree(dist);
 		yfree(cmts);
-		return ENOMEM;
+		return -ENOMEM;
 	}
 
 	for (i = 0; i < nrcmt; i++) {
@@ -304,7 +304,7 @@ ystpr_distgraph(int fd,
 				yfree(cmts[j]);
 			yfree(idxs);
 			yfree(dist);
-			return ENOMEM;
+			return -ENOMEM;
 		}
 		cmts[i][_MAX_CMT_LEN - 1] = 0; /* trailing 0 */
 	}
@@ -313,23 +313,23 @@ ystpr_distgraph(int fd,
 
 	/* add comment for min */
 	idxs[j] = 0;
-	snprintf(cmts[j++], _MAX_CMT_LEN - 1, "%f", min);
+	snprintf(cmts[j++], _MAX_CMT_LEN, "%f", min);
 	for (i = sigminus; i > 0; i--) {
 		_get_dist_index(idxs[j], mean - i * sigma);
 		/* ignore return value intentionally */
-		snprintf(cmts[j++], _MAX_CMT_LEN - 1, "-%ds", i);
+		snprintf(cmts[j++], _MAX_CMT_LEN, "-%ds", i);
 	}
 
 	_get_dist_index(idxs[j], mean);
-	snprintf(cmts[j++], _MAX_CMT_LEN - 1, "u");
+	snprintf(cmts[j++], _MAX_CMT_LEN, "u");
 	for (i = 1; i <= sigplus; i++) {
 		_get_dist_index(idxs[j], mean + i * sigma);
 		/* ignore return value intentionally */
-		snprintf(cmts[j++], _MAX_CMT_LEN - 1, "%ds", i);
+		snprintf(cmts[j++], _MAX_CMT_LEN, "%ds", i);
 	}
 	/* add comment for max */
 	idxs[j] = w - 1;
-	snprintf(cmts[j++], _MAX_CMT_LEN - 1, "%f", max);
+	snprintf(cmts[j++], _MAX_CMT_LEN, "%f", max);
 
 	r = ystpr_bargraph(fd,
 			   dist,

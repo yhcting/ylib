@@ -61,6 +61,17 @@ dregister_tstfn(void (*fn)(void), const char *mod) {
 	ylistl_add_last(&_tstfnl, &n->lk);
 }
 
+void
+dunregister_tstfn(void (*fn)(void), const char *mod) {
+	struct tstfn *p, *n;
+	ylistl_foreach_item_removal_safe(p, n, &_tstfnl, struct tstfn, lk) {
+		if (p->fn == fn
+		    && !strcmp(p->modname, mod)) {
+			ylistl_remove(&p->lk);
+			free(p);
+		}
+	}
+}
 
 void *
 dmalloc(size_t sz) {

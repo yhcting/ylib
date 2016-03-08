@@ -90,7 +90,7 @@ worker_func(void **out,
 		++jargs;
 	}
 	usec = get_rand_usleep(wa);
-	wout = ymalloc(sizeof(*out));
+	wout = ymalloc(sizeof(*wout));
 	wout->usec = usec;
 	wout->str = ymalloc(512);
 	sprintf(wout->str, "%s : %d : %u", wa->str, wa->id, usec);

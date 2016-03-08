@@ -201,14 +201,12 @@ cat <<EOF >tests/Makefile.am
 
 if DEBUG
     bin_PROGRAMS = y
-else !DEBUG
-    noinst_PROGRAMS = y
-endif !DEBUG
+    y_SOURCES = $prog_sources
+    y_CFLAGS = -I../src
 
-y_SOURCES = $prog_sources
-y_CFLAGS = -I../src
+    y_LDADD = ../src/liby.la -lpthread -lrt -lm
+endif
 
-y_LDADD = ../src/liby.la -lpthread -lrt -lm
 EOF
 
 

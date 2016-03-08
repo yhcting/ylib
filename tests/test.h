@@ -41,11 +41,16 @@
 
 EXPORT int dmem_count(void);
 EXPORT void dregister_tstfn(void (*fn)(void), const char *mod);
+EXPORT void dunregister_tstfn(void (*fn)(void), const char *mod);
 
 #  define TESTFN(fn, mod)                                               \
-	static void __tst_##fn(void) __attribute__ ((constructor));	\
-	static void __tst_##fn(void) {					\
+	static void __tst_register_##fn(void) __attribute__ ((constructor)); \
+	static void __tst_register_##fn(void) {				\
 		dregister_tstfn(&fn, #mod);				\
+	}								\
+	static void __tst_unregister_##fn(void) __attribute__ ((destructor)); \
+	static void __tst_unregister_##fn(void) {			\
+		dunregister_tstfn(&fn, #mod);				\
 	}
 
 #endif /* __TESt_h__ */

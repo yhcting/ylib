@@ -2,6 +2,10 @@
 
 set -e
 
+topdir=$(readlink -e $(dirname $0))
+
+pushd $topdir >/dev/null
+
 function usage() {
     prog=$1
     cat <<EOF
@@ -55,14 +59,17 @@ fi
 
 # Test build and unit
 # -------------------
-cfgopts="--with-debug --with-debug2"
+nrcores=$(cat /proc/cpuinfo | grep processor | wc -l)
+cfgopts="--with-debug"
 for opt in "" $cfgopts; do
-    ./configure-full $opt
-    make
-    if [ x$skipUnit != xtrue ]; then
-        tests/y
+    git clean -dfx
+    ./configure-full --prefix="$topdir" $opt
+    make -j$nrcores install
+    if [ x$skipUnit != xtrue -a -e bin/y ]; then
+        bin/y
     fi
-    make clean
 done
 
 echo ">> Congraturations !"
+
+popd >/dev/null

@@ -59,30 +59,14 @@ AC_ARG_WITH(debug,
         [Debug is enabled.])],
     [with_debug=no])
 
-AC_ARG_WITH(debug2,
-    [AS_HELP_STRING([--with-debug2],
-        [Debugging level 2 - more verbose debugging.])],
-    [AC_DEFINE([CONFIG_DEBUG2],
-        [1],
-        [ More verbose debugging is enabled.])
-     AC_DEFINE([CONFIG_DEBUG], [1])],
-    [with_debug2=no])
-
-if test "x$with_debug" != xno -o "x$with_debug2" != xno; then
-    debug=yes
-else
-    debug=no
-fi
-
-AS_IF([test x$debug == xyes ],
-    [CFLAGS="-g -O0"],
-    [CFLAGS="-O2"])
+AS_IF([test "x$with_debug" != xno],
+    [CFLAGS="-g -O0 -fPIC -D_FORTIFY_SOURCE=2 -fsanitize=address"],
+    [CFLAGS="-fPIC -O2"])
 CFLAGS="${CFLAGS} -Wall -Werror"
 AC_SUBST([CFLAGS])
 
-AM_CONDITIONAL([DEBUG], [test x$debug = xyes])
+AM_CONDITIONAL([DEBUG], [test "x$with_debug" != xno])
 
 AC_CONFIG_FILES([Makefile src/Makefile tests/Makefile])
 
 AC_OUTPUT
-

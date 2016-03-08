@@ -75,7 +75,7 @@ EXPORT void dfree(void *);
 #endif /* CONFIG_DEBUG */
 
 
-#ifdef CONFIG_DEBUG2
+#ifdef YDPRINT
 
 /* Debug PRint */
 #  define dpr(a, b...) printf(a, ##b);
@@ -87,13 +87,13 @@ EXPORT void dfree(void *);
 /* Debug CHecK PoinT */
 #  define dchkpt() printf("%s: %d\n", __FILE__, __LINE__);
 
-#else /* CONFIG_DEBUG2 */
+#else /* YDPRINT */
 
 #  define dpr(a, b...) do { } while (0)
 #  define dfpr(a, b...) do { } while (0)
 #  define dpospr(a, b...) do { } while (0)
 #  define dchkpt() do { } while (0)
 
-#endif /* CONFIG_DEBUG2 */
+#endif /* YDPRINT */
 
 #endif /* __COMMOn_h__ */

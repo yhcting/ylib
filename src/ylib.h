@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,64 +33,63 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include "test.h"
-#ifdef CONFIG_DEBUG
 
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
+/**
+ * @file ylib.h
+ * @brief Header to use ylib
+ */
 
-#include "common.h"
-#include "yut.h"
-#include "yset.h"
+#ifndef __YLIb_h__
+#define __YLIb_h__
 
-static void
-test_set(void) {
-	int i, r;
-	char buf[10];
-	int *elems[100];
-	yset_t s = yseti_create();
-	yset_t ss = ysets_create();
+/*
+ * Include headers for modules
+ */
+#include "ydef.h"
+#include "ylog.h"
 
-	for (i = 0; i < 100; i++) {
-		yassert(1 == yset_add(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(1 == yset_add(ss, buf));
-	}
-	for (i = 0; i < 50; i++) {
-		yassert(0 == yset_add(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(0 == yset_add(ss, buf));
-	}
-	for (i = 0; i < 25; i++) {
-		yassert(1 == yset_remove(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(1 == yset_remove(ss, buf));
-	}
-	for (i = 0; i < 25; i++) {
-		yassert(0 == yset_remove(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(0 == yset_remove(ss, buf));
-	}
-	for (i = 0; i < 25; i++) {
-		yassert(!yset_has(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(!yset_has(ss, buf));
-	}
-	for (; i < 50; i++) {
-		yassert(yset_has(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(yset_has(ss, buf));
-	}
-	r = yset_elements(s, (const void **)elems, yut_arrsz(elems));
-	yassert(75 == r);
-	for (i = 0; i < r; i++)
-		yassert(25 <= (intptr_t)elems[i] && (intptr_t)elems[i] < 100);
-	yset_destroy(s);
-	yset_destroy(ss);
+/** Configuration for ylib */
+struct ylib_config {
+	/**
+	 * capacity of msg-object-pool. if <=0, then default capacity is used
+	 */
+	int ymsg_pool_capacity;
+	/**
+	 * File descriptor where standard log - all except for ERR and FATAL -
+	 *  is written to. If it is invalid, default fd is used.
+	 */
+	int ylog_stdfd;
+	/**
+	 * File descriptor where err(ERR, FATAL) log is written to.
+	 * If it is invalid, default fd is used.
+	 */
+	int ylog_errfd;
+	/**
+	 * Log level. If it is invalid default value is used.
+	 */
+	enum yloglv ylog_level; /**< level of ylog */
+};
 
-}
+/**
+ * Initialize ylib. Call this before using ylib.
+ * Before calling this, ylib may not be available.
+ *
+ * @param c Config struct. Once it is used, ylib doesn't refer it anymore.
+ *          (This is, client can free memory.)
+ *          Set to NULL to use default configuration.
+ * @return 0 if success. Otherwise -errno.
+ */
+YYEXPORT int
+ylib_init(const struct ylib_config *c);
 
-TESTFN(set)
+/**
+ * Cleanup internal-reasources used by ylib.
+ * After calling this, ylib may become unavailable.
+ *
+ * @return 0 if success. Otherwise -errno.
+ */
+YYEXPORT int
+ylib_exit(void);
 
-#endif /* CONFIG_DEBUG */
+
+#endif /* __YLIb_h__ */

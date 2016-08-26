@@ -25,7 +25,6 @@ doxy/
 
 # auto-generated files
 Android.mk
-src/ylib.h
 
 # files for build system
 Makefile

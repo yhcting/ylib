@@ -37,6 +37,7 @@
 
 #include "common.h"
 #include "msg.h"
+#include "ylog.h"
 #include "ymsgq.h"
 #include "ymsglooper.h"
 #include "msghandler.h"
@@ -45,8 +46,8 @@ static void
 default_handle(const struct ymsg *m) {
 	if (unlikely(YMSG_TYP_EXEC != m->type
 		     || !m->run)) {
-		dpr("Invalid message for default handler: type:%d, %p\n",
-		    m->type, m->run);
+		ylogw("Invalid message(default handler): type:%d, %p => ignored\n,",
+		      m->type, m->run);
 		return;
 	}
 	(*m->run)(m->data);

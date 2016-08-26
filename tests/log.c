@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,64 +33,24 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+
 #include "test.h"
 #ifdef CONFIG_DEBUG
 
-#include <stdio.h>
-#include <string.h>
 #include <assert.h>
 
 #include "common.h"
-#include "yut.h"
-#include "yset.h"
+#include "ylog.h"
+
+extern void log_clear_thread_specific_buffer(void);
 
 static void
-test_set(void) {
-	int i, r;
-	char buf[10];
-	int *elems[100];
-	yset_t s = yseti_create();
-	yset_t ss = ysets_create();
-
-	for (i = 0; i < 100; i++) {
-		yassert(1 == yset_add(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(1 == yset_add(ss, buf));
-	}
-	for (i = 0; i < 50; i++) {
-		yassert(0 == yset_add(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(0 == yset_add(ss, buf));
-	}
-	for (i = 0; i < 25; i++) {
-		yassert(1 == yset_remove(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(1 == yset_remove(ss, buf));
-	}
-	for (i = 0; i < 25; i++) {
-		yassert(0 == yset_remove(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(0 == yset_remove(ss, buf));
-	}
-	for (i = 0; i < 25; i++) {
-		yassert(!yset_has(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(!yset_has(ss, buf));
-	}
-	for (; i < 50; i++) {
-		yassert(yset_has(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(yset_has(ss, buf));
-	}
-	r = yset_elements(s, (const void **)elems, yut_arrsz(elems));
-	yassert(75 == r);
-	for (i = 0; i < r; i++)
-		yassert(25 <= (intptr_t)elems[i] && (intptr_t)elems[i] < 100);
-	yset_destroy(s);
-	yset_destroy(ss);
-
+test_log(void) {
+	ylogw("Test: this is log\n");
+	ylogv("Test: this is log\n");
+	log_clear_thread_specific_buffer();
 }
 
-TESTFN(set)
+TESTFN(log)
 
 #endif /* CONFIG_DEBUG */

@@ -42,6 +42,7 @@
 
 #include "lib.h"
 #include "common.h"
+#include "ylog.h"
 #include "ymsgq.h"
 #include "msg.h"
 #include "ymsglooper.h"
@@ -300,7 +301,7 @@ ymsglooper_start_looper_thread(bool destroy_on_exit) {
 			   &ts);
 	if (unlikely(r)) {
 		yassert(0);
-		dpr("Fail to create thread: %s\n", strerror(r));
+		ylogf("Fail to create thread: %s\n", strerror(r));
 		goto free_cond;
 	}
 
@@ -389,7 +390,10 @@ ymsglooper_stop(struct ymsglooper *ml) {
  *****************************************************************************/
 static int
 minit(const struct ylib_config *cfg) {
-	int r = pthread_key_create(&_tkey, &mldestroy);
+	/*struct ymsglooper object instance may be refered after exiting
+	 * thread.
+	 */
+	int r = pthread_key_create(&_tkey, NULL);
 	if (unlikely(r))
 		return -r;
 	return 0;

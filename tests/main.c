@@ -41,6 +41,7 @@
 #include <pthread.h>
 
 #include "ylib.h"
+#include "ylog.h"
 #include "common.h"
 #include "ylistl.h"
 
@@ -147,7 +148,11 @@ main(int argc, const char *argv[]) {
 
 	pthread_mutex_init(&_mem_count_lock, NULL);
 
-	ylib_init(NULL);
+	struct ylib_config yc;
+	memset(&yc, 0, sizeof(yc));
+	yc.ylog_stdfd = yc.ylog_errfd = -1;
+	yc.ylog_level = YLOG_VERBOSE;
+	ylib_init(&yc);
 	ylistl_foreach_item(p, &_tstfnl, struct tstfn, lk) {
 		int r = repeat;
 		if (modnm
@@ -181,6 +186,14 @@ main(int argc, const char *argv[]) {
 			/* yassert(0); */
 		}
 		printf(" => PASSED\n");
+	}
+	ylib_exit();
+	if (dmem_count()) {
+		printf("Unbalanced memory lib init/exit\n"
+		       "    balance : %d\n",
+		       dmem_count());
+		return -1;
+		/* yassert(0); */
 	}
 	pthread_mutex_destroy(&_mem_count_lock);
 	printf(">>>>>> TEST PASSED <<<<<<<\n");

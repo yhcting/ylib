@@ -124,7 +124,7 @@ kcp_s(void **news, const void *s) {
         size_t sz = strlen((const char *)s);
         void *ns = ymalloc(sz + 1);
         if (unlikely(!ns))
-                return ENOMEM;
+                return -ENOMEM;
         memcpy(ns, s, sz + 1);
         *news = ns;
 	return 0;

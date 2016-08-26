@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,64 +33,90 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include "test.h"
-#ifdef CONFIG_DEBUG
 
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
+/**
+ * @file ylog.h
+ * @brief Header to use ylog
+ */
 
-#include "common.h"
-#include "yut.h"
-#include "yset.h"
+#ifndef __YLOg_h__
+#define __YLOg_h__
 
-static void
-test_set(void) {
-	int i, r;
-	char buf[10];
-	int *elems[100];
-	yset_t s = yseti_create();
-	yset_t ss = ysets_create();
+#include "ydef.h"
 
-	for (i = 0; i < 100; i++) {
-		yassert(1 == yset_add(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(1 == yset_add(ss, buf));
-	}
-	for (i = 0; i < 50; i++) {
-		yassert(0 == yset_add(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(0 == yset_add(ss, buf));
-	}
-	for (i = 0; i < 25; i++) {
-		yassert(1 == yset_remove(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(1 == yset_remove(ss, buf));
-	}
-	for (i = 0; i < 25; i++) {
-		yassert(0 == yset_remove(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(0 == yset_remove(ss, buf));
-	}
-	for (i = 0; i < 25; i++) {
-		yassert(!yset_has(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(!yset_has(ss, buf));
-	}
-	for (; i < 50; i++) {
-		yassert(yset_has(s, (void *)(intptr_t)i));
-		sprintf(buf, "%d", i);
-		yassert(yset_has(ss, buf));
-	}
-	r = yset_elements(s, (const void **)elems, yut_arrsz(elems));
-	yassert(75 == r);
-	for (i = 0; i < r; i++)
-		yassert(25 <= (intptr_t)elems[i] && (intptr_t)elems[i] < 100);
-	yset_destroy(s);
-	yset_destroy(ss);
+/**
+ * Log level.
+ */
+enum yloglv {
+	YLOG_VERBOSE = 0,
+	YLOG_DEBUG,
+	YLOG_INFO,
+	YLOG_WARN,
+	YLOG_ERR,
+	YLOG_FATAL,
+	YLOG_DISABLE_LOG,
+	YLOG_NR_LOGLV = YLOG_DISABLE_LOG
+};
 
+/**
+ * Internal variable. DO NOT edit this value directly.
+ * Due to performance reason, varaible is exposed to the public(global).
+ */
+extern enum yloglv ___yloglv;
+
+/**
+ * Get current log level.
+ */
+static inline enum yloglv
+ylog_loglv(void) {
+	return ___yloglv;
 }
 
-TESTFN(set)
+/**
+ * This is only for internal use. Client SHOULD NOT use this function
+ *   DIRECTLY.
+ */
+YYEXPORT void
+___ylog_write(enum yloglv, const char *file, int lineno, const char *fmt, ...);
 
-#endif /* CONFIG_DEBUG */
+/**
+ * This is only for internal use. Client SHOULD NOT use this function
+ *   DIRECTLY.
+ */
+#define _ylog(lv, fmt, args...)						\
+	if (YYunlikely((lv) >= ylog_loglv())) {				\
+		___ylog_write(lv, __FILE__, __LINE__, fmt, ##args);	\
+	}
+
+/**
+ * log YLOG_VERBOSE
+ */
+#define ylogv(fmt, args...) _ylog(YLOG_VERBOSE, fmt, ##args)
+
+/**
+ * log YLOG_DEBUG
+ */
+#define ylogd(fmt, args...) _ylog(YLOG_DEBUG, fmt, ##args)
+
+/**
+ * log YLOG_INFO
+ */
+#define ylogi(fmt, args...) _ylog(YLOG_INFO, fmt, ##args)
+
+/**
+ * log YLOG_WARN
+ */
+#define ylogw(fmt, args...) _ylog(YLOG_WARN, fmt, ##args)
+
+/**
+ * log YLOG_ERR
+ */
+#define yloge(fmt, args...) _ylog(YLOG_ERR, fmt, ##args)
+
+/**
+ * log YLOG_FATAL
+ */
+#define ylogf(fmt, args...) _ylog(YLOG_FATAL, fmt, ##args)
+
+
+#endif /* __YLOg_h__ */

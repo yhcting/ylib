@@ -63,6 +63,7 @@ yseti_create(void) {
 
 /**
  * Create set whose key-type is string.
+ * deep-copied key-string is used.
  *
  * @return NULL if fails.
  */
@@ -140,6 +141,8 @@ yset_elements(const yset_t s,
 
 /**
  * Add to the set.
+ * \a elem is used as key by shallow or deep copy. It is decided when set is
+ *   created(ysetX_create).
  *
  * @param s Set
  * @param elem data value(item)

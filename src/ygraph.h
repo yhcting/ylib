@@ -323,7 +323,7 @@ ygraph_has_edge(const struct ygraph *g,
  * @param e Newly added edge object. if NULL, this is ignored.
  * @param from Source vertex of edge
  * @param to Destination vertex of edge
- * @return 0 if success. Otherwise -errno.\n
+ * @return 0 if success. Otherwise -errno.
  */
 YYEXPORT int
 ygraph_add_edge(struct ygraph *,

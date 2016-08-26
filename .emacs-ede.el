@@ -14,14 +14,14 @@
     "Using make file in top directory"
     (interactive)
     (let ((cmd ""))
-        (set 'cmd (concat "cd " yhc.topdir "; make CFLAGS=-g DEFS=-DYDBG install"))
+        (set 'cmd (concat "cd " yhc.topdir "; make -j8 install"))
         (compile cmd)))
 
 (defun yhc.compile.release ()
     "Using make file in top directory"
     (interactive)
     (let ((cmd ""))
-        (set 'cmd (concat "cd " yhc.topdir "; make install"))
+        (set 'cmd (concat "cd " yhc.topdir "; make -j8 install"))
         (compile cmd)))
 
 (defun yhc.gdb ()

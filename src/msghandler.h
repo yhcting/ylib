@@ -34,85 +34,15 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-#include <malloc.h>
-#include <assert.h>
-#include <stdlib.h>
+#ifndef __MSGHANDLEr_h__
+#define __MSGHANDLEr_h__
 
-#include "ylib.h"
+#include "ymsghandler.h"
 
 
-static struct module *_hd = NULL;
-
-/* DO NOT USE 'ylist' for 'ylistl' here.
- * Both are also part of 'ylib'.
- * BEFORE INITialzation, DO NOT USE ANY MODULES!
- */
-struct module {
-	const char *name;
-	int (*init)(const struct ylib_config *);
-	void (*exit)(void);
-	struct module *next;
+struct ymsghandler {
+	struct ymsglooper *ml;
+	void (*handle)(const struct ymsg *);
 };
 
-static void
-add_module(struct module *m) {
-	m->next = _hd;
-	_hd = m;
-}
-
-static void
-free_modules(void) {
-	struct module *m, *n;
-	for (m = _hd; m; m = n) {
-		n = m->next;
-		free(m);
-	}
-}
-
-
-void
-ylib_register_module(const char *name,
-		     int (*init_)(const struct ylib_config *),
-		     void (*exit_)(void)) {
-	assert(name);
-	struct module *m = malloc(sizeof(*m));
-	if (!m) {/* Out Of Memory! */
-		assert(0);
-		exit(EXIT_FAILURE);
-	}
-	m->name = name;
-	m->init = init_;
-	m->exit = exit_;
-	add_module(m);
-}
-
-
-int
-ylib_init(const struct ylib_config *c) {
-	struct module *m;
-	struct module *lastm = _hd;
-	int r = 0;
-	for (m = _hd; m; m = m->next) {
-		lastm = m;
-		if (!!(r = (*m->init)(c))) /* to make compiler happy */
-			goto fail; /* error! stop! */
-	}
-
-	return 0;
-
- fail:
-	/* 'init' fails at 'lastm' */
-	for (m = _hd; m != lastm; m = m->next)
-		(*m->exit)();
-	return r;
-}
-
-
-int
-ylib_exit(void) {
-	struct module *m;
-	for (m = _hd; m; m = m->next)
-		(*m->exit)();
-	free_modules();
-	return 0;
-}
+#endif /* __MSGHANDLEr_h__ */

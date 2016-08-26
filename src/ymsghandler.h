@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -34,13 +34,76 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-#include "ylib.h"
+#ifndef __YMSGHANDLEr_h__
+#define __YMSGHANDLEr_h__
 
-/** Configuration for ylib */
-struct ylib_config {
-	int ymsg_pool_sz; /**< size of msg-object-pool. */
-};
+#include <pthread.h>
+#include "ydef.h"
 
 
-extern int init(void);
-extern int exit(void);
+struct ymsg;
+struct ymsghandler;
+struct ymsglooper;
+
+/**
+ * Create message handler.
+ *
+ * @param ml message looper in which this handler works, in terms of 'context'.
+ * @param handle message handle function.
+ *        'handle' MUST NOT change value or destroy(free) msg object!
+ *        To use default handler, set to NULL.
+ * @return NULL if fails.
+ */
+YYEXPORT struct ymsghandler *
+ymsghandler_create(struct ymsglooper *ml,
+		   void (*handle)(const struct ymsg *));
+
+/**
+ * Destroy handler.
+ */
+YYEXPORT void
+ymsghandler_destroy(struct ymsghandler *);
+
+/**
+ * Get msglooper in where this handler belonging to.
+ */
+YYEXPORT struct ymsglooper *
+ymsghandler_get_looper(struct ymsghandler *);
+
+/**
+ * Post data msg to this handler.
+ */
+YYEXPORT int
+ymsghandler_post_data(struct ymsghandler *,
+		      int code, void *data,
+		      void (*dfree)(void *));
+
+/**
+ * Post data msg to this handler.
+ */
+YYEXPORT int
+ymsghandler_post_data2(struct ymsghandler *,
+		       int code, void *data,
+		       void (*dfree)(void *),
+		       uint8_t pri, uint32_t opt);
+
+/**
+ * Post exec.(callback) msg to this handler.
+ */
+YYEXPORT int
+ymsghandler_post_exec(struct ymsghandler *,
+		      void *arg, void (*argfree)(void *),
+		      void (*run)(void *));
+
+/**
+ * Post exec.(callback) msg to this handler.
+ */
+YYEXPORT int
+ymsghandler_post_exec2(struct ymsghandler *,
+		       void *arg, void (*argfree)(void *),
+		       void (*run)(void *),
+		       uint8_t pri, uint32_t opt);
+
+
+
+#endif /* __YMSGHANDLEr_h__ */

@@ -54,7 +54,7 @@ struct ymsgq;
  * Create message-queue object.
  *
  * @param capacity Max number of msgs that Q can have.
- *                 '<= 0' means not-limited
+ *                 '<= 0' means 'unlimited capacity'
  * @return NULL if fails.
  */
 YYEXPORT struct ymsgq *
@@ -70,7 +70,7 @@ ymsgq_destroy(struct ymsgq *);
  * Enqueue message to message queue
  *
  * @return 0 if success. Otherwise -errno
- *         (EPERM means 'Q is already full')
+ *         (EAGAIN means 'Q is already full')
  */
 YYEXPORT int
 ymsgq_en(struct ymsgq *, struct ymsg *);

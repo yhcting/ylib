@@ -33,6 +33,7 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+
 #include <pthread.h>
 #include <string.h>
 
@@ -61,18 +62,27 @@ static struct pool _pool;
  *
  *****************************************************************************/
 static INLINE void
-mclean(struct ymsg_ *m) {
+minit_to_zero(struct ymsg_ *m) {
 	memset(m, 0, sizeof(*m));
+}
+
+static INLINE void
+mfree_data(struct ymsg_ *m) {
+	dfpr("free");
+	if (likely(YMSG_TYP_INVALID != m->m.type
+		   && m->m.dfree
+		   && m->m.data))
+		(*m->m.dfree)(m->m.data);
+	/* to avoid freeing multiple times. */
+	m->m.dfree = NULL;
+	m->m.data = NULL;
 }
 
 static void
 mdestroy(struct ymsg_ *m) {
 	if (unlikely(!m))
 		return;
-	if (likely(YMSG_TYP_INVALID != m->m.type
-		   && m->m.dfree
-		   && m->m.data))
-		(*m->m.dfree)(m->m.data);
+	mfree_data(m);
 	yfree(m);
 }
 
@@ -127,7 +137,7 @@ pool_get(void) {
  done_unlock:
 	pool_unlock();
 	if (likely(m))
-		mclean(m);
+		minit_to_zero(m);
 	return m;
 }
 
@@ -144,6 +154,7 @@ pool_put(struct ymsg_ *m) {
 	return r;
 }
 
+static void pool_clear(void) __unused;
 static void
 pool_clear(void) {
 	struct ylistl_link *lk;
@@ -171,12 +182,15 @@ ymsg_create(void) {
 		return NULL;
 	ylistl_init_link(&m->lk);
 	_msg_magic_set(m);
+	dfpr(".");
 	return &m->m;
 }
 
 void
 ymsg_destroy(struct ymsg *ym) {
+	dfpr(".");
 	struct ymsg_ *m = msg_mutate(ym);
+	mfree_data(m);
 	if (unlikely(!pool_put(m)))
 		mdestroy(m);
 }

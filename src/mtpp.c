@@ -41,6 +41,7 @@
 #include "common.h"
 #include "ygraph.h"
 #include "ymtpp.h"
+#include "ymsg.h"
 #include "ymsgq.h"
 #include "ylist.h"
 
@@ -57,9 +58,9 @@
  *****************************************************************************/
 #define MCODE_DEF_LIST					\
 	/* start running */				\
-	_MCODE_DEF(START,     YMSG_PRI_VERY_HIGH)	\
+	_MCODE_DEF(START,     YMSG_PRI_HIGHER)		\
 	/* internal error */				\
-	_MCODE_DEF(ERROR,     YMSG_PRI_VERY_HIGH)	\
+	_MCODE_DEF(ERROR,     YMSG_PRI_HIGHER)		\
 	/* all jobs are done */				\
 	_MCODE_DEF(ALL_DONE,  YMSG_PRI_NORMAL)		\
 	/* one job is done.				\
@@ -157,7 +158,7 @@ post_message(struct ymtpp *m,
 	dfpr("code=%s", _mcode_name[code]);
 	if (unlikely(!(msg = ymsg_create())))
 		return -ENOMEM;
-	ymsg_set_data(msg, _mcode_pri[code], code, data);
+	ymsg_set_data(msg, _mcode_pri[code], 0, code, data, dfree);
 	msg->dfree = dfree;
 	if (unlikely(r = ymsgq_en(m->mq, msg))) {
 		ymsg_destroy(msg);

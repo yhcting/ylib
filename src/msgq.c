@@ -57,7 +57,7 @@ struct ymsgq {
 	 * This module assumes that this value is constant and only readable.
 	 */
 	u32 capacity;
-	pthread_mutex_t m;
+	pthread_mutex_t lock;
 	pthread_cond_t cond;
 };
 
@@ -105,10 +105,10 @@ static int
 qen(struct ymsgq *q, struct ymsg_ *m) {
 	int err = 0;
 	int r __unused;
-	r = pthread_mutex_lock(&q->m);
+	r = pthread_mutex_lock(&q->lock);
 	yassert(!r);
 	if (unlikely(q->sz >= q->capacity)) {
-		err = -EPERM;
+		err = -EAGAIN;
 		goto unlock;
 	}
 	set_time_stamp(m);
@@ -117,7 +117,7 @@ qen(struct ymsgq *q, struct ymsg_ *m) {
 	r = pthread_cond_broadcast(&q->cond);
 	yassert(!r);
  unlock:
-	r = pthread_mutex_unlock(&q->m);
+	r = pthread_mutex_unlock(&q->lock);
 	yassert(!r);
 	return err;
 }
@@ -130,6 +130,7 @@ qen(struct ymsgq *q, struct ymsg_ *m) {
 struct ymsgq *
 ymsgq_create(int capacity) {
 	int i;
+	int r __unused;
 	struct ymsgq *q = ymalloc(sizeof(*q));
 	if (unlikely(!q))
 		return NULL; /* OOM */
@@ -137,14 +138,24 @@ ymsgq_create(int capacity) {
 		ylistl_init_link(&q->q[i]);
 	q->capacity = capacity <= 0? 0xffffffff: (u32)capacity;
 	q->sz = 0;
-	pthread_mutex_init(&q->m, NULL);
-	pthread_cond_init(&q->cond, NULL);
+	if (unlikely(pthread_mutex_init(&q->lock, NULL)))
+		goto free_q;
+	if (unlikely(pthread_cond_init(&q->cond, NULL)))
+		goto free_lock;
 	return q;
+
+ free_lock:
+	r = pthread_mutex_destroy(&q->lock);
+	yassert(!r);
+ free_q:
+	yfree(q);
+	return NULL;
 }
 
 void
 ymsgq_destroy(struct ymsgq *q) {
 	int i;
+	int r __unused;
 	struct ymsg_ *pos, *tmp;
 	for (i = 0; i < yut_arrsz(q->q); i++) {
 		ylistl_foreach_item_removal_safe(pos,
@@ -155,8 +166,10 @@ ymsgq_destroy(struct ymsgq *q) {
 			ymsg_destroy(&pos->m);
 		}
 	}
-	pthread_cond_destroy(&q->cond);
-	pthread_mutex_destroy(&q->m);
+	r = pthread_cond_destroy(&q->cond);
+	yassert(!r);
+	r = pthread_mutex_destroy(&q->lock);
+	yassert(!r);
 	yfree(q);
 }
 
@@ -177,11 +190,16 @@ struct ymsg *
 ymsgq_de(struct ymsgq *q) {
 	int i;
 	struct ylistl_link *lk;
+	int r __unused;
 
-	pthread_mutex_lock(&q->m);
-	if (!q->sz)
+	r = pthread_mutex_lock(&q->lock);
+	yassert(!r);
+	if (!q->sz) {
 		/* queue is empty. wait! */
-		pthread_cond_wait(&q->cond, &q->m);
+		r = pthread_cond_wait(&q->cond, &q->lock);
+		yassert(!r);
+
+	}
 	yassert(q->sz > 0);
 	lk = NULL;
 	/* Highest priority = index 0 */
@@ -194,7 +212,8 @@ ymsgq_de(struct ymsgq *q) {
 			break;
 		}
 	}
-	pthread_mutex_unlock(&q->m);
+	r = pthread_mutex_unlock(&q->lock);
+	yassert(!r);
 	yassert(lk);
 	return &containerof(lk, struct ymsg_, lk)->m;
 }

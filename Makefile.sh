@@ -16,6 +16,8 @@ modenames="
 :mempool
 :msg
 :msgq
+:msglooper
+:msghandler
 :mtpp
 :p
 :set
@@ -110,7 +112,7 @@ cat <<EOF >>$autogenfile
 
 /** Configuration for ylib */
 struct ylib_config {
-	int ymsg_pool_sz; /**< size of msg-object-pool. */
+	int ymsg_pool_capacity; /**< capacity of msg-object-pool. */
 };
 
 /**
@@ -122,7 +124,8 @@ struct ylib_config {
  *          Set to NULL to use default configuration.
  * @return 0 if success. Otherwise -errno.
  */
-EXPORT int init(const struct ylib_config *c);
+YYEXPORT int
+ylib_init(const struct ylib_config *c);
 
 /**
  * Cleanup internal-reasources used by ylib.
@@ -130,7 +133,8 @@ EXPORT int init(const struct ylib_config *c);
  *
  * @return 0 if success. Otherwise -errno.
  */
-EXPORT int exit(void);
+YYEXPORT int
+ylib_exit(void);
 
 #ifdef __cplusplus
 }

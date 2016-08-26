@@ -35,6 +35,7 @@
  *****************************************************************************/
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
 #include <pthread.h>
@@ -129,10 +130,18 @@ main(int argc, const char *argv[]) {
 	int sv;
 	struct tstfn *p;
 	const char *modnm = NULL; /* module name to test */
-	if (2 == argc)
+	int repeat = 5; /* default repeat value */
+	if (1 < argc)
 		modnm = argv[1];
-	else if (2 < argc) {
-		fprintf(stderr, "Usage: y [module name]\n");
+	if (2 < argc) {
+		repeat = atoi(argv[2]);
+	}
+	if (3 < argc) {
+		fprintf(stderr, "Usage: y [module name] [repeat count]\n");
+		return -1;
+	}
+	if (repeat <= 0) {
+		fprintf(stderr, "Invalid repeat count\n");
 		return -1;
 	}
 
@@ -140,7 +149,7 @@ main(int argc, const char *argv[]) {
 
 	ylib_init(NULL);
 	ylistl_foreach_item(p, &_tstfnl, struct tstfn, lk) {
-		int repeat = 5;
+		int r = repeat;
 		if (modnm
 		    && strcmp(modnm, p->modname))
 			continue; /* skip not-interesting test */
@@ -158,10 +167,11 @@ main(int argc, const char *argv[]) {
 		 * at test-modA
 		 * - This result is NOT good to understand.
 		 */
-		while (repeat--)
+		while (r--) {
 			(*p->fn)();
-		if (p->clear)
-			(*p->clear)();
+			if (p->clear)
+				(*p->clear)();
+		}
 		if (sv != dmem_count()) {
 			printf("Unbalanced memory at [%s]!\n"
 			       "    balance : %d\n",

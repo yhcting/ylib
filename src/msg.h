@@ -43,6 +43,9 @@
 #define __MSg_h__
 
 #include "ymsg.h"
+#include "def.h"
+
+struct ymsghandler;
 
 /*
  * char MAGIC[] = { 'w', 'x', 'y', 'z' };
@@ -64,6 +67,7 @@ struct ymsg_ {
 	u64 when; /**< Nsec since boot */
 #endif /* CONFIG_DEBUG */
 	/** For internal use. DO NOT access 'lk' at out side library! */
+	struct ymsghandler *handler;
 	struct ylistl_link lk;
 };
 
@@ -102,6 +106,11 @@ _msg_magic_set(struct ymsg_ *m __unused) {}
  *
  *
  *****************************************************************************/
+static INLINE void
+msg_set_handler(struct ymsg_ *m, struct ymsghandler *h) {
+	m->handler = h;
+}
+
 static INLINE struct ymsg_ *
 msg_mutate(struct ymsg *ym) {
 	struct ymsg_ *m = ym? containerof(ym, struct ymsg_, m): NULL;

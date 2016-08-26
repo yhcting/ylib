@@ -34,85 +34,104 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-#include <malloc.h>
+#include "test.h"
+#ifdef CONFIG_DEBUG
+
+#include <string.h>
 #include <assert.h>
-#include <stdlib.h>
+#include <unistd.h>
 
-#include "ylib.h"
+#include "common.h"
+#include "ymsg.h"
+#include "ymsglooper.h"
+#include "ymsghandler.h"
 
 
-static struct module *_hd = NULL;
+extern void msg_clear_pool(void);
 
-/* DO NOT USE 'ylist' for 'ylistl' here.
- * Both are also part of 'ylib'.
- * BEFORE INITialzation, DO NOT USE ANY MODULES!
- */
-struct module {
-	const char *name;
-	int (*init)(const struct ylib_config *);
-	void (*exit)(void);
-	struct module *next;
+
+struct msgA {
+	int a, b;
+};
+
+struct msgB {
+	char *s;
 };
 
 static void
-add_module(struct module *m) {
-	m->next = _hd;
-	_hd = m;
+free_msgA(void *v) {
+	yfree(v);
 }
 
 static void
-free_modules(void) {
-	struct module *m, *n;
-	for (m = _hd; m; m = n) {
-		n = m->next;
-		free(m);
+free_msgB(void *v) {
+	struct msgB *m = (struct msgB *)v;
+	yfree(m->s);
+	yfree(m);
+}
+
+static void
+run(void *a) {
+	struct msgB *m = (struct msgB *)a;
+	//printf("Hello Run\n");
+	yassert('A' == m->s[0]
+		&& 'B' == m->s[1]
+		&& 'C' == m->s[2]);
+}
+
+
+
+static void
+handle0(const struct ymsg *m) {
+	if (YMSG_TYP_DATA == m->type) {
+		struct msgA *ma = (struct msgA *)m->data;
+		yassert(m->code == ma->a && ma->a == ma->b);
+		//printf("Hello data...\n");
 	}
 }
 
 
-void
-ylib_register_module(const char *name,
-		     int (*init_)(const struct ylib_config *),
-		     void (*exit_)(void)) {
-	assert(name);
-	struct module *m = malloc(sizeof(*m));
-	if (!m) {/* Out Of Memory! */
-		assert(0);
-		exit(EXIT_FAILURE);
-	}
-	m->name = name;
-	m->init = init_;
-	m->exit = exit_;
-	add_module(m);
-}
+static void
+test_msghandler(void) {
+	int i;
+	struct ymsghandler *mh0, *mh1;
+	struct ymsglooper *ml0 = ymsglooper_start_looper_thread(FALSE);
+	struct ymsglooper *ml1 = ymsglooper_start_looper_thread(FALSE);
+	mh0 = ymsghandler_create(ml0, NULL); /* use default handle */
+	mh1 = ymsghandler_create(ml1, &handle0);
 
-
-int
-ylib_init(const struct ylib_config *c) {
-	struct module *m;
-	struct module *lastm = _hd;
-	int r = 0;
-	for (m = _hd; m; m = m->next) {
-		lastm = m;
-		if (!!(r = (*m->init)(c))) /* to make compiler happy */
-			goto fail; /* error! stop! */
+	for (i = 0; i < 10; i++) {
+		struct msgA *ma = ymalloc(sizeof(*ma));
+		ma->a = ma->b = i;
+		ymsghandler_post_data(mh1, i, ma, &free_msgA);
 	}
 
-	return 0;
+	for (i = 0; i < 10; i++) {
+		struct msgB *m = ymalloc(sizeof(*m));
+		m->s = ymalloc(100);
+	        sprintf(m->s, "ABC %d: message", i);
+		ymsghandler_post_exec(mh0, m, &free_msgB, &run);
+	}
+	ymsglooper_stop(ymsghandler_get_looper(mh0));
+	ymsglooper_stop(ymsghandler_get_looper(mh1));
 
- fail:
-	/* 'init' fails at 'lastm' */
-	for (m = _hd; m != lastm; m = m->next)
-		(*m->exit)();
-	return r;
+	ymsghandler_destroy(mh0);
+	ymsghandler_destroy(mh1);
+
+	while (!(ymsglooper_get_state(ml0) == YMSGLOOPER_TERMINATED
+		 && ymsglooper_get_state(ml1) == YMSGLOOPER_TERMINATED))
+		usleep(1000 * 50);
+	ymsglooper_destroy(ml0);
+	ymsglooper_destroy(ml1);
+}
+
+static void
+clear_msghandler(void) {
+	msg_clear_pool();
 }
 
 
-int
-ylib_exit(void) {
-	struct module *m;
-	for (m = _hd; m; m = m->next)
-		(*m->exit)();
-	free_modules();
-	return 0;
-}
+TESTFN(msghandler)
+CLEARFN(msghandler)
+
+#endif /* CONFIG_DEBUG */

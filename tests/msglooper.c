@@ -34,85 +34,48 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-#include <malloc.h>
+#include "test.h"
+#ifdef CONFIG_DEBUG
+
+#include <stdint.h>
 #include <assert.h>
-#include <stdlib.h>
+#include <unistd.h>
 
-#include "ylib.h"
+#include "common.h"
+#include "ymsglooper.h"
 
 
-static struct module *_hd = NULL;
+extern void msg_clear_pool(void);
 
-/* DO NOT USE 'ylist' for 'ylistl' here.
- * Both are also part of 'ylib'.
- * BEFORE INITialzation, DO NOT USE ANY MODULES!
- */
-struct module {
-	const char *name;
-	int (*init)(const struct ylib_config *);
-	void (*exit)(void);
-	struct module *next;
-};
 
 static void
-add_module(struct module *m) {
-	m->next = _hd;
-	_hd = m;
+test_msglooper(void) {
+	/* create looper thread and stop it */
+	struct ymsglooper *ml0 = ymsglooper_start_looper_thread(TRUE);
+	struct ymsglooper *ml1 = ymsglooper_start_looper_thread(TRUE);
+	ymsglooper_stop(ml0);
+	ymsglooper_stop(ml1);
+	usleep(1000 * 500); /* wait until threads are done */
+
+	ml0 = ymsglooper_start_looper_thread(FALSE);
+	ml1 = ymsglooper_start_looper_thread(FALSE);
+	ymsglooper_stop(ml0);
+	ymsglooper_stop(ml1);
+	yassert(!ymsglooper_get()); /* there is no message looper for this thread. */
+	while (!(ymsglooper_get_state(ml0) == YMSGLOOPER_TERMINATED
+		 && ymsglooper_get_state(ml1) == YMSGLOOPER_TERMINATED))
+		usleep(1000 * 50);
+	ymsglooper_destroy(ml0);
+	ymsglooper_destroy(ml1);
 }
 
 static void
-free_modules(void) {
-	struct module *m, *n;
-	for (m = _hd; m; m = n) {
-		n = m->next;
-		free(m);
-	}
+clear_msglooper(void) {
+	msg_clear_pool();
 }
 
 
-void
-ylib_register_module(const char *name,
-		     int (*init_)(const struct ylib_config *),
-		     void (*exit_)(void)) {
-	assert(name);
-	struct module *m = malloc(sizeof(*m));
-	if (!m) {/* Out Of Memory! */
-		assert(0);
-		exit(EXIT_FAILURE);
-	}
-	m->name = name;
-	m->init = init_;
-	m->exit = exit_;
-	add_module(m);
-}
+TESTFN(msglooper)
+CLEARFN(msglooper)
 
-
-int
-ylib_init(const struct ylib_config *c) {
-	struct module *m;
-	struct module *lastm = _hd;
-	int r = 0;
-	for (m = _hd; m; m = m->next) {
-		lastm = m;
-		if (!!(r = (*m->init)(c))) /* to make compiler happy */
-			goto fail; /* error! stop! */
-	}
-
-	return 0;
-
- fail:
-	/* 'init' fails at 'lastm' */
-	for (m = _hd; m != lastm; m = m->next)
-		(*m->exit)();
-	return r;
-}
-
-
-int
-ylib_exit(void) {
-	struct module *m;
-	for (m = _hd; m; m = m->next)
-		(*m->exit)();
-	free_modules();
-	return 0;
-}
+#endif /* CONFIG_DEBUG */

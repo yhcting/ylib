@@ -79,7 +79,7 @@ enum {
 struct ymtpp {
 	struct ygraph *g;
 	struct yvertex *targetv; /* target vertex */
-	struct ymq *mq;
+	struct ymsgq *mq;
 	u32 maxjobs; /* # jobs can be run in parallel */
 	/* Below this line : variables foro runtime information.
 	 * That is, they become dirty while running - ymtpp_run()
@@ -159,7 +159,7 @@ post_message(struct ymtpp *m,
 		return -ENOMEM;
 	ymsg_set_data(msg, _mcode_pri[code], code, data);
 	msg->dfree = dfree;
-	if (unlikely(r = ymq_en(m->mq, msg))) {
+	if (unlikely(r = ymsgq_en(m->mq, msg))) {
 		ymsg_destroy(msg);
 		return r;
 	}
@@ -681,7 +681,7 @@ ymtpp_create(u32 maxjobs) {
 					    NULL))))
 		goto fail_mtpp;
 
-	if (unlikely(!(m->mq = ymq_create())))
+	if (unlikely(!(m->mq = ymsgq_create())))
 		goto fail_graph;
 
 	m->maxjobs = !maxjobs? UINT_MAX: maxjobs;
@@ -699,7 +699,7 @@ void
 ymtpp_destroy(struct ymtpp *m) {
 	if (unlikely(!m))
 		return;
-	ymq_destroy(m->mq);
+	ymsgq_destroy(m->mq);
 	ygraph_destroy(m->g);
 	yfree(m);
 }
@@ -765,7 +765,7 @@ ymtpp_run(struct ymtpp *m,
 	while (1) {
 		int mcode;
 
-		msg = ymq_de(m->mq);
+		msg = ymsgq_de(m->mq);
 		mcode = msg->code;
 		mdata = msg->data;
 		ymsg_destroy(msg);

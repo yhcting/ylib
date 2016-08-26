@@ -40,7 +40,7 @@
 #include <assert.h>
 
 #include "common.h"
-#include "yutils.h"
+#include "yut.h"
 #include "ystatmath.h"
 
 static void

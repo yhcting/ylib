@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -35,60 +35,78 @@
  *****************************************************************************/
 
 /**
- * @file ymsgq.h
- * @brief Header to use simple message queue module.
+ * @file msg.h
+ * @brief Header to use ymsg in inside library
  */
 
-#ifndef __YMSGq_h__
-#define __YMSGq_h__
-
-#include <stdint.h>
-#include <string.h>
+#ifndef __MSg_h__
+#define __MSg_h__
 
 #include "ymsg.h"
 
-/** Message queue object supporting Multi-Thread */
-struct ymsgq;
+/*
+ * char MAGIC[] = { 'w', 'x', 'y', 'z' };
+ * '*((u32 *)MAIGC)' is easier but to avoid 'strict-aliasing warning'
+ * below way is used.
+ */
+static const u32 MSG_MAGIC = 'y' << 24 | 'm' << 16 | 's' << 8 | 'g';
 
-/**
- * Create message-queue object.
+
+
+/* internal ymsg structure */
+struct ymsg_ {
+#ifdef CONFIG_DEBUG
+	u32 magic0;
+#endif /* CONFIG_DEBUG */
+	struct ymsg m;
+#ifdef CONFIG_DEBUG
+	u32 magic1;
+#endif /* CONFIG_DEBUG */
+	/** For internal use. DO NOT access 'lk' at out side library! */
+	struct ylistl_link lk;
+};
+
+
+/******************************************************************************
  *
- * @return NULL if fails.
- */
-YYEXPORT struct ymsgq *
-ymsgq_create(void);
-
-/**
- * Destroy message-queue object.
- */
-YYEXPORT void
-ymsgq_destroy(struct ymsgq *);
-
-/**
- * Enqueue message to message queue
+ * DEBUG
  *
- * @return 0 if success. Otherwise -errno
- *         (EPERM means 'Q is already full')
- */
-YYEXPORT int
-ymsgq_en(struct ymsgq *, struct ymsg *);
+ *****************************************************************************/
+#ifdef CONFIG_DEBUG
 
-/**
- * Dequeue message from message queue.
- * This is blocking function.
- * So, if message queue is empty, wait until message is available.
+static INLINE void
+_msg_magic_verify(struct ymsg_ *m) {
+	yassert(m
+		&& MSG_MAGIC == m->magic0
+		&& MSG_MAGIC == m->magic1);
+}
+
+static INLINE void
+_msg_magic_set(struct ymsg_ *m) {
+	m->magic0 = m->magic1 = MSG_MAGIC;
+}
+
+#else /* CONFIG_DEBUG */
+
+static INLINE void
+_msg_magic_verify(struct ymsg_ *m __unused) {}
+static INLINE void
+_msg_magic_set(struct ymsg_ *m __unused) {}
+
+#endif /* CONFIG_DEBUG */
+
+
+/******************************************************************************
  *
- * @return NULL if fails.
- */
-YYEXPORT struct ymsg *
-ymsgq_de(struct ymsgq *);
-
-/**
- * Get size(number of messsage) of message queue.
  *
- * @return Size
- */
-YYEXPORT uint32_t
-ymsgq_sz(const struct ymsgq *);
+ *
+ *****************************************************************************/
+static INLINE struct ymsg_ *
+msg_mutate(struct ymsg *ym) {
+	struct ymsg_ *m = ym? containerof(ym, struct ymsg_, m): NULL;
+	_msg_magic_verify(m);
+	return m;
+}
 
-#endif /* __YMSGq_h__ */
+
+#endif /* __MSg_h__ */

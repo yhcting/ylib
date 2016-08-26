@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2015
+ * Copyright (C) 2015, 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,48 +33,23 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include "test.h"
-#ifdef CONFIG_DEBUG
-
-#include <assert.h>
+#include <string.h>
 
 #include "common.h"
-#include "yutils.h"
+#include "yut.h"
 
-static void
-bitops(void) {
-	u64 x;
-	x = 0xabcffcda;
-	yassert(0xc == yut_bits(x, 8, 4));
-	yassert(0xa == yut_bits(x, 0, 4));
-	yassert(0xa == yut_bits(x, 28, 4));
-	yassert(0xabcf0cda == yut_clear_bits(x, 12, 4));
-	yassert(0xabcffcd0 == yut_clear_bits(x, 0, 4));
-	yassert(0xabcffcd1 == yut_set_bits(x, 0, 4, 1));
-	yassert(0xabcf1cda == yut_set_bits(x, 12, 4, 1));
-	yassert(yut_test_bit(x, 1));
-	yassert(yut_test_bit(x, 3));
-	yassert(0xabcffcdb == yut_set_bit(x, 0));
-	yassert(0xabcffcda == yut_set_bit(x, 13));
-	yassert(0xabcfecda == yut_clear_bit(x, 12));
-	yassert(0xabcffcda == yut_clear_bit(x, 26));
+bool
+yut_starts_with(const char *str, const char *substr) {
+	int len, lensub, i;
+	if (unlikely(!str || !substr))
+		return FALSE;
+	len = strlen(str);
+	lensub = strlen(substr);
+	if (unlikely(lensub > len))
+		return FALSE;
+	for (i = 0; i < lensub; i++) {
+		if (unlikely(str[i] != substr[i]))
+			return FALSE;
+	}
+	return TRUE;
 }
-
-static void
-others(void) {
-	yassert(!yut_starts_with("abcdef", "abcdefg"));
-	yassert(!yut_starts_with("abcdef", "ae"));
-	yassert(yut_starts_with("abcdef", "abcdef"));
-	yassert(yut_starts_with("abcdef", "ab"));
-}
-
-static void
-test_utils(void) {
-	bitops();
-	others();
-}
-
-
-TESTFN(test_utils, utils)
-
-#endif /* CONFIG_DEBUG */

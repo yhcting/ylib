@@ -14,6 +14,7 @@ modenames="
 :list
 :lru
 :mempool
+:msg
 :msgq
 :mtpp
 :p
@@ -22,7 +23,7 @@ modenames="
 :statprint
 :treel
 :trie
-:utils
+:ut
 geo:point
 geo:line
 geo:band

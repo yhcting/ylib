@@ -60,7 +60,7 @@
  * |//|  |//|
  * v  v  v  v
  * +--+  +--+          <------------ One y-band
- * |//|  |//|           //////////// 
+ * |//|  |//|           ////////////
  * +--+  +--+------+   <------------
  * +---------------+
  * |\\\\\\\\\\\\\\\|
@@ -95,7 +95,7 @@
 #include "yrect.h"
 #include "yrgn.h"
 #include "../ydynb.h"
-#include "../yutils.h"
+#include "../yut.h"
 
 struct yrgn {
 	struct yband bs[0];

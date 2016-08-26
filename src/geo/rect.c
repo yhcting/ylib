@@ -36,7 +36,7 @@
 
 #include "geo.h"
 #include "yrect.h"
-#include "../yutils.h"
+#include "../yut.h"
 
 void
 ygeor_set3(struct yrect *or,

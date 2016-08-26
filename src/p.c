@@ -36,7 +36,7 @@
 #include <string.h>
 #include <stdint.h>
 #include "common.h"
-#include "yutils.h"
+#include "yut.h"
 #include "yp.h"
 
 /*
@@ -177,4 +177,3 @@ ypget(void *v) {
 }
 
 #endif /* CONFIG_DEBUG */
-

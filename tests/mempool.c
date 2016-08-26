@@ -52,46 +52,46 @@
 static void
 test_mempool(void) {
 	int i, j, k;
-	struct ymp *mp;
+	struct ymempool *mp;
 	int *b[TESTSZ];
 
-	mp = ymp_create(TESTGRPSZ, sizeof(int), 0);
+	mp = ymempool_create(TESTGRPSZ, sizeof(int), 0);
 
 	/*
 	 * Normal Test...
 	 */
-	b[0] = ymp_get(mp);
-	ymp_put(mp, b[0]);
+	b[0] = ymempool_get(mp);
+	ymempool_put(mp, b[0]);
 
-	b[0] = ymp_get(mp);
-	b[1] = ymp_get(mp);
-	ymp_put(mp, b[0]);
-	ymp_put(mp, b[1]);
+	b[0] = ymempool_get(mp);
+	b[1] = ymempool_get(mp);
+	ymempool_put(mp, b[0]);
+	ymempool_put(mp, b[1]);
 
 	for (i = 0; i < TESTSZ; i++) {
-		b[i] = ymp_get(mp);
+		b[i] = ymempool_get(mp);
 		*b[i] = i;
 	}
 
 	for (i = 0; i < TESTSZ / 2; i++)
-		ymp_put(mp, b[i]);
+		ymempool_put(mp, b[i]);
 
 	for (i = 0; i < TESTSZ / 2; i++) {
-		b[i] = ymp_get(mp);
+		b[i] = ymempool_get(mp);
 		*b[i] = i;
 	}
 
 	for (i = TESTSZ / 2; i < TESTSZ; i++)
-		ymp_put(mp, b[i]);
+		ymempool_put(mp, b[i]);
 
 	for (i = 0; i < TESTSZ / 2; i++) {
-		ymp_put(mp, b[i]);
-		b[i] = ymp_get(mp);
+		ymempool_put(mp, b[i]);
+		b[i] = ymempool_get(mp);
 		*b[i] = i;
 	}
 
 	for (i = TESTSZ / 2; i < TESTSZ; i++) {
-		b[i] = ymp_get(mp);
+		b[i] = ymempool_get(mp);
 		*b[i] = i;
 	}
 
@@ -99,7 +99,7 @@ test_mempool(void) {
 		assert(*b[i] == i);
 	}
 
-	ymp_destroy(mp);
+	ymempool_destroy(mp);
 
 	/*
 	 * Defragmentation Test
@@ -108,11 +108,11 @@ test_mempool(void) {
 #define __MAGICV 0x12345678
 #define __POISONV 0xdeaddead /* poision value */
 
-	mp = ymp_create(TESTGRPSZ, sizeof(int), YMP_mt_safe);
+	mp = ymempool_create(TESTGRPSZ, sizeof(int), YMEMPOOL_mt_safe);
 
 	/* initialize */
 	for (i = 0; i < TESTSZ; i++) {
-		b[i] = ymp_get(mp);
+		b[i] = ymempool_get(mp);
 		*b[i] = __MAGICV; /* magic value */
 	}
 
@@ -128,7 +128,7 @@ test_mempool(void) {
 			k = rand() % TESTSZ;
 			if (b[k]) {
 				*b[k] = __POISONV;
-				ymp_put(mp, b[k]);
+				ymempool_put(mp, b[k]);
 				b[k] = NULL;
 			}
 		}
@@ -136,7 +136,7 @@ test_mempool(void) {
 		/* get again */
 		for (j = 0; j < TESTSZ; j++) {
 			if (!b[j]) {
-				b[j] = ymp_get(mp);
+				b[j] = ymempool_get(mp);
 				*b[j] = __MAGICV;
 			}
 		}
@@ -145,13 +145,13 @@ test_mempool(void) {
 	/* free enough blocks to prepare defragmentation */
 	for (i = 0; i < TESTSZ / 4 * 3; i++) {
 		*b[i] = __POISONV;
-		ymp_put(mp, b[i]);
+		ymempool_put(mp, b[i]);
 		b[i] = NULL;
 	}
 
-#if 0 /* ymp_shrink is NOT supported at this moment */
+#if 0 /* ymempool_shrink is NOT supported at this moment */
 	/* call shrink here! */
-	ymp_shrink(mp, 0);
+	ymempool_shrink(mp, 0);
 	{ /* just scope */
 		int nr = 0;
 		/* verify values */
@@ -161,10 +161,10 @@ test_mempool(void) {
 				assert(__MAGICV == *b[i]);
 			}
 		}
-		assert(nr == ymp_usedsz(mp));
+		assert(nr == ymempool_usedsz(mp));
 	} /* just scope */
 #endif
-	ymp_destroy(mp);
+	ymempool_destroy(mp);
 
 #undef __POISONV
 #undef __MAGICV

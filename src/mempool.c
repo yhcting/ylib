@@ -136,7 +136,7 @@ struct blk {
 	struct dummy d;
 };
 
-struct ymp {
+struct ymempool {
 #ifndef CONFIG_MEMPOOL_DYNAMIC
 	u8 **grp; /* groups of blocks */
 #endif
@@ -153,48 +153,48 @@ struct ymp {
  * Intenal functions
  *****************************************************************************/
 static INLINE int
-opt_is_mt_safe(struct ymp *mp) {
-	return mp->opt & YMP_mt_safe;
+opt_is_mt_safe(struct ymempool *mp) {
+	return mp->opt & YMEMPOOL_mt_safe;
 }
 
 static INLINE void
-init_lock(struct ymp *mp) {
+init_lock(struct ymempool *mp) {
 	if (opt_is_mt_safe(mp))
 		pthread_mutex_init(&mp->m, NULL);
 }
 
 static INLINE void
-lock(struct ymp *mp) {
+lock(struct ymempool *mp) {
 	if (opt_is_mt_safe(mp))
 		if (pthread_mutex_lock(&mp->m))
 			yassert(0);
 }
 
 static INLINE void
-unlock(struct ymp *mp) {
+unlock(struct ymempool *mp) {
 	if (opt_is_mt_safe(mp))
 		if (pthread_mutex_unlock(&mp->m))
 			yassert(0);
 }
 
 static INLINE void
-destroy_lock(struct ymp *mp) {
+destroy_lock(struct ymempool *mp) {
 	if (opt_is_mt_safe(mp))
 		pthread_mutex_destroy(&mp->m);
 }
 
 static INLINE int
-align_adjust(struct ymp *mp) {
+align_adjust(struct ymempool *mp) {
 	return sizeof(void *) - (mp->esz % sizeof(void *));
 }
 
 static INLINE int
-esz(struct ymp *mp) {
+esz(struct ymempool *mp) {
 	return mp->esz + align_adjust(mp);
 }
 
 static INLINE int
-blksz(struct ymp *mp) {
+blksz(struct ymempool *mp) {
 	return sizeof(struct blk) - sizeof(struct dummy) + esz(mp);
 }
 
@@ -202,19 +202,19 @@ blksz(struct ymp *mp) {
  * i : index of fbp (ex. fbi)
  */
 static INLINE struct blk *
-fbpblk(struct ymp *mp, int i) {
+fbpblk(struct ymempool *mp, int i) {
 	struct blk *b = *(mp->fbp[i / mp->grpsz] + i % mp->grpsz);
 	yassert(b->i == i);
 	return b;
 }
 
 static INLINE int
-is_freeblk(struct ymp *mp, struct blk *b) {
+is_freeblk(struct ymempool *mp, struct blk *b) {
 	return (mp->fbi <= b->i);
 }
 
 static INLINE int
-is_usedblk(struct ymp *mp, struct blk *b) {
+is_usedblk(struct ymempool *mp, struct blk *b) {
 	return !is_freeblk(mp, b);
 }
 
@@ -222,18 +222,18 @@ is_usedblk(struct ymp *mp, struct blk *b) {
  * i: index of fbp (ex. fbi)
  */
 static INLINE void
-setfbp(struct ymp *mp, int i, struct blk *b) {
+setfbp(struct ymempool *mp, int i, struct blk *b) {
 	*(mp->fbp[i / mp->grpsz] + i % mp->grpsz) = b;
 	b->i = i;
 }
 
 static INLINE int
-sz(struct ymp *mp) {
+sz(struct ymempool *mp) {
 	return mp->nrgrp * mp->grpsz;
 }
 
 static INLINE int
-usedsz(struct ymp *mp) {
+usedsz(struct ymempool *mp) {
 	return mp->fbi;
 }
 
@@ -241,7 +241,7 @@ usedsz(struct ymp *mp) {
  * Policy
  */
 static INLINE int
-need_shrink(struct ymp *mp) {
+need_shrink(struct ymempool *mp) {
 	return (mp->fbi * 2 / mp->grpsz < mp->nrgrp);
 }
 
@@ -251,7 +251,7 @@ need_shrink(struct ymp *mp) {
  * expand memory pool by 1 group
  */
 static int
-expand(struct ymp *mp) {
+expand(struct ymempool *mp) {
 	int i;
 	struct blk ***newfbp;
 
@@ -293,7 +293,7 @@ expand(struct ymp *mp) {
 }
 
 static int
-shrink(struct ymp *mp, int margin) {
+shrink(struct ymempool *mp, int margin) {
 	int from, i, j;
 	/* start index of empty group */
 	from = (mp->fbi - 1) / mp->grpsz + 1 + margin;
@@ -311,19 +311,19 @@ shrink(struct ymp *mp, int margin) {
 #else /* CONFIG_MEMPOOL_DYNAMIC */
 
 static INLINE int
-shrink(struct ymp *mp, int margin) { return 0; }
+shrink(struct ymempool *mp, int margin) { return 0; }
 
 /*
  * i: index of memory block pool.
  */
 static INLINE struct blk *
-blk(struct ymp *mp, int i) {
+blk(struct ymempool *mp, int i) {
 	return (struct blk *)(mp->grp[i / mp->grpsz]
 			      + i % mp->grpsz * blksz(mp));
 }
 
 static INLINE void
-fbpdump(struct ymp *mp) {
+fbpdump(struct ymempool *mp) {
 	int i;
 	printf("sz : %d, fbi : %d\n", sz(mp), mp->fbi);
 	for (i = 0; i < sz(mp); i++) {
@@ -333,7 +333,7 @@ fbpdump(struct ymp *mp) {
 }
 
 static INLINE void
-blkdump(struct ymp *mp) {
+blkdump(struct ymempool *mp) {
 	int i;
 	printf("sz : %d, fbi : %d\n", sz(mp), mp->fbi);
 	for (i = 0; i < sz(mp); i++) {
@@ -346,7 +346,7 @@ blkdump(struct ymp *mp) {
  * expand memory pool by 1 group
  */
 static int
-expand(struct ymp *mp) {
+expand(struct ymempool *mp) {
 	int i;
 	u8 **newgrp;
 	struct blk ***newfbp;
@@ -411,9 +411,9 @@ expand(struct ymp *mp) {
  * Interface Functions
  *****************************************************************************/
 
-struct ymp*
-ymp_create(int grpsz, int elemsz, int opt) {
-	struct ymp *mp;
+struct ymempool *
+ymempool_create(int grpsz, int elemsz, int opt) {
+	struct ymempool *mp;
 
 	yassert(grpsz > 0 && elemsz > 0);
 	if (unlikely(!(mp = ycalloc(1, sizeof(*mp)))))
@@ -454,7 +454,7 @@ ymp_create(int grpsz, int elemsz, int opt) {
 }
 
 void
-ymp_destroy(struct ymp *mp) {
+ymempool_destroy(struct ymempool *mp) {
 	int i;
 	destroy_lock(mp);
 #ifdef CONFIG_MEMPOOL_DYNAMIC
@@ -480,7 +480,7 @@ ymp_destroy(struct ymp *mp) {
  * get one block from pool.
  */
 void *
-ymp_get(struct ymp *mp) {
+ymempool_get(struct ymempool *mp) {
 	struct blk *b;
 
 	lock(mp);
@@ -504,7 +504,7 @@ ymp_get(struct ymp *mp) {
  * return block to pool.
  */
 void
-ymp_put(struct ymp *mp, void *block) {
+ymempool_put(struct ymempool *mp, void *block) {
 	struct blk *b;
 	struct blk *ub; /* used block */
 	int ti;
@@ -533,7 +533,7 @@ ymp_put(struct ymp *mp, void *block) {
  */
 #ifdef CONFIG_MEMPOOL_DYNAMIC
 int
-ymp_shrink(struct ymp *mp, int margin) {
+ymempool_shrink(struct ymempool *mp, int margin) {
 	lock(mp);
 	shrink(mp, margin);
 	unlock(mp);
@@ -541,7 +541,7 @@ ymp_shrink(struct ymp *mp, int margin) {
 }
 
 int
-ymp_stop_shrink(struct ymp *mp) {
+ymempool_stop_shrink(struct ymempool *mp) {
 	return -EINVAL;
 }
 
@@ -550,19 +550,19 @@ ymp_stop_shrink(struct ymp *mp) {
  * Not supported at Non-dynamic-mempool.
  */
 int
-ymp_shrink(struct ymp *mp, int margin) {
+ymempool_shrink(struct ymempool *mp, int margin) {
 	return -1;
 }
 
 int
-ymp_stop_shrink(struct ymp *mp) {
+ymempool_stop_shrink(struct ymempool *mp) {
 	return -EINVAL;
 }
 
 #endif /* CONFIG_MEMPOOL_DYNAMIC */
 
 int
-ymp_sz(struct ymp *mp) {
+ymempool_sz(struct ymempool *mp) {
 	int s;
 	lock(mp);
 	s = sz(mp);
@@ -571,7 +571,7 @@ ymp_sz(struct ymp *mp) {
 }
 
 int
-ymp_usedsz(struct ymp *mp) {
+ymempool_usedsz(struct ymempool *mp) {
 	int s;
 	lock(mp);
 	s = usedsz(mp);

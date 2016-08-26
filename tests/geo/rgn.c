@@ -36,7 +36,7 @@
 #include "../test.h"
 #ifdef CONFIG_DEBUG
 #include "geo/yrgn.h"
-#include "yutils.h"
+#include "yut.h"
 
 #include <assert.h>
 #include <stdlib.h>

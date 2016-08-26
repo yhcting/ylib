@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,62 +33,37 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+#include "common.h"
+#include "msg.h"
 
-/**
- * @file ymsgq.h
- * @brief Header to use simple message queue module.
- */
-
-#ifndef __YMSGq_h__
-#define __YMSGq_h__
-
-#include <stdint.h>
-#include <string.h>
-
-#include "ymsg.h"
-
-/** Message queue object supporting Multi-Thread */
-struct ymsgq;
-
-/**
- * Create message-queue object.
+/******************************************************************************
  *
- * @return NULL if fails.
- */
-YYEXPORT struct ymsgq *
-ymsgq_create(void);
-
-/**
- * Destroy message-queue object.
- */
-YYEXPORT void
-ymsgq_destroy(struct ymsgq *);
-
-/**
- * Enqueue message to message queue
  *
- * @return 0 if success. Otherwise -errno
- *         (EPERM means 'Q is already full')
- */
-YYEXPORT int
-ymsgq_en(struct ymsgq *, struct ymsg *);
-
-/**
- * Dequeue message from message queue.
- * This is blocking function.
- * So, if message queue is empty, wait until message is available.
  *
- * @return NULL if fails.
- */
-YYEXPORT struct ymsg *
-ymsgq_de(struct ymsgq *);
+ *****************************************************************************/
+static void
+mdestroy(struct ymsg_ *m) {
+	if (unlikely(!m))
+		return;
+	if (likely(YMSG_TYP_INVALID != m->m.type
+		   && m->m.dfree
+		   && m->m.data))
+		(*m->m.dfree)(m->m.data);
+	yfree(m);
+}
 
-/**
- * Get size(number of messsage) of message queue.
- *
- * @return Size
- */
-YYEXPORT uint32_t
-ymsgq_sz(const struct ymsgq *);
 
-#endif /* __YMSGq_h__ */
+struct ymsg *
+ymsg_create(void) {
+	struct ymsg_ *m = (struct ymsg_ *)ycalloc(1, sizeof(*m));
+	if (unlikely(!m))
+		return NULL;
+	ylistl_init_link(&m->lk);
+	_msg_magic_set(m);
+	return &m->m;
+}
+
+void
+ymsg_destroy(struct ymsg *ym) {
+	mdestroy(msg_mutate(ym));
+}

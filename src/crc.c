@@ -35,7 +35,7 @@
  *****************************************************************************/
 
 #include "common.h"
-#include "yutils.h"
+#include "yut.h"
 #include "ycrc.h"
 
 /*

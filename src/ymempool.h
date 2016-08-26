@@ -53,11 +53,11 @@
  * Options
  */
 enum {
-	YMP_mt_safe = 0x1, /**< MultiThread-safe */
+	YMEMPOOL_mt_safe = 0x1, /**< MultiThread-safe */
 };
 
 /** Memory pool object */
-struct ymp;
+struct ymempool;
 
 /**
  * Create memory pool.
@@ -65,17 +65,17 @@ struct ymp;
  *
  * @param grpsz Elem group size size in pool (number of element)
  * @param elemsz Element size (in bytes)
- * @param opt Option. See {@link YMP_mt_safe}
+ * @param opt Option. See {@link YMEMPOOL_mt_safe}
  * @return NULL if fails.
  */
-YYEXPORT struct ymp *
-ymp_create(int grpsz, int elemsz, int opt);
+YYEXPORT struct ymempool *
+ymempool_create(int grpsz, int elemsz, int opt);
 
 /**
  * Destroy memory pool.
  */
 YYEXPORT void
-ymp_destroy(struct ymp *);
+ymempool_destroy(struct ymempool *);
 
 /**
  * Get one block from pool.
@@ -83,13 +83,13 @@ ymp_destroy(struct ymp *);
  * @return NULL if fails. (Ex. Out Of Memory).
  */
 YYEXPORT void *
-ymp_get(struct ymp *);
+ymempool_get(struct ymempool *);
 
 /**
- * Return memory block got from {@link ymp_get}, to pool.
+ * Return memory block got from {@link ymempool_get}, to pool.
  */
 YYEXPORT void
-ymp_put(struct ymp *, void *block);
+ymempool_put(struct ymempool *, void *block);
 
 /**
  * Get size of memory pool.
@@ -97,7 +97,7 @@ ymp_put(struct ymp *, void *block);
  * @return Number of element
  */
 YYEXPORT int
-ymp_sz(struct ymp *);
+ymempool_sz(struct ymempool *);
 
 /**
  * Get used size of memory pool.
@@ -105,6 +105,6 @@ ymp_sz(struct ymp *);
  * @return Number of used element
  */
 YYEXPORT int
-ymp_usedsz(struct ymp *);
+ymempool_usedsz(struct ymempool *);
 
 #endif /* __YMEMPOOl_h__ */

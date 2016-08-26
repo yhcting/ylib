@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2015
+ * Copyright (C) 2015, 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -35,12 +35,12 @@
  *****************************************************************************/
 
 /**
- * @file yutils.h
+ * @file yut.h
  * @brief Header defines small utilities.
  */
 
-#ifndef __YUTILs_h__
-#define __YUTILs_h__
+#ifndef __YUt_h__
+#define __YUt_h__
 
 #include "ydef.h"
 
@@ -266,4 +266,4 @@ YYEXPORT bool
 yut_starts_with(const char *str, const char *substr);
 
 
-#endif /* __YUTILs_h__ */
+#endif /* __YUt_h__ */

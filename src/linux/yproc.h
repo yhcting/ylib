@@ -43,6 +43,24 @@
 
 #include "ydef.h"
 
+/* At inux kernel it is set as 16 - See TASK_COMM_LEN. */
+#define YPROC_TCOMM_LEN 16
+
+/**
+ * Data struct for "/proc/<pid>/stat" in linux
+ */
+struct yproc_pid_stat {
+	int pid; /**< Process id */
+	// +1 for terminating 0
+	char tcomm[YPROC_TCOMM_LEN + 1]; /**< TASK COMM string */
+	char state; /**< Process state (ex. R, S ...) */
+	int ppid; /**< Parent process id */
+	int pgid; /**< Process group id */
+	int sid; /**< Session id */
+	/* TODO:  fill other fields too. */
+};
+
+
 /**
  * Get file fpath from fd.
  *
@@ -52,7 +70,7 @@
  * @return 0 for success. Otherwise -errno.
  */
 YYEXPORT int
-yproc_get_fd_path(int fd, char *buf, unsigned bufsz);
+yproc_self_fd_path(int fd, char *buf, unsigned bufsz);
 
 
 /**
@@ -65,6 +83,16 @@ yproc_get_fd_path(int fd, char *buf, unsigned bufsz);
  */
 YYEXPORT int
 yproc_pid_cmdline(int pid, char *buf, unsigned bufsz);
+
+/**
+ * Get parent process id of given pid
+ *
+ * @param stat output data struct.
+ * @param pid Process id
+ * @return -errno if error, otherwise 0.
+ */
+YYEXPORT int
+yproc_pid_stat(struct yproc_pid_stat *stat, int pid);
 
 
 #endif /* __YPROc_h__ */

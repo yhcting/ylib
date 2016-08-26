@@ -46,7 +46,7 @@
 #include "ylistl.h"
 
 /* Message type */
-enum {
+enum ymsg_type {
 	/* TYP_INVALID SHOULD be 0. 0 is natual initial value of empty data
 	 *   structure
 	 */
@@ -56,7 +56,7 @@ enum {
 };
 
 /* Priority */
-enum {
+enum ymsg_priority {
 	YMSG_PRI_HIGHER = 0, /**< Highest priority */
 	YMSG_PRI_HIGH,
 	YMSG_PRI_NORMAL,

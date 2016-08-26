@@ -60,7 +60,7 @@ AC_ARG_WITH(debug,
     [with_debug=no])
 
 AS_IF([test "x$with_debug" != xno],
-    [CFLAGS="-g -O0 -fPIC -D_FORTIFY_SOURCE=2 -fsanitize=address"],
+    [CFLAGS="-g -O0 -fPIC -D_FORTIFY_SOURCE=2 -fsanitize=address -fsanitize=undefined"],
     [CFLAGS="-fPIC -O2"])
 CFLAGS="${CFLAGS} -Wall -Werror"
 AC_SUBST([CFLAGS])

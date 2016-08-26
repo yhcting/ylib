@@ -39,6 +39,7 @@
 #include <string.h>
 #include <pthread.h>
 
+#include "ylib.h"
 #include "common.h"
 #include "ylistl.h"
 
@@ -136,6 +137,8 @@ main(int argc, const char *argv[]) {
 	}
 
 	pthread_mutex_init(&_mem_count_lock, NULL);
+
+	ylib_init(NULL);
 	ylistl_foreach_item(p, &_tstfnl, struct tstfn, lk) {
 		int repeat = 5;
 		if (modnm

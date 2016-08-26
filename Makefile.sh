@@ -98,12 +98,40 @@ extern "C" {
 #include "ydef.h"
 EOF
 
-for m in $modenames; do
-    hdrf=$(header_file $m)
-    echo "#include \"$hdrf\"" >>$autogenfile
-done
+# ylib.h don't need to have include all headers.
+# It's up-to client including useful headers.
+#
+#for m in $modenames; do
+#    hdrf=$(header_file $m)
+#    echo "#include \"$hdrf\"" >>$autogenfile
+#done
 
 cat <<EOF >>$autogenfile
+
+/** Configuration for ylib */
+struct ylib_config {
+	int ymsg_pool_sz; /**< size of msg-object-pool. */
+};
+
+/**
+ * Initialize ylib. Call this before using ylib.
+ * Before calling this, ylib may not be available.
+ *
+ * @param c Config struct. Once it is used, ylib doesn't refer it anymore.
+ *          (This is, client can free memory.)
+ *          Set to NULL to use default configuration.
+ * @return 0 if success. Otherwise -errno.
+ */
+EXPORT int init(const struct ylib_config *c);
+
+/**
+ * Cleanup internal-reasources used by ylib.
+ * After calling this, ylib may become unavailable.
+ *
+ * @return 0 if success. Otherwise -errno.
+ */
+EXPORT int exit(void);
+
 #ifdef __cplusplus
 }
 #endif
@@ -137,7 +165,7 @@ done
 # Library
 # -------
 common_sources="
-libmain.c
+lib.c
 "
 
 lib_sources=

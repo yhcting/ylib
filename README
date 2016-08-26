@@ -79,7 +79,6 @@ Term 'delete' SHOULD NOT be used as couter-part of term 'add'.
 'alloc' is similar with 'create'. But it is used for small module (ex. sub modules or structures.)
 
 
-
 ====
 TODO
 ====

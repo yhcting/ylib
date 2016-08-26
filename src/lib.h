@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -34,13 +34,22 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
+#ifndef __LIb_h__
+#define __LIb_h__
+
 #include "ylib.h"
 
-/** Configuration for ylib */
-struct ylib_config {
-	int ymsg_pool_sz; /**< size of msg-object-pool. */
-};
+void ylib_register_module(const char *name,
+			  int (*init)(const struct ylib_config *),
+			  void (*exit)(void));
+
+/* Module requiring init/exit, SHOULD use this marco.
+ */
+#define LIB_MODULE(name, init_, exit_)					\
+	static void __ylib_mod_register_##name(void) __attribute__ ((constructor)); \
+	static void __ylib_mod_register_##name(void) {			\
+		ylib_register_module(#name, &init_, &exit_);		\
+	}
 
 
-extern int init(void);
-extern int exit(void);
+#endif /* __LIb_h__ */

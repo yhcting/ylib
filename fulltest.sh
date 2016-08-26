@@ -22,6 +22,11 @@ EOF
 }
 
 
+if [[ $(git diff | wc -l) != 0 ]]; then
+    echo "ERROR: There are files that are NOT cached or commited! Abort!"
+    exit 1
+fi
+
 
 while getopts "hdu" opt; do
     case $opt in

@@ -36,17 +36,19 @@
 #include <pthread.h>
 #include <string.h>
 
+#include "lib.h"
 #include "common.h"
 #include "msg.h"
 
 
 
-#define MSG_POOL_SIZE 100  /* Should this be configurable? */
+#define DEFAULT_MSG_POOL_SIZE 100  /* Should this be configurable? */
 
 
 struct pool {
 	pthread_mutex_t lock;
 	int sz;
+	int capacity;
 	struct ylistl_link hd;
 };
 
@@ -80,12 +82,21 @@ mdestroy(struct ymsg_ *m) {
  * Message pool
  *
  *****************************************************************************/
-static INLINE void
-pool_init(void) {
+static INLINE int
+pool_init(int capacity) {
 	int r __unused;
 	r = pthread_mutex_init(&_pool.lock, NULL);
 	yassert(!r);
 	ylistl_init_link(&_pool.hd);
+	_pool.capacity = capacity;
+	return -r;
+}
+
+static INLINE void
+pool_exit(void) {
+	int r __unused;
+	r = pthread_mutex_destroy(&_pool.lock);
+	yassert(!r);
 }
 
 static INLINE int
@@ -124,7 +135,7 @@ static bool
 pool_put(struct ymsg_ *m) {
 	bool r = FALSE;
 	pool_lock();
-	if (likely(_pool.sz < MSG_POOL_SIZE)) {
+	if (likely(_pool.sz < _pool.capacity)) {
 		ylistl_add_last(&_pool.hd, &m->lk);
 		_pool.sz++;
 		r = TRUE;
@@ -176,6 +187,7 @@ ymsg_destroy(struct ymsg *ym) {
  *
  *
  *****************************************************************************/
+#ifdef CONFIG_DEBUG
 /*
  * This function is used for testing and debugging.
  */
@@ -183,10 +195,20 @@ void
 msg_clear_pool(void) {
 	pool_clear();
 }
+#endif /* CONFIG_DEBUG */
 
 
-static void init(void) __attribute__ ((constructor));
-static void
-init(void) {
-	pool_init();
+static int
+minit(const struct ylib_config *cfg) {
+	int capacity = cfg && (cfg->ymsg_pool_capacity > 0)?
+		cfg->ymsg_pool_capacity:
+		DEFAULT_MSG_POOL_SIZE;
+	return pool_init(capacity);
 }
+
+static void
+mexit(void) {
+	pool_exit();
+}
+
+LIB_MODULE(msg, minit, mexit);

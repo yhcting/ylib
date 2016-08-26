@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -34,13 +34,84 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
+#include <malloc.h>
+#include <assert.h>
+#include <stdlib.h>
+
 #include "ylib.h"
 
-/** Configuration for ylib */
-struct ylib_config {
-	int ymsg_pool_sz; /**< size of msg-object-pool. */
+
+static struct module *_hd = NULL;
+
+/* DO NOT USE 'ylist' for 'ylistl' here.
+ * Both are also part of 'ylib'.
+ * BEFORE INITialzation, DO NOT USE ANY MODULES!
+ */
+struct module {
+	const char *name;
+	int (*init)(const struct ylib_config *);
+	void (*exit)(void);
+	struct module *next;
 };
 
+static void
+add_module(struct module *m) {
+	m->next = _hd;
+	_hd = m;
+}
 
-extern int init(void);
-extern int exit(void);
+static void
+free_modules(void) {
+	struct module *m, *n;
+	for (m = _hd; m; m = n) {
+		n = m->next;
+		free(m);
+	}
+}
+
+
+void
+ylib_register_module(const char *name,
+		     int (*init_)(const struct ylib_config *),
+		     void (*exit_)(void)) {
+	assert(name);
+	struct module *m = malloc(sizeof(*m));
+	if (!m) {/* Out Of Memory! */
+		assert(0);
+		exit(EXIT_FAILURE);
+	}
+	m->name = name;
+	m->init = init_;
+	m->exit = exit_;
+	add_module(m);
+}
+
+
+int
+ylib_init(const struct ylib_config *c) {
+	struct module *m;
+	struct module *lastm = _hd;
+	int r = 0;
+	for (m = _hd; m; m = m->next) {
+		lastm = m;
+		if (r = (*m->init)(c))
+			goto fail; /* error! stop! */
+	}
+
+	return 0;
+
+ fail:
+	/* 'init' fails at 'lastm' */
+	for (m = _hd; m != lastm; m = m->next)
+		(*m->exit)();
+	return r;
+}
+
+
+void
+ylib_exit(void) {
+	struct module *m;
+	for (m = _hd; m; m = m->next)
+		(*m->exit)();
+	free_modules();
+}

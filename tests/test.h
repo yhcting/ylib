@@ -39,14 +39,14 @@
 
 #include "common.h"
 
-EXPORT int dmem_count(void);
-EXPORT void dregister_tstfn(void (*fn)(void), const char *mod);
-EXPORT void dunregister_tstfn(void (*fn)(void), const char *mod);
-EXPORT void dregister_clearfn(void (*fn)(void), const char *mod);
-EXPORT void dunregister_clearfn(void (*fn)(void), const char *mod);
+int dmem_count(void);
+void dregister_tstfn(void (*fn)(void), const char *mod);
+void dunregister_tstfn(void (*fn)(void), const char *mod);
+void dregister_clearfn(void (*fn)(void), const char *mod);
+void dunregister_clearfn(void (*fn)(void), const char *mod);
 
 
-#  define TESTFN(name)							\
+#define TESTFN(name)							\
 	static void __tst_register_test_##name(void) __attribute__ ((constructor)); \
 	static void __tst_register_test_##name(void) {			\
 		dregister_tstfn(&test_##name, #name);			\
@@ -56,10 +56,10 @@ EXPORT void dunregister_clearfn(void (*fn)(void), const char *mod);
 		dunregister_tstfn(&test_##name, #name);			\
 	}
 
-#  define CLEARFN(name)							\
+#define CLEARFN(name)							\
 	static void __tst_register_clear_##name(void) __attribute__ ((constructor)); \
 	static void __tst_register_clear_##name(void) {			\
-		dregister_clearfn(&clear_##name, #name);			\
+		dregister_clearfn(&clear_##name, #name);		\
 	}
 
 #endif /* __TESt_h__ */

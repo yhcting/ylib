@@ -75,6 +75,6 @@ test_ut(void) {
 }
 
 
-TESTFN(test_ut, ut)
+TESTFN(ut)
 
 #endif /* CONFIG_DEBUG */

@@ -64,6 +64,6 @@ test_etc(void) {
 	yassert(32 == n);
 }
 
-TESTFN(test_etc, etc)
+TESTFN(etc)
 
 #endif /* CONFIG_DEBUG */

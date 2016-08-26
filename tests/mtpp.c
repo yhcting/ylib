@@ -124,6 +124,14 @@ init_job(struct ymtppjob *ccj,
 	strcpy(ccj->name, name);
 }
 
+
+extern void msg_clear_pool(void);
+
+static void
+clear_mtpp(void) {
+	msg_clear_pool();
+}
+
 /* JOB network
  *		+-> D -----------+
  *		|		 |
@@ -251,6 +259,7 @@ test_mtpp(void) {
 }
 
 
-TESTFN(test_mtpp, mtpp)
+TESTFN(mtpp)
+CLEARFN(mtpp)
 
 #endif /* CONFIG_DEBUG */

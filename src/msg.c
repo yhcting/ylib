@@ -33,14 +33,36 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+#include <pthread.h>
+#include <string.h>
+
 #include "common.h"
 #include "msg.h"
+
+
+
+#define MSG_POOL_SIZE 100  /* Should this be configurable? */
+
+
+struct pool {
+	pthread_mutex_t lock;
+	int sz;
+	struct ylistl_link hd;
+};
+
+static struct pool _pool;
+
 
 /******************************************************************************
  *
  *
  *
  *****************************************************************************/
+static INLINE void
+mclean(struct ymsg_ *m) {
+	memset(m, 0, sizeof(*m));
+}
+
 static void
 mdestroy(struct ymsg_ *m) {
 	if (unlikely(!m))
@@ -53,9 +75,87 @@ mdestroy(struct ymsg_ *m) {
 }
 
 
+/******************************************************************************
+ *
+ * Message pool
+ *
+ *****************************************************************************/
+static INLINE void
+pool_init(void) {
+	int r __unused;
+	r = pthread_mutex_init(&_pool.lock, NULL);
+	yassert(!r);
+	ylistl_init_link(&_pool.hd);
+}
+
+static INLINE int
+pool_lock(void) {
+	int r = pthread_mutex_lock(&_pool.lock);
+	yassert(!r);
+	return r;
+}
+
+static INLINE int
+pool_unlock(void) {
+	int r = pthread_mutex_unlock(&_pool.lock);
+	yassert(!r);
+	return r;
+}
+
+static struct ymsg_ *
+pool_get(void) {
+	struct ylistl_link *lk;
+	struct ymsg_ *m = NULL;
+	pool_lock(); /* return value is ignored intentionally */
+	if (unlikely(ylistl_is_empty(&_pool.hd)))
+		goto done_unlock;
+	lk = ylistl_remove_first(&_pool.hd);
+	yassert(_pool.sz > 0);
+	_pool.sz--;
+	m = containerof(lk, struct ymsg_, lk);
+ done_unlock:
+	pool_unlock();
+	if (likely(m))
+		mclean(m);
+	return m;
+}
+
+static bool
+pool_put(struct ymsg_ *m) {
+	bool r = FALSE;
+	pool_lock();
+	if (likely(_pool.sz < MSG_POOL_SIZE)) {
+		ylistl_add_last(&_pool.hd, &m->lk);
+		_pool.sz++;
+		r = TRUE;
+	}
+	pool_unlock();
+	return r;
+}
+
+static void
+pool_clear(void) {
+	struct ylistl_link *lk;
+	pool_lock();
+	while (!ylistl_is_empty(&_pool.hd)) {
+		lk = ylistl_remove_first(&_pool.hd);
+		yfree(containerof(lk, struct ymsg_, lk));
+	}
+	_pool.sz = 0;
+	pool_unlock();
+}
+
+
+/******************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
 struct ymsg *
 ymsg_create(void) {
-	struct ymsg_ *m = (struct ymsg_ *)ycalloc(1, sizeof(*m));
+	struct ymsg_ *m = pool_get();
+	if (unlikely(!m))
+		m = (struct ymsg_ *)ycalloc(1, sizeof(*m));
 	if (unlikely(!m))
 		return NULL;
 	ylistl_init_link(&m->lk);
@@ -65,5 +165,28 @@ ymsg_create(void) {
 
 void
 ymsg_destroy(struct ymsg *ym) {
-	mdestroy(msg_mutate(ym));
+	struct ymsg_ *m = msg_mutate(ym);
+	if (unlikely(!pool_put(m)))
+		mdestroy(m);
+}
+
+
+/******************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+/*
+ * This function is used for testing and debugging.
+ */
+void
+msg_clear_pool(void) {
+	pool_clear();
+}
+
+
+static void init(void) __attribute__ ((constructor));
+static void
+init(void) {
+	pool_init();
 }

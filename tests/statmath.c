@@ -131,6 +131,6 @@ test_statmath(void) {
 	test_ivar();
 }
 
-TESTFN(test_statmath, statmath)
+TESTFN(statmath)
 
 #endif /* CONFIG_DEBUG */

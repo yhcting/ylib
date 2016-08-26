@@ -131,6 +131,6 @@ test_lru(void) {
 }
 
 
-TESTFN(test_lru, lru)
+TESTFN(lru)
 
 #endif /* CONFIG_DEBUG */

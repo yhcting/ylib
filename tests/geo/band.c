@@ -47,6 +47,6 @@ test_geo_band(void)  {
 
 
 
-TESTFN(test_geo_band, geo_band)
+TESTFN(geo_band)
 
 #endif /* CONFIG_DEBUG */

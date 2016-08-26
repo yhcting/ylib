@@ -47,6 +47,6 @@ test_crc(void)  {
 
 
 
-TESTFN(test_crc, crc)
+TESTFN(crc)
 
 #endif /* CONFIG_DEBUG */

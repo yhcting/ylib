@@ -214,6 +214,6 @@ test_list(void) {
 	ylist_destroy(lst);
 }
 
-TESTFN(test_list, list)
+TESTFN(list)
 
 #endif /* CONFIG_DEBUG */

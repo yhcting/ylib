@@ -53,6 +53,10 @@
 struct ymsgq {
 	struct ylistl_link q[YMSG_PRI_NR];
 	u32 sz;
+	/* This SHOULD NOT be changed once it is set at ymsgq_create()
+	 * This module assumes that this value is constant and only readable.
+	 */
+	u32 capacity;
 	pthread_mutex_t m;
 	pthread_cond_t cond;
 };
@@ -63,6 +67,8 @@ struct ymsgq {
  *
  *
  *****************************************************************************/
+#ifdef CONFIG_DEBUG
+
 /*
  * return 0 if error otherwise CLOCK_MONOTONIC_RAW is returned.
  * (nano-seconds - OVERFLOW is NOT considered)
@@ -75,6 +81,21 @@ monotonic_time(void) {
 	return sec2ns(ts.tv_sec) + ts.tv_nsec;
 }
 
+
+
+static INLINE void
+set_time_stamp(struct ymsg_ *m) {
+	m->when = monotonic_time();
+}
+
+#else /* CONFIG_DEBUG */
+
+static INLINE void set_time_stamp(struct ymsg_ *m) { }
+
+#endif /* CONFIG_DEBUG */
+
+
+
 /******************************************************************************
  *
  *
@@ -82,17 +103,23 @@ monotonic_time(void) {
  *****************************************************************************/
 static int
 qen(struct ymsgq *q, struct ymsg_ *m) {
-	int r;
-	m->m.when = monotonic_time();
+	int err = 0;
+	int r __unused;
 	r = pthread_mutex_lock(&q->m);
 	yassert(!r);
+	if (unlikely(q->sz >= q->capacity)) {
+		err = -EPERM;
+		goto unlock;
+	}
+	set_time_stamp(m);
 	ylistl_add_last(&q->q[m->m.pri], &m->lk);
 	++q->sz;
 	r = pthread_cond_broadcast(&q->cond);
 	yassert(!r);
+ unlock:
 	r = pthread_mutex_unlock(&q->m);
 	yassert(!r);
-	return r;
+	return err;
 }
 
 /******************************************************************************
@@ -101,13 +128,14 @@ qen(struct ymsgq *q, struct ymsg_ *m) {
  *
  *****************************************************************************/
 struct ymsgq *
-ymsgq_create(void) {
+ymsgq_create(int capacity) {
 	int i;
 	struct ymsgq *q = ymalloc(sizeof(*q));
 	if (unlikely(!q))
 		return NULL; /* OOM */
 	for (i = 0; i < yut_arrsz(q->q); i++)
 		ylistl_init_link(&q->q[i]);
+	q->capacity = capacity <= 0? 0xffffffff: (u32)capacity;
 	q->sz = 0;
 	pthread_mutex_init(&q->m, NULL);
 	pthread_cond_init(&q->cond, NULL);

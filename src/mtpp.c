@@ -681,7 +681,7 @@ ymtpp_create(u32 maxjobs) {
 					    NULL))))
 		goto fail_mtpp;
 
-	if (unlikely(!(m->mq = ymsgq_create())))
+	if (unlikely(!(m->mq = ymsgq_create(0))))
 		goto fail_graph;
 
 	m->maxjobs = !maxjobs? UINT_MAX: maxjobs;

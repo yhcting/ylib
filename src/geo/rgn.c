@@ -137,12 +137,12 @@ static const struct yband rband_max_invalid[] = {
 
 #ifdef CONFIG_DEBUG
 
-static inline void
+static INLINE void
 assert_band_min_invalid(void) {
 	verify_band_min_invalid(&band_min_invalid);
 }
 
-static inline void
+static INLINE void
 assert_rband_min_invalid(void) {
 	const struct yband *b = rband_min_invalid;
 	verify_band_min_invalid(&b[0]);
@@ -150,12 +150,12 @@ assert_rband_min_invalid(void) {
 	yassert(!b[2].s && !b[2].b);
 }
 
-static inline void
+static INLINE void
 assert_band_max_invalid(void) {
 	verify_band_max_invalid(&band_max_invalid);
 }
 
-static inline void
+static INLINE void
 assert_rband_max_invalid(void) {
 	const struct yband *b = rband_max_invalid;
 	yassert(GEO_INVALID_MAX_VALUE - 1 == b[0].s
@@ -168,10 +168,10 @@ assert_rband_max_invalid(void) {
 
 #else /* CONFIG_DEBUG */
 
-static inline void assert_band_min_invalid(void) { }
-static inline void assert_rband_min_invalid(void) { }
-static inline void assert_band_max_invalid(void) { }
-static inline void assert_rband_max_invalid(void) { }
+static INLINE void assert_band_min_invalid(void) { }
+static INLINE void assert_rband_min_invalid(void) { }
+static INLINE void assert_band_max_invalid(void) { }
+static INLINE void assert_rband_max_invalid(void) { }
 
 #endif /* CONFIG_DEBUG */
 
@@ -180,38 +180,38 @@ static inline void assert_rband_max_invalid(void) { }
  * Helpers
  *
  *****************************************************************************/
-static inline struct yrgn *
+static INLINE struct yrgn *
 bands2rgn(const struct yband *b) {
 	return (struct yrgn *)b;
 }
 
-static inline struct yband *
+static INLINE struct yband *
 rgn2bands(const struct yrgn *g) {
 	return (struct yband *)g;
 }
 
-static inline struct yrgn *
+static INLINE struct yrgn *
 rband2rgn(const struct rectband *rb) {
 	return (struct yrgn *)rb;
 }
 
-static inline struct rectband *
+static INLINE struct rectband *
 rgn2rband(const struct yrgn *g) {
 	return (struct rectband *)g;
 }
 
-static inline struct yband *
+static INLINE struct yband *
 rband2bands(const struct rectband *rb) {
 	return (struct yband *)rb;
 }
 
-static inline struct rectband *
+static INLINE struct rectband *
 bands2rband(const struct yband *b) {
 	return (struct rectband *)b;
 }
 
 /* assumes buffer(out) size is large enough */
-static inline void
+static INLINE void
 mutate_rect_to_rgnbands(struct yband *out, const struct yrect *r) {
 	if (ygeor_is_empty(r))
 		ygeob_set_empty(&out[0]);
@@ -228,7 +228,7 @@ mutate_rect_to_rgnbands(struct yband *out, const struct yrect *r) {
  * Band-array in region follows special rules.
  * (See comment at head of file.)
  */
-static inline u32
+static INLINE u32
 rband_bsz(const struct rectband *rb) {
 	const struct yband *p = rband2bands(rb);
 #ifdef CONFIG_DEBUG
@@ -254,7 +254,7 @@ rband_bsz(const struct rectband *rb) {
  *'bsz' means 'Band SiZe'
  * # of bands in rgn including end-sentinels.
  */
-static inline u32
+static INLINE u32
 rgn_bsz(const struct yrgn *g) {
 	const struct yband *b = rgn2bands(g);
 #ifdef CONFIG_DEBUG
@@ -278,7 +278,7 @@ rgn_bsz(const struct yrgn *g) {
  * Band
  *
  *****************************************************************************/
-static inline bool
+static INLINE bool
 band_can_merge(const struct yband *bs, const struct yband *bb) {
 	YYassert(!ygeob_is_empty(bs)
 		 && !ygeob_is_empty(bb)
@@ -291,7 +291,7 @@ band_can_merge(const struct yband *bs, const struct yband *bb) {
  * @param top_lho Is top-band belongs to lho-band?
  * @return # of bands added to 'outb'(0 or 1).
  */
-static inline u32
+static INLINE u32
 band_add(struct yband *prevb,
 	 struct yband *outb,
 	 const struct yband *b) {
@@ -314,7 +314,7 @@ band_add(struct yband *prevb,
  * @return # of bands added to 'outb' (0 or 1).
  *
  */
-static inline u32
+static INLINE u32
 band_op_no_overlap(struct yband *prevb,
 		   struct yband *outb,
 		   const struct yband *b,
@@ -328,7 +328,7 @@ band_op_no_overlap(struct yband *prevb,
 	return 0;
 }
 
-static inline u32
+static INLINE u32
 band_op_overlap(struct yband *prevb,
 		struct yband *outb,
 		const struct yband *ol,
@@ -343,7 +343,7 @@ band_op_overlap(struct yband *prevb,
  * @return # of bands written at 'outb'
  *         (Never fails!)
  */
-static inline u32
+static INLINE u32
 band_op(struct yband *outb, /* (Out) array having at least 3 free spaces */
 	bool *botb0, /* (Out) bottom from b0 */
 	struct yband *pobb, /* Out */
@@ -404,7 +404,7 @@ band_op(struct yband *outb, /* (Out) array having at least 3 free spaces */
  * Maximum # of band-buffer required as output, is
  *         (Never fails!)
  */
-static inline u32
+static INLINE u32
 rband_max_requred_outbands(u32 rb0sz, u32 rb1sz, enum optype opty) {
 	u32 maxsz = yut_max(rb0sz, rb1sz);
 	/*
@@ -485,7 +485,7 @@ rband_add(struct rectband *prevrb,
  *         > 0 means one 'rectband' is added to 'outb'
  *         (Never fails!)
  */
-static inline u32
+static INLINE u32
 rband_op_no_overlap(struct rectband *prevrb,
 		    struct yband *outb,
 		    const struct yband *yb,
@@ -676,7 +676,7 @@ rband_op(struct yband *outb, /* assumes that it has enough memory */
  * Region
  *
  *****************************************************************************/
-static inline bool
+static INLINE bool
 rgn_is_empty(const struct yrgn *g) {
 	/* check whether first band is empty or not */
 	return ygeob_is_empty(g->bs);

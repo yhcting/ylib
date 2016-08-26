@@ -44,6 +44,7 @@
 
 struct tstfn {
 	void (*fn)(void);
+	void (*clear)(void);
 	const char *modname;
 	struct ylistl_link lk;
 };
@@ -57,6 +58,7 @@ dregister_tstfn(void (*fn)(void), const char *mod) {
 	/* malloc should be used instead of dmalloc */
 	struct tstfn* n = malloc(sizeof(*n));
 	n->fn = fn;
+	n->clear = NULL;
 	n->modname = mod;
 	ylistl_add_last(&_tstfnl, &n->lk);
 }
@@ -71,6 +73,18 @@ dunregister_tstfn(void (*fn)(void), const char *mod) {
 			free(p);
 		}
 	}
+}
+
+void
+dregister_clearfn(void (*fn)(void), const char *mod) {
+	struct tstfn *p;
+	ylistl_foreach_item(p, &_tstfnl, struct tstfn, lk) {
+		if (!strcmp(p->modname, mod)) {
+			p->clear = fn;
+			return;
+		}
+	}
+	fprintf(stderr, "Unknown module name for clear function: %s\n", mod);
 }
 
 void *
@@ -143,6 +157,8 @@ main(int argc, const char *argv[]) {
 		 */
 		while (repeat--)
 			(*p->fn)();
+		if (p->clear)
+			(*p->clear)();
 		if (sv != dmem_count()) {
 			printf("Unbalanced memory at [%s]!\n"
 			       "    balance : %d\n",

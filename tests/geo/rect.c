@@ -47,6 +47,6 @@ test_geo_rect(void)  {
 
 
 
-TESTFN(test_geo_rect, geo_rect)
+TESTFN(geo_rect)
 
 #endif /* CONFIG_DEBUG */

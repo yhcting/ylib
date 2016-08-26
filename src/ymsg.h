@@ -71,7 +71,6 @@ enum {
  * data({@link YMSG_TYP_DATA}) or exec({@link YMSG_TYP_EXEC})
  */
 struct ymsg {
-	uint64_t when; /**< Nsec since boot */
 	uint8_t type; /**< Message type [0-255] */
 	uint8_t pri; /**< Priority [0-255] */
 	uint16_t opt; /**< Option - reserved for future use */
@@ -106,7 +105,6 @@ ymsg_set_common(struct ymsg *m,
 		uint8_t pri,
 		uint16_t opt,
 		void *data) {
-	m->when = 0; /* set to invalid value */
 	m->type = type;
 	m->pri = pri;
 	m->opt = opt; /* reserved */

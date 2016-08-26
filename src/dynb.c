@@ -38,13 +38,13 @@
 #include "common.h"
 #include "ydynb.h"
 
-static inline u32
+static INLINE u32
 padsz(u16 esz, u8 align) {
 	return (align - esz % align) % align;
 }
 
 /* Element size including paddings */
-static inline u32
+static INLINE u32
 elemsz(u16 esz, u8 align) {
 	return esz + padsz(esz, align);
 }

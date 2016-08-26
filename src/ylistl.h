@@ -178,6 +178,33 @@ ylistl_remove(struct ylistl_link *link) {
 }
 
 /**
+ * Delete link of the first element of the list and return it.
+ *
+ * @param head Head of list
+ * @return The first element
+ */
+static YYINLINE struct ylistl_link *
+ylistl_remove_first(struct ylistl_link *head) {
+	struct ylistl_link *lk = head->next;
+	ylistl_remove(lk);
+	return lk;
+}
+
+/**
+ * Delete link of the last element of the list and return it.
+ *
+ * @param head Head of list
+ * @return The last element
+ */
+static YYINLINE struct ylistl_link *
+ylistl_remove_last(struct ylistl_link *head) {
+	struct ylistl_link *lk = head->prev;
+	ylistl_remove(lk);
+	return lk;
+}
+
+
+/**
  * Replace \a old node with \a anew node
  *
  * @param old Node to be replaced with.
@@ -195,7 +222,7 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
  * Iterates link-node of the list.
  *
  * @param pos (struct ylistl_link *) Iteration cursor
- * @param head (struct ylistl_link *) Head of list 
+ * @param head (struct ylistl_link *) Head of list
  */
 #define ylistl_foreach(pos, head)					\
         for ((pos) = (head)->next; (pos) != (head); (pos) = (pos)->next)

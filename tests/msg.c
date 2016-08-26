@@ -34,4 +34,34 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-/* Dummy */
+#include "test.h"
+#ifdef CONFIG_DEBUG
+
+#include <assert.h>
+
+#include "common.h"
+#include "ymsg.h"
+
+
+extern void msg_clear_pool(void);
+
+
+static void
+test_msg(void) {
+	int i;
+	struct ymsg *m;
+	for (i = 0; i < 200; i++) {
+		m = ymsg_create();
+		ymsg_destroy(m);
+	}
+}
+
+static void
+clear_msg(void) {
+	msg_clear_pool();
+}
+
+TESTFN(msg)
+CLEARFN(msg)
+
+#endif /* CONFIG_DEBUG */

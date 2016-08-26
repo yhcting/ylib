@@ -62,6 +62,6 @@ test_p(void) {
 	ypput(o);
 }
 
-TESTFN(test_p, p)
+TESTFN(p)
 
 #endif /* CONFIG_DEBUG */

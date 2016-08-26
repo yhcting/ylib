@@ -61,6 +61,7 @@ struct ymsg_ {
 	struct ymsg m;
 #ifdef CONFIG_DEBUG
 	u32 magic1;
+	u64 when; /**< Nsec since boot */
 #endif /* CONFIG_DEBUG */
 	/** For internal use. DO NOT access 'lk' at out side library! */
 	struct ylistl_link lk;

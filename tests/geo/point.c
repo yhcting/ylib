@@ -47,6 +47,6 @@ test_geo_point(void)  {
 
 
 
-TESTFN(test_geo_point, geo_point)
+TESTFN(geo_point)
 
 #endif /* CONFIG_DEBUG */

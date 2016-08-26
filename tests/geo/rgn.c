@@ -852,6 +852,6 @@ test_geo_rgn(void)  {
 
 
 
-TESTFN(test_geo_rgn, geo_rgn)
+TESTFN(geo_rgn)
 
 #endif /* CONFIG_DEBUG */

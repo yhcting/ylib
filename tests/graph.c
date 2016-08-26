@@ -179,6 +179,6 @@ test_graph(void) {
 	ygraph_destroy(g);
 }
 
-TESTFN(test_graph, graph)
+TESTFN(graph)
 
 #endif /* CONFIG_DEBUG */

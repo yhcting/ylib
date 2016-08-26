@@ -129,6 +129,6 @@ test_heap(void) {
 	yheap_destroy(h);
 }
 
-TESTFN(test_heap, heap)
+TESTFN(heap)
 
 #endif /* CONFIG_DEBUG */

@@ -57,6 +57,6 @@ test_proc(void) {
 	yassert(ppid == stat.ppid);
 }
 
-TESTFN(test_proc, proc)
+TESTFN(proc)
 
 #endif /* CONFIG_DEBUG */

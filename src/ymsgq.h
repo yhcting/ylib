@@ -53,10 +53,12 @@ struct ymsgq;
 /**
  * Create message-queue object.
  *
+ * @param capacity Max number of msgs that Q can have.
+ *                 '<= 0' means not-limited
  * @return NULL if fails.
  */
 YYEXPORT struct ymsgq *
-ymsgq_create(void);
+ymsgq_create(int capacity);
 
 /**
  * Destroy message-queue object.

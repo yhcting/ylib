@@ -49,6 +49,6 @@ test_trie(void) {
 
 
 
-TESTFN(test_trie, trie)
+TESTFN(trie)
 
 #endif /* CONFIG_DEBUG */

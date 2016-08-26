@@ -170,6 +170,6 @@ test_mempool(void) {
 #undef __MAGICV
 }
 
-TESTFN(test_mempool, mempool)
+TESTFN(mempool)
 
 #endif /* CONFIG_DEBUG */

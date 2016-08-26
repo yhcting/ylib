@@ -118,6 +118,6 @@ test_dynb(void) {
 }
 
 
-TESTFN(test_dynb, dynb)
+TESTFN(dynb)
 
 #endif /* CONFIG_DEBUG */

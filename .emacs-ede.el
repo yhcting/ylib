@@ -27,7 +27,7 @@
 (defun yhc.gdb ()
     "gdb wrapper"
     (interactive)
-    (if (file-exists-p yhc.target)
+    (if (file-exists-p (concat yhc.topdir "bin/" yhc.target))
         (let ((cmd ""))
             (set 'cmd (concat "gdb -i=mi --annotate=3 " yhc.topdir "bin/" yhc.target))
             ;(message cmd)))

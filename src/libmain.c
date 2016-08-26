@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -34,6 +34,4 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-
 #include "ylib.h"
-

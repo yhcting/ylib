@@ -69,6 +69,6 @@ test_set(void) {
 	yset_destroy(s);
 }
 
-TESTFN(test_set, set)
+TESTFN(set)
 
 #endif /* CONFIG_DEBUG */

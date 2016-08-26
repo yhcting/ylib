@@ -34,4 +34,19 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-/* Dummy */
+#include "test.h"
+#ifdef CONFIG_DEBUG
+
+#include <assert.h>
+
+#include "common.h"
+#include "ymsgq.h"
+
+static void
+test_msgq(void) {
+}
+
+
+TESTFN(msgq)
+
+#endif /* CONFIG_DEBUG */

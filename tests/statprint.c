@@ -521,6 +521,6 @@ test_statprint(void) {
 	test_distgraph();
 }
 
-TESTFN(test_statprint, statprint)
+TESTFN(statprint)
 
 #endif /* CONFIG_DEBUG */

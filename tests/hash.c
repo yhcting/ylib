@@ -225,6 +225,6 @@ test_hash(void) {
 	test_hashi();
 }
 
-TESTFN(test_hash, hash)
+TESTFN(hash)
 
 #endif /* CONFIG_DEBUG */

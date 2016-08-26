@@ -194,6 +194,6 @@ test_treel(void) {
 
 }
 
-TESTFN(test_treel, treel)
+TESTFN(treel)
 
 #endif /* CONFIG_DEBUG */

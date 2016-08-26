@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2015
+ * Copyright (C) 2015, 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,5 +33,23 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+#include <string.h>
 
+#include "common.h"
 #include "yutils.h"
+
+bool
+yut_starts_with(const char *str, const char *substr) {
+	int len, lensub, i;
+	if (unlikely(!str || !substr))
+		return FALSE;
+	len = strlen(str);
+	lensub = strlen(substr);
+	if (unlikely(lensub > len))
+		return FALSE;
+	for (i = 0; i < lensub; i++) {
+		if (unlikely(str[i] != substr[i]))
+			return FALSE;
+	}
+	return TRUE;
+}

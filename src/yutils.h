@@ -42,6 +42,8 @@
 #ifndef __YUTILs_h__
 #define __YUTILs_h__
 
+#include "ydef.h"
+
 /*****************************************************************************
  *
  * Bit operations
@@ -252,5 +254,16 @@
  */
 #define yut_arrsz(a)				\
 	((int)(sizeof(a)/sizeof((a)[0])))
+
+/**
+ * Check \a str stars with \a substr.
+ * This is inspired from String.startsWith of Java.
+ * If \a str or \a substr are NULL, FALSE is returned.
+ *
+ * @return TRUE or FALSE
+ */
+YYEXPORT bool
+yut_starts_with(const char *str, const char *substr);
+
 
 #endif /* __YUTILs_h__ */

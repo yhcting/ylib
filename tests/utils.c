@@ -33,13 +33,13 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+#include "test.h"
 #ifdef CONFIG_DEBUG
 
 #include <assert.h>
 
 #include "common.h"
 #include "yutils.h"
-#include "test.h"
 
 static void
 bitops(void) {
@@ -61,8 +61,17 @@ bitops(void) {
 }
 
 static void
+others(void) {
+	yassert(!yut_starts_with("abcdef", "abcdefg"));
+	yassert(!yut_starts_with("abcdef", "ae"));
+	yassert(yut_starts_with("abcdef", "abcdef"));
+	yassert(yut_starts_with("abcdef", "ab"));
+}
+
+static void
 test_utils(void) {
-	bitopts();
+	bitops();
+	others();
 }
 
 

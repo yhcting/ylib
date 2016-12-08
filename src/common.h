@@ -55,15 +55,15 @@
 #  include <assert.h>
 #  include <stdio.h>
 
-#  define ymalloc dmalloc
-#  define yrealloc drealloc
-#  define ycalloc dcalloc
+#  define ymalloc(sz) dmalloc(sz, __FILE__, __LINE__)
+#  define yrealloc(p, sz) drealloc(p, sz, __FILE__, __LINE__)
+#  define ycalloc(n, sz) dcalloc(n, sz, __FILE__, __LINE__)
 #  define yfree dfree
 #  define yassert(x) assert(x)
 
-EXPORT void *dmalloc(size_t);
-EXPORT void *drealloc(void *, size_t);
-EXPORT void *dcalloc(size_t, size_t);
+EXPORT void *dmalloc(size_t, const char *, int);
+EXPORT void *drealloc(void *, size_t, const char *, int);
+EXPORT void *dcalloc(size_t, size_t, const char *, int);
 EXPORT void dfree(void *);
 
 #else /* CONFIG_DEBUG */
@@ -106,32 +106,83 @@ EXPORT void dfree(void *);
 #endif /* YDPRINT */
 
 
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+#define declare_lock(lOCKtYPE, cONTAINERtYPE, nAME, iNIToPT)		\
+	static inline void						\
+	init_##nAME##_lock(cONTAINERtYPE *o) {				\
+		fatali0(pthread_##lOCKtYPE##_init(&o->nAME##_lock,	\
+						  iNIToPT));		\
+	}								\
+        static inline void                                              \
+        lock_##nAME(cONTAINERtYPE *o) {					\
+                fatali0(pthread_##lOCKtYPE##_lock(&o->nAME##_lock));	\
+        }                                                               \
+        static inline void                                              \
+        unlock_##nAME(cONTAINERtYPE *o) {				\
+                fatali0(pthread_##lOCKtYPE##_unlock(&o->nAME##_lock));	\
+        }								\
+	static inline void						\
+	destroy_##nAME##_lock(cONTAINERtYPE *o) {			\
+		fatali0(pthread_##lOCKtYPE##_destroy(&o->nAME##_lock)); \
+	}								\
+
+
+
 /*****************************************************************************
  *
  *
  *
  *****************************************************************************/
 /**
- * Die(exit process with exit code 1 with fatal log message.)
+ * Die(exit process with exit code 1).
  */
-#define die(fmt, args...)			\
+#define die()					\
         do {					\
-		ylogf(fmt, ##args);		\
 		yassert(FALSE);			\
 		exit(1);			\
         } while (FALSE)
 
 /**
+ * Die(exit process with exit code 1 with fatal log message.)
+ */
+#define die2(fmt, args...)			\
+        do {					\
+		ylogf(fmt, ##args);		\
+		die();				\
+        } while (FALSE)
+
+/**
+ * Die if \a cond is NOT TRUE.
+ */
+#define fatal(cond)				\
+	if (unlikely(!(cond))) {		\
+		die();				\
+	}
+
+/**
+ * Die if \a cond is NOT TRUE with given message.
+ */
+#define fatal2(cond, fmt, args...)		\
+	if (unlikely(!(cond))) {		\
+		die2(fmt, ##args);		\
+	}
+
+/**
  * Call fatal function that returns 'int 0' if success.
  * If function fails, 'assert' is triggered.
  */
-#define fatali0(int0_return_func_call_stmt)				\
-        do {								\
-                int ___Rr___  = int0_return_func_call_stmt;		\
-		if (unlikely(___Rr___)) {				\
-			die("Failure at MUST-SUCCESS-Function!: %d",	\
-			    ___Rr___);					\
-		}							\
+#define fatali0(int0_return_func_call_stmt)			\
+        do {							\
+                int ___Rr___  = int0_return_func_call_stmt;	\
+		fatal2(0 == ___Rr___,				\
+		       "Failure at MUST-SUCCESS-Function!: %d",	\
+		       ___Rr___);				\
         } while (FALSE)
 
 #endif /* __COMMOn_h__ */

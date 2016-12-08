@@ -399,7 +399,8 @@ ytask_add_event_listener2(struct ytask *tsk,
 }
 
 /**
- * Remove event listener.
+ * Remove event listener. After this function, \a event_listener_handle is no
+ *   more valule.
  *
  * @param event_listener_handle handle returned by
  *                              {@link ytask_add_event_listener}

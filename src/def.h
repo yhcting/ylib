@@ -67,17 +67,14 @@
 /* GNU C Specific */
 #ifdef __GNUC__
 
-/* barrier is not used yet
-#  define barrier() __asm__ __volatile__("": : :"memory")
-*/
+
+#  define __barrier() __asm__ __volatile__("": : :"memory")
 #  define __unused __attribute__((unused))
 
 #else /* __GNUC__ */
 
-/* barrier is not used yet
-#  error barrier() should be defined for this compiler.
-#  define barrier()
-*/
+#  error barrier() should be defined.
+#  define __barrier()
 #  define __unused
 
 #endif /* __GNUC__ */

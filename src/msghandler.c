@@ -131,6 +131,21 @@ ymsghandler_post_exec2(struct ymsghandler *mh,
 	return ymsgq_en(ymsglooper_get_msgq(mh->ml), m);
 }
 
+int
+ymsghandler_exec_on(struct ymsghandler *mh,
+		    void *arg, void (*argfree)(void *),
+		    void (*run)(void *)) {
+	if (ymsglooper_get_thread(ymsghandler_get_looper(mh))
+	    == pthread_self()) {
+		(*run)(arg);
+		if (arg && argfree)
+			(*argfree)(arg);
+		return 0;
+	}
+	return ymsghandler_post_exec(mh, arg, argfree, run);
+}
+
+
 /******************************************************************************
  *
  *

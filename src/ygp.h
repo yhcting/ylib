@@ -54,10 +54,10 @@
  * But DO NOT access internal values directly. Use them via interface!
  */
 struct ygp {
-	void *container;
-        void (*container_free)(void *);
-	pthread_spinlock_t lock;
-        int refcnt;  /* reference count */
+	void *container; /**< Container object */
+        void (*container_free)(void *); /**< Function to free container */
+	pthread_spinlock_t lock; /**< Lock */
+        int refcnt;  /**< reference count */
 };
 
 /**
@@ -72,15 +72,27 @@ ygpinit(struct ygp *gp,
  * Put object. Reference counter is decreased.
  * If reference count is '0' and \a ofree is NOT NULL, object is freed by
  *  calling \a ofree.
+ *
+ * @return Reference count after put.
  */
-YYEXPORT void
+YYEXPORT int
 ygpput(struct ygp *);
 
 /**
  * Increased reference count.
+ *
+ * @return Reference count after get.
  */
-YYEXPORT void
+YYEXPORT int
 ygpget(struct ygp *);
+
+
+/**
+ * Get current reference count.
+ * Reference count is NOT changed.
+ */
+YYEXPORT int
+ygpref_cnt(struct ygp *);
 
 /**
  * Destroy container and ygp instance in force.

@@ -104,6 +104,15 @@ ymsghandler_post_exec2(struct ymsghandler *,
 		       void (*run)(void *),
 		       uint8_t pri, uint32_t opt);
 
+/**
+ * If msghandler is run on current context, \a run is executed immediately.
+ * Otherwise, this function works exactly same with
+ *   {@link ymsghandler_post_exec}
+ */
+YYEXPORT int
+ymsghandler_exec_on(struct ymsghandler *mh,
+		    void *arg, void (*argfree)(void *),
+		    void (*run)(void *));
 
 
 #endif /* __YMSGHANDLEr_h__ */

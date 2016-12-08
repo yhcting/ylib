@@ -112,19 +112,30 @@ ygpdestroy(struct ygp *gp) {
 }
 
 
-void
+int
 ygpput(struct ygp *gp) {
 	int refcnt = dec_refcnt(gp);
 	yassert(0 <= refcnt);
 	if (unlikely(refcnt <= 0))
 		ygpdestroy(gp);
+	return refcnt;
 }
 
-void
+int
 ygpget(struct ygp *gp) {
-	int refcnt __unused;
+	int refcnt;
 	refcnt = inc_refcnt(gp);
 	yassert(0 < refcnt);
+	return refcnt;
+}
+
+int
+ygpref_cnt(struct ygp *gp) {
+	int r;
+	lock(gp);
+	r = gp->refcnt;
+	unlock(gp);
+	return r;
 }
 
 

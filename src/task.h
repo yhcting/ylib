@@ -49,6 +49,7 @@
 #include "threadex.h"
 #include "ylistl.h"
 #include "yhash.h"
+#include "ygp.h"
 
 
 struct ytask {
@@ -61,8 +62,7 @@ struct ytask {
 	pthread_mutex_t tagmap_lock;
         struct ylistl_link elhd; /**< event listener header */
 	pthread_mutex_t el_lock;
-        int refcnt; /**< reference count */
-	pthread_spinlock_t refcnt_lock;
+	struct ygp gp;
         struct {
                 u64 interval; /**< interval between progress. ms */
                 u64 pubtm; /**< last publish time. ms */
@@ -72,7 +72,20 @@ struct ytask {
 		volatile bool init; /**< progress is initialized */
 #endif /* CONFIG_DEBUG */
         } prog;
-        /* ---------- used as internal arguments ----------*/
+	/* ------------------------------------------------
+	 * Values used only inside library.
+	 * These are to support other library modules.
+	 *
+	 * [NOTE]
+	 * In terms of loose-coupling, Using internal hashmap like 'tagmap'
+	 *   is better.
+	 * But, it's slow and requires more memory space.
+	 */
+	/* Values used by taskmanager. */
+	struct {
+		void *tag;
+		void (*tagfree)(void *);
+	} tm;
 };
 
 struct task_event_listener {
@@ -106,17 +119,19 @@ task_init(struct ytask *,
 int
 task_clean(struct ytask *);
 
-int
-task_get(struct ytask *);
+static INLINE int
+task_get(struct ytask *tsk) {
+	return ygpget(&tsk->gp);
+}
 
+static INLINE int
+task_put(struct ytask *tsk) {
+	return ygpput(&tsk->gp);
+}
 
-int
-task_put(struct ytask *);
-
-
-int
-task_refcnt(struct ytask *);
-
-
+static INLINE int
+task_refcnt(struct ytask *tsk) {
+	return ygpref_cnt(&tsk->gp);
+}
 
 #endif /* __TASk_h__ */

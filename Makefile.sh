@@ -20,6 +20,7 @@ modenames="
 :msghandler
 :threadex
 :task
+:taskmanager
 :mtpp
 :p
 :o

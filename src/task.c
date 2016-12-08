@@ -43,6 +43,7 @@
 #include "lib.h"
 #include "yhash.h"
 #include "yo.h"
+#include "ygp.h"
 #include "yut.h"
 #include "ymsghandler.h"
 #include "threadex.h"
@@ -57,32 +58,10 @@ static const u64 PROG_DEFAULT_INTERVAL = 500; /* ms */
  * Lock
  *
  *****************************************************************************/
-#define declare_lock(tYPE, nAME, iNIToPT)				\
-	static inline void						\
-	init_##nAME##_lock(struct ytask *tsk) {				\
-		fatali0(pthread_##tYPE##_init(&tsk->nAME##_lock,	\
-					      iNIToPT));		\
-	}								\
-        static inline void                                              \
-        lock_##nAME(struct ytask *tsk) {				\
-                fatali0(pthread_##tYPE##_lock(&tsk->nAME##_lock));	\
-        }                                                               \
-        static inline void                                              \
-        unlock_##nAME(struct ytask *tsk) {				\
-                fatali0(pthread_##tYPE##_unlock(&tsk->nAME##_lock));	\
-        }								\
-	static inline void						\
-	destroy_##nAME##_lock(struct ytask *tsk) {			\
-		fatali0(pthread_##tYPE##_destroy(&tsk->nAME##_lock));	\
-	}								\
-
 /* Hash operation is quite expensive. So mutex lock is chosen */
-declare_lock(mutex, tagmap, NULL)
+declare_lock(mutex, struct ytask, tagmap, NULL)
 /* List operation is very cheap. But calling listeners requires lock */
-declare_lock(mutex, el, NULL)
-declare_lock(spin, refcnt, PTHREAD_PROCESS_PRIVATE)
-
-#undef declare_lock
+declare_lock(mutex, struct ytask, el, NULL)
 
 /******************************************************************************
  *
@@ -93,41 +72,6 @@ static void
 task_put_runnable(void *arg) {
 	struct ytask *tsk = (struct ytask *)arg;
 	task_put(tsk);
-}
-
-int
-task_get(struct ytask *tsk) {
-	int r;
-	lock_refcnt(tsk);
-	r = ++tsk->refcnt;
-	unlock_refcnt(tsk);
-	yassert(r > 0);
-	return r;
-}
-
-int
-task_put(struct ytask *tsk) {
-	int r;
-	lock_refcnt(tsk);
-	r = --tsk->refcnt;
-	unlock_refcnt(tsk);
-	yassert(r >= 0);
-	if (unlikely(!r)) {
-		/* destroy task */
-		fatali0(task_clean(tsk));
-		yfree(tsk);
-	}
-	return r;
-}
-
-int
-task_refcnt(struct ytask *tsk) {
-	int r;
-	lock_refcnt(tsk);
-	r = tsk->refcnt;
-	unlock_refcnt(tsk);
-	yassert(r >= 0);
-	return r;
 }
 
 /******************************************************************************
@@ -204,15 +148,16 @@ on_progress_runnable(void *arg) {
 		if (tsk->listener.on_early_##nAME) {			\
 			(*tsk->listener.on_early_##nAME) cALLaRG;	\
 		}							\
+                lock_el(tsk);                                           \
 		ylistl_foreach_item(el,					\
 				    &tsk->elhd,				\
 				    struct task_event_listener,		\
 				    lk) {				\
-			struct yo *o = yocreate##yOnUM yOaRG;		\
-			if (unlikely(!o)) {				\
-				die("Out of memory!");			\
-			}						\
 			if (el->el.on_##nAME) {				\
+				struct yo *o = yocreate##yOnUM yOaRG;	\
+				if (unlikely(!o)) {			\
+					die2("Out of memory!");		\
+				}					\
 				/* To prevent task to be destroied before \
 				 * handling listener message		\
 				 */					\
@@ -228,6 +173,7 @@ on_progress_runnable(void *arg) {
 					 &task_put_runnable));		\
 			}						\
 		}							\
+                unlock_el(tsk);                                         \
 		if (tsk->listener.on_late_##nAME) {			\
 			(*tsk->listener.on_late_##nAME) cALLaRG;	\
 		}							\
@@ -303,6 +249,12 @@ static const struct ythreadex_listener _threadex_listener = {
  *
  *
  *****************************************************************************/
+static void
+task_destroy(struct ytask *tsk) {
+	task_clean(tsk);
+	yfree(tsk);
+}
+
 int
 task_init(struct ytask *tsk,
           const char *name,
@@ -338,7 +290,9 @@ task_init(struct ytask *tsk,
 	}
 	init_tagmap_lock(tsk);
 	init_el_lock(tsk);
-	init_refcnt_lock(tsk);
+	ygpinit(&tsk->gp, tsk, (void(*)(void *))&task_destroy);
+	/* Initialize library internal values */
+	memset(&tsk->tm, 0, sizeof(tsk->tm));
 	return 0;
 
  clean_threadex:
@@ -363,7 +317,9 @@ task_clean(struct ytask *tsk) {
         yhash_destroy(tsk->tagmap);
 	destroy_tagmap_lock(tsk);
 	destroy_el_lock(tsk);
-	destroy_refcnt_lock(tsk);
+	/* Cleanup library internal values */
+	if (unlikely(tsk->tm.tag && tsk->tm.tagfree))
+		(*tsk->tm.tagfree)(tsk->tm.tag);
         return 0;
 }
 
@@ -397,6 +353,7 @@ notify_current_progress_to_new_listener(void *arg) {
 	(*el->el.on_progress)(tsk, tsk->prog.prog);
 	task_put(tsk);
 }
+
 /******************************************************************************
  *
  *
@@ -549,7 +506,7 @@ ytask_remove_event_listener(struct ytask *tsk,
 	struct task_event_listener *el = event_listener_handle;
 	yassert(tsk && event_listener_handle);
 	if (!task_has_event_listener(tsk, el))
-		return -ENOENT;
+		return -EINVAL;
 	lock_el(tsk);
 	ylistl_remove(&el->lk);
 	unlock_el(tsk);

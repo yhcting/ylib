@@ -92,11 +92,12 @@ struct ymsghandler;
  * Thread priority(NOT Effective(not implemented), yet)
  */
 enum ythreadex_priority {
-	YTHREADEX_HIGHER,
-	YTHREADEX_HIGH,
-	YTHREADEX_NORMAL,
+	YTHREADEX_LOWER = 0,
 	YTHREADEX_LOW,
-	YTHREADEX_LOWER,
+	YTHREADEX_NORMAL,
+	YTHREADEX_HIGH,
+	YTHREADEX_HIGHER,
+	YTHREADEX_NUM_PRIORITY,
 };
 
 /**

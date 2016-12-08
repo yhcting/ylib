@@ -218,6 +218,11 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
 	anew->prev->next = anew;
 }
 
+/****************************************************************************
+ *
+ * Macros
+ *
+ ****************************************************************************/
 /**
  * Iterates link-node of the list.
  *
@@ -318,6 +323,11 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
 	     (pos) = (n),						\
 		     (n) = YYcontainerof((pos)->member.prev, type, member))
 
+/****************************************************************************
+ *
+ * Rich(but heavy) functions
+ *
+ ****************************************************************************/
 /**
  * Get size(number of items) of list.
  *
@@ -331,6 +341,70 @@ ylistl_size(const struct ylistl_link *head) {
 	ylistl_foreach(pos, head)
 		size++;
 	return size;
+}
+
+/**
+ * Check \a node is in the list(\a head).
+ *
+ * @param head Head node of the list.
+ * @param node Node to check.
+ * @return bool TRUE or FALSE
+ */
+static YYINLINE bool
+ylistl_contains(const struct ylistl_link *head,
+		const struct ylistl_link *node) {
+	const struct ylistl_link *pos;
+	ylistl_foreach(pos, head) {
+		if (pos == node)
+			return TRUE;
+	}
+	return FALSE;
+}
+
+/**
+ * Delete link.
+ * If \a node is NOT in the list headed by \a head, FALSE is returned.
+ *
+ * @param head Head of list.
+ * @param node Node link.
+ * @return TRUE or FALSE
+ *
+ */
+static YYINLINE bool
+ylistl_remove2(struct ylistl_link *head,
+	       struct ylistl_link *node) {
+	if (!ylistl_contains(head, node))
+		return FALSE;
+	ylistl_remove(node);
+	return TRUE;
+}
+
+/**
+ * Delete link of the last element of the list and return it.
+ * If list is empty, NULL is returned.
+ *
+ * @param head Head of list
+ * @return The last element or NULL
+ */
+static YYINLINE struct ylistl_link *
+ylistl_remove_last2(struct ylistl_link *head) {
+	if (YYunlikely(ylistl_is_empty(head)))
+		return NULL;
+	return ylistl_remove_last(head);
+}
+
+/**
+ * Delete link of the first element of the list and return it.
+ * If list is empty, NULL is returned.
+ *
+ * @param head Head of list
+ * @return The first element or NULL.
+ */
+static YYINLINE struct ylistl_link *
+ylistl_remove_first2(struct ylistl_link *head) {
+	if (YYunlikely(ylistl_is_empty(head)))
+		return NULL;
+	return ylistl_remove_first(head);
 }
 
 #endif /* __YLISTl_h__ */

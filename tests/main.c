@@ -53,10 +53,78 @@ struct tstfn {
 	struct ylistl_link lk;
 };
 
-static YLISTL_DEFINE_HEAD(_tstfnl);
-static int _mem_count = 0;
-static pthread_mutex_t _mem_count_lock = PTHREAD_MUTEX_INITIALIZER;
+struct memblk {
+	int line;
+	const char *file;
+	int sz;
+	struct ylistl_link lk;
+	uintptr_t blk[0];
+};
 
+static YLISTL_DEFINE_HEAD(_tstfnl);
+static YLISTL_DEFINE_HEAD(_memhd);
+static int _mem_count = 0;
+static pthread_mutex_t _mem_lock = PTHREAD_MUTEX_INITIALIZER;
+
+static void
+init_mem_lock(void) {
+	pthread_mutex_init(&_mem_lock, NULL);
+}
+
+static void
+destroy_mem_lock(void) {
+	pthread_mutex_destroy(&_mem_lock);
+}
+
+static void
+lock_mem(void) {
+	pthread_mutex_lock(&_mem_lock);
+}
+
+static void
+unlock_mem(void) {
+	pthread_mutex_unlock(&_mem_lock);
+}
+
+static void
+add_mem_locked(struct memblk *m) {
+	_mem_count++;
+	ylistl_add_first(&_memhd, &m->lk);
+}
+
+static void
+rm_mem_locked(struct memblk *m) {
+	_mem_count--;
+	ylistl_remove(&m->lk);
+}
+
+static void
+clear_mem(void) {
+	struct memblk *pos, *n;
+	ylistl_foreach_item_removal_safe(pos, n, &_memhd,
+					 struct memblk, lk) {
+		ylistl_remove(&pos->lk);
+		free(pos);
+	}
+}
+
+static void
+print_mem(void) {
+	struct memblk *pos;
+	printf("%20s %10s, %10s\n", "File", "Line", "Size");
+	ylistl_foreach_item(pos, &_memhd, struct memblk, lk) {
+		printf("%20s %10d, %10d\n",
+		       pos->file,
+		       pos->line,
+		       pos->sz);
+	}
+}
+
+/******************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
 void
 dregister_tstfn(void (*fn)(void), const char *mod) {
 	/* malloc should be used instead of dmalloc */
@@ -92,32 +160,43 @@ dregister_clearfn(void (*fn)(void), const char *mod) {
 }
 
 void *
-dmalloc(size_t sz) {
-	pthread_mutex_lock(&_mem_count_lock);
-	_mem_count++;
-	pthread_mutex_unlock(&_mem_count_lock);
-	return malloc(sz);
+dmalloc(size_t sz, const char *file, int line) {
+	struct memblk *m;
+	m = malloc(sizeof(struct memblk) + sz);
+	m->sz = (int)sz;
+	m->file = file;
+	m->line = line;
+	lock_mem();
+	add_mem_locked(m);
+	unlock_mem();
+	return &m->blk[0];
 }
 
 void *
-drealloc(void *p, size_t sz) {
-	return realloc(p, sz);
+drealloc(void *p, size_t sz, const char *file, int line) {
+	struct memblk *m = YYcontainerof(p, struct memblk, blk);
+	void *newp;
+	newp = dmalloc(sz, file, line);
+	memcpy(newp, p, sz > m->sz? m->sz: sz);
+	dfree(p);
+	return newp;
 }
 
 void *
-dcalloc(size_t n, size_t sz) {
-	pthread_mutex_lock(&_mem_count_lock);
-	_mem_count++;
-	pthread_mutex_unlock(&_mem_count_lock);
-	return calloc(n, sz);
+dcalloc(size_t n, size_t sz, const char *file, int line) {
+	void *m = dmalloc(sz * n, file, line);
+	memset(m, 0, sz * n);
+	return m;
 }
 
 void
 dfree(void *p) {
-	pthread_mutex_lock(&_mem_count_lock);
-	_mem_count--;
-	pthread_mutex_unlock(&_mem_count_lock);
-	free(p);
+	struct memblk *m;
+	m = YYcontainerof(p, struct memblk, blk);
+	lock_mem();
+	rm_mem_locked(m);
+	unlock_mem();
+	free(m);
 }
 
 int
@@ -126,6 +205,11 @@ dmem_count(void) {
 }
 
 
+/******************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
 #ifdef CONFIG_DEBUG
 struct opt {
 	const char *mods[1024]; /* 1024 is large enough value */
@@ -218,6 +302,7 @@ test_mod(struct tstfn *tf, int count) {
 			(*tf->clear)();
 	}
 	if (sv != dmem_count()) {
+		print_mem();
 		fprintf(stderr,
 			"Unbalanced memory at [%s]!\n"
 			"    balance : %d\n",
@@ -243,7 +328,7 @@ main(int argc, char *argv[]) {
 	if (parse_optarg(&opt, argc, argv))
 		return -1;
 
-	pthread_mutex_init(&_mem_count_lock, NULL);
+	init_mem_lock();
 
 	struct ylib_config yc;
 	memset(&yc, 0, sizeof(yc));
@@ -286,6 +371,7 @@ main(int argc, char *argv[]) {
 	}
 	ylib_exit();
 	if (dmem_count()) {
+		print_mem();
 		fprintf(stderr,
 			"Unbalanced memory lib init/exit\n"
 		        "    balance : %d\n",
@@ -293,7 +379,8 @@ main(int argc, char *argv[]) {
 		return -1;
 		/* yassert(0); */
 	}
-	pthread_mutex_destroy(&_mem_count_lock);
+	clear_mem();
+	destroy_mem_lock();
 	printf(">>>>>> TEST PASSED <<<<<<<\n");
 	return 0;
 }

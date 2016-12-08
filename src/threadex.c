@@ -62,28 +62,7 @@ static pthread_spinlock_t _id_lock;
  * Lock
  *
  *****************************************************************************/
-#define declare_lock(tYPE, nAME, iNIToPT)				\
-	static inline void						\
-	init_##nAME##_lock(struct ythreadex *threadex) {		\
-		fatali0(pthread_##tYPE##_init(&threadex->nAME##_lock,	\
-					      iNIToPT));		\
-	}								\
-        static inline void                                              \
-        lock_##nAME(struct ythreadex *threadex) {                       \
-                fatali0(pthread_##tYPE##_lock(&threadex->nAME##_lock)); \
-        }                                                               \
-        static inline void                                              \
-        unlock_##nAME(struct ythreadex *threadex) {                     \
-                fatali0(pthread_##tYPE##_unlock(&threadex->nAME##_lock)); \
-        }								\
-	static inline void						\
-	destroy_##nAME##_lock(struct ythreadex *threadex) {		\
-		fatali0(pthread_##tYPE##_destroy(&threadex->nAME##_lock)); \
-	}								\
-
-declare_lock(mutex, state, NULL)
-
-#undef declare_lock
+declare_lock(mutex, struct ythreadex, state, NULL)
 
 /******************************************************************************
  *

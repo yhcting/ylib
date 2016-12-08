@@ -34,48 +34,35 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-#include "test.h"
-#ifdef CONFIG_DEBUG
+#ifndef __YERRNo_h__
+#define __YERRNo_h__
 
-#include <stdint.h>
-#include <assert.h>
-#include <unistd.h>
+/* yerrno SHOULD be SUPER-SET of standard errno */
+#include <errno.h>
 
-#include "common.h"
-#include "ymsglooper.h"
+#include "ydef.h"
 
+/**
+ * ylib specific errno.
+ *
+ * Note that errno MUST NOT be overlapped with standard or glibc errno.
+ * And, it SHOULD NOT be too large not to be considered as valid memory address
+ *   value, because sometimes, errno may be used as return value of function
+ *   having pointer as it's return type.
+ */
+enum {
+	YERRNO_BASE = 0x7ff,
+	YEILLST = YERRNO_BASE, /**< Illegal state */
+	YERRNO_LIMIT
+};
 
-extern void msg_clear_pool(void);
+#define yerrno_is_yerr(e) (YERRNO_BASE <= (e) && YERRNO_LIMIT > (e))
 
+/**
+ * Return string describing errno.
+ * In case of \a ec is standard errno, this works same as \a strerror
+ */
+YYEXPORT const char *
+yerrno_str(int ec);
 
-static void
-test_msglooper(void) {
-	/* create looper thread and stop it */
-	struct ymsglooper *ml0 = ymsglooper_start_looper_thread(TRUE);
-	struct ymsglooper *ml1 = ymsglooper_start_looper_thread(TRUE);
-	ymsglooper_stop(ml0);
-	ymsglooper_stop(ml1);
-	usleep(1000 * 500); /* wait until threads are done */
-
-	ml0 = ymsglooper_start_looper_thread(FALSE);
-	ml1 = ymsglooper_start_looper_thread(FALSE);
-	ymsglooper_stop(ml0);
-	ymsglooper_stop(ml1);
-	yassert(!ymsglooper_get()); /* there is no message looper for this thread. */
-	while (!(ymsglooper_get_state(ml0) == YMSGLOOPER_TERMINATED
-		 && ymsglooper_get_state(ml1) == YMSGLOOPER_TERMINATED))
-		usleep(1000 * 50);
-	ymsglooper_destroy(ml0);
-	ymsglooper_destroy(ml1);
-}
-
-static void
-clear_msglooper(void) {
-	msg_clear_pool();
-}
-
-
-TESTFN(msglooper) /* @suppress("Unused static function") */
-CLEARFN(msglooper) /* @suppress("Unused static function") */
-
-#endif /* CONFIG_DEBUG */
+#endif /* __YERRNo_h__ */

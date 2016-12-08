@@ -89,10 +89,13 @@ YYEXPORT int
 ymsglooper_create(int msgq_capacity, bool destroy_on_exit);
 
 /**
- * If looper is NOT terimated(state of looper is NOT YMSGLOOPER_TERMINATED)
- * Caller is blocked until looper is termiated.
+ * Destroy looper instance.
+ * Looper SHOULD be in TERMINATED state.
+ *
+ * @return 0 if success otherwise -errno.
+ *         (Ex. if looper state is NOT TERMINATED, -EPERM is returned.)
  */
-YYEXPORT void
+YYEXPORT int
 ymsglooper_destroy(struct ymsglooper *);
 
 /**

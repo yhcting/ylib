@@ -67,7 +67,7 @@ extern enum yloglv ___yloglv;
 /**
  * Get current log level.
  */
-static inline enum yloglv
+static YYINLINE enum yloglv
 ylog_loglv(void) {
 	return ___yloglv;
 }

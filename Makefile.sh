@@ -18,6 +18,7 @@ modenames="
 :msgq
 :msglooper
 :msghandler
+:threadex
 :mtpp
 :p
 :set
@@ -26,6 +27,7 @@ modenames="
 :treel
 :trie
 :log
+:errno
 :ut
 geo:point
 geo:line

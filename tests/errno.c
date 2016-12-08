@@ -37,45 +37,16 @@
 #include "test.h"
 #ifdef CONFIG_DEBUG
 
-#include <stdint.h>
 #include <assert.h>
-#include <unistd.h>
 
 #include "common.h"
-#include "ymsglooper.h"
-
-
-extern void msg_clear_pool(void);
+#include "yerrno.h"
 
 
 static void
-test_msglooper(void) {
-	/* create looper thread and stop it */
-	struct ymsglooper *ml0 = ymsglooper_start_looper_thread(TRUE);
-	struct ymsglooper *ml1 = ymsglooper_start_looper_thread(TRUE);
-	ymsglooper_stop(ml0);
-	ymsglooper_stop(ml1);
-	usleep(1000 * 500); /* wait until threads are done */
-
-	ml0 = ymsglooper_start_looper_thread(FALSE);
-	ml1 = ymsglooper_start_looper_thread(FALSE);
-	ymsglooper_stop(ml0);
-	ymsglooper_stop(ml1);
-	yassert(!ymsglooper_get()); /* there is no message looper for this thread. */
-	while (!(ymsglooper_get_state(ml0) == YMSGLOOPER_TERMINATED
-		 && ymsglooper_get_state(ml1) == YMSGLOOPER_TERMINATED))
-		usleep(1000 * 50);
-	ymsglooper_destroy(ml0);
-	ymsglooper_destroy(ml1);
+test_errno(void) {
 }
 
-static void
-clear_msglooper(void) {
-	msg_clear_pool();
-}
-
-
-TESTFN(msglooper) /* @suppress("Unused static function") */
-CLEARFN(msglooper) /* @suppress("Unused static function") */
+TESTFN(errno)
 
 #endif /* CONFIG_DEBUG */

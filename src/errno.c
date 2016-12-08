@@ -34,48 +34,17 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-#include "test.h"
-#ifdef CONFIG_DEBUG
+#include <string.h>
 
-#include <stdint.h>
-#include <assert.h>
-#include <unistd.h>
+#include "yerrno.h"
 
-#include "common.h"
-#include "ymsglooper.h"
+static const char *_errstr[] = {
+	"Illegal state", /**< YEILLST */
+};
 
-
-extern void msg_clear_pool(void);
-
-
-static void
-test_msglooper(void) {
-	/* create looper thread and stop it */
-	struct ymsglooper *ml0 = ymsglooper_start_looper_thread(TRUE);
-	struct ymsglooper *ml1 = ymsglooper_start_looper_thread(TRUE);
-	ymsglooper_stop(ml0);
-	ymsglooper_stop(ml1);
-	usleep(1000 * 500); /* wait until threads are done */
-
-	ml0 = ymsglooper_start_looper_thread(FALSE);
-	ml1 = ymsglooper_start_looper_thread(FALSE);
-	ymsglooper_stop(ml0);
-	ymsglooper_stop(ml1);
-	yassert(!ymsglooper_get()); /* there is no message looper for this thread. */
-	while (!(ymsglooper_get_state(ml0) == YMSGLOOPER_TERMINATED
-		 && ymsglooper_get_state(ml1) == YMSGLOOPER_TERMINATED))
-		usleep(1000 * 50);
-	ymsglooper_destroy(ml0);
-	ymsglooper_destroy(ml1);
+const char *
+yerrno_str(int ec) {
+	if (!yerrno_is_yerr(ec))
+		return strerror(ec);
+	return _errstr[ec - YERRNO_BASE];
 }
-
-static void
-clear_msglooper(void) {
-	msg_clear_pool();
-}
-
-
-TESTFN(msglooper) /* @suppress("Unused static function") */
-CLEARFN(msglooper) /* @suppress("Unused static function") */
-
-#endif /* CONFIG_DEBUG */

@@ -45,7 +45,9 @@
 #include "ydef.h"
 #include "ylistl.h"
 
-/* Message type */
+/**
+ * Message type
+ */
 enum ymsg_type {
 	/* TYP_INVALID SHOULD be 0. 0 is natual initial value of empty data
 	 *   structure
@@ -55,7 +57,9 @@ enum ymsg_type {
 	YMSG_TYP_EXEC, /**< Message to execute 'run' */
 };
 
-/* Priority */
+/**
+ * Priority
+ */
 enum ymsg_priority {
 	YMSG_PRI_HIGHER = 0, /**< Highest priority */
 	YMSG_PRI_HIGH,

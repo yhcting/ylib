@@ -37,7 +37,11 @@
 #ifndef __COMMOn_h__
 #define __COMMOn_h__
 
+#include <stdlib.h>
+
+#include "ylog.h"
 #include "def.h"
+
 
 /*****************************************************************************
  *
@@ -75,6 +79,11 @@ EXPORT void dfree(void *);
 #endif /* CONFIG_DEBUG */
 
 
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
 #ifdef YDPRINT
 
 /* Debug PRint */
@@ -95,5 +104,26 @@ EXPORT void dfree(void *);
 #  define dchkpt() do { } while (0)
 
 #endif /* YDPRINT */
+
+
+/*****************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+/**
+ * Call fatal function that returns 'int 0' if success.
+ * If function fails, 'assert' is triggered.
+ */
+#define fatali0(int0_return_func_call_stmt)				\
+        do {								\
+                int ___Rr___  = int0_return_func_call_stmt;		\
+		if (unlikely(___Rr___)) {				\
+			ylogf("Failure at MUST-SUCCESS-Function!: %d", ___Rr___); \
+			yassert(FALSE);					\
+			exit(1);					\
+		}							\
+        } while (FALSE)
+
 
 #endif /* __COMMOn_h__ */

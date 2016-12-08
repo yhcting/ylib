@@ -151,8 +151,10 @@ main(int argc, const char *argv[]) {
 	struct ylib_config yc;
 	memset(&yc, 0, sizeof(yc));
 	yc.ylog_stdfd = yc.ylog_errfd = -1;
-	yc.ylog_level = YLOG_VERBOSE;
+	/* yc.ylog_level = YLOG_VERBOSE; */
+	yc.ylog_level = YLOG_WARN;
 	ylib_init(&yc);
+	ylogv("TEST-START\n");
 	ylistl_foreach_item(p, &_tstfnl, struct tstfn, lk) {
 		int r = repeat;
 		if (modnm

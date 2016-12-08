@@ -46,11 +46,12 @@ extern void log_clear_thread_specific_buffer(void);
 
 static void
 test_log(void) {
-	ylogw("Test: this is log\n");
-	ylogv("Test: this is log\n");
+	ylogd("Test: this is debug log\n");
+	ylogv("Test: this is verbose log\n");
 	log_clear_thread_specific_buffer();
 }
 
-TESTFN(log)
+
+TESTFN(log) /* @suppress("Unused static function") */
 
 #endif /* CONFIG_DEBUG */

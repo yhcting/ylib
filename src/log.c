@@ -122,6 +122,7 @@ ___ylog_write(enum yloglv lv,
 	if (likely(r < LOG_BUF_SZ)) {
 		int n;
 		va_list alist;
+		va_start(alist, fmt);
 		n = vsnprintf(buf + r, LOG_BUF_SZ - r, fmt, alist);
 		va_end(alist);
 		r += n;
@@ -157,7 +158,6 @@ minit(const struct ylib_config *cfg) {
 	r = pthread_key_create(&_tkey, &yfree);
 	if (unlikely(r))
 		return -r;
-	return 0;
 
 	/* Set to default value */
 	___yloglv = YLOG_WARN;
@@ -179,9 +179,7 @@ minit(const struct ylib_config *cfg) {
 
 static void
 mexit(void) {
-	int r __unused;
-	r = pthread_key_delete(_tkey);
-	yassert(!r);
+	fatali0(pthread_key_delete(_tkey));
 }
 
-LIB_MODULE(log, minit, mexit);
+LIB_MODULE(log, minit, mexit) /* @suppress("Unused static function") */

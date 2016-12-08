@@ -152,17 +152,15 @@ struct ytask_event_listener {
 	void (*on_progress)(struct ytask *, long prog);
 };
 
-
-/**
- * Get super struct \a ythreadex part of given ytask instance.
- *
- * @param tsk ytask instance.
- * @return ythreadex part of this instance.
+/* >>> \cond */
+/*
+ * This function is ONLY for INTERNAL use.
  */
 static YYINLINE struct ythreadex *
-ytask_threadex(struct ytask *tsk) {
+__ytask_super(struct ytask *tsk) {
         return (struct ythreadex *)tsk;
 }
+/* <<< \endcond */
 
 /**
  * Once \a result is assigned in side \a run (user-thread-function),
@@ -205,7 +203,7 @@ ytask_destroy(struct ytask *);
  */
 static YYINLINE int
 ytask_start(struct ytask *tsk) {
-        return ythreadex_start(ytask_threadex(tsk));
+        return ythreadex_start(__ytask_super(tsk));
 }
 
 /**
@@ -213,7 +211,7 @@ ytask_start(struct ytask *tsk) {
  */
 static YYINLINE int
 ytask_start_sync(struct ytask *tsk) {
-        return ythreadex_start_sync(ytask_threadex(tsk));
+        return ythreadex_start_sync(__ytask_super(tsk));
 }
 
 /**
@@ -222,7 +220,7 @@ ytask_start_sync(struct ytask *tsk) {
  */
 static YYINLINE int
 ytask_join(struct ytask *tsk, void **retval) {
-        return ythreadex_join(ytask_threadex(tsk), retval);
+        return ythreadex_join(__ytask_super(tsk), retval);
 }
 
 /**
@@ -256,7 +254,7 @@ ytask_publish_progress(struct ytask *, long prog);
  */
 static YYINLINE enum ythreadex_state
 ytask_get_state(struct ytask *tsk) {
-        return ythreadex_get_state(ytask_threadex(tsk));
+        return ythreadex_get_state(__ytask_super(tsk));
 }
 
 /**
@@ -264,7 +262,7 @@ ytask_get_state(struct ytask *tsk) {
  */
 static YYINLINE void *
 ytask_get_arg(struct ytask *tsk) {
-        return ythreadex_get_arg(ytask_threadex(tsk));
+        return ythreadex_get_arg(__ytask_super(tsk));
 }
 
 /**
@@ -272,7 +270,7 @@ ytask_get_arg(struct ytask *tsk) {
  */
 static YYINLINE void *
 ytask_get_result(struct ytask *tsk) {
-        return ythreadex_get_result(ytask_threadex(tsk));
+        return ythreadex_get_result(__ytask_super(tsk));
 }
 
 /**
@@ -280,7 +278,7 @@ ytask_get_result(struct ytask *tsk) {
  */
 static YYINLINE int
 ytask_get_errcode(struct ytask *tsk) {
-        return ythreadex_get_errcode(ytask_threadex(tsk));
+        return ythreadex_get_errcode(__ytask_super(tsk));
 }
 
 /**
@@ -288,7 +286,7 @@ ytask_get_errcode(struct ytask *tsk) {
  */
 static YYINLINE enum ythreadex_priority
 ytask_get_priority(struct ytask *tsk) {
-        return ythreadex_get_priority(ytask_threadex(tsk));
+        return ythreadex_get_priority(__ytask_super(tsk));
 }
 
 /**
@@ -296,7 +294,7 @@ ytask_get_priority(struct ytask *tsk) {
  */
 static YYINLINE struct ymsghandler *
 ytask_get_owner(struct ytask *tsk) {
-        return ythreadex_get_owner(ytask_threadex(tsk));
+        return ythreadex_get_owner(__ytask_super(tsk));
 }
 
 /**
@@ -304,7 +302,7 @@ ytask_get_owner(struct ytask *tsk) {
  */
 static YYINLINE const char *
 ytask_get_name(struct ytask *tsk) {
-        return ythreadex_get_name(ytask_threadex(tsk));
+        return ythreadex_get_name(__ytask_super(tsk));
 }
 
 /**
@@ -312,7 +310,7 @@ ytask_get_name(struct ytask *tsk) {
  */
 static YYINLINE long
 ytask_get_id(struct ytask *tsk) {
-        return ythreadex_get_id(ytask_threadex(tsk));
+        return ythreadex_get_id(__ytask_super(tsk));
 }
 
 /**

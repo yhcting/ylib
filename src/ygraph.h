@@ -272,14 +272,22 @@ ygraph_remove_vertex(struct ygraph *, struct yvertex *);
 
 
 /**
- * The vertex \a v is in the graph \a g?
+ * The vertex is in the graph?
  *
- * @param g Graph
- * @param v Vertex
  * @return boolean
  */
 YYEXPORT bool
-ygraph_has_vertex(const struct ygraph *g, const struct yvertex *v);
+ygraph_has_vertex(const struct ygraph *, const struct yvertex *);
+
+/**
+ * Check the vertex is in cycle
+ *
+ * @return  1 : cyclic link exists
+ *          0 : cyclic link DOESN'T exists
+ *         <0 : -errno
+ */
+YYEXPORT int
+ygraph_has_cycle(const struct ygraph *, const struct yvertex *);
 
 /******************************************************************************
  *

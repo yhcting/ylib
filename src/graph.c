@@ -40,6 +40,8 @@
 
 #include "common.h"
 #include "ygraph.h"
+#include "yset.h"
+#include "ylist.h"
 
 #ifndef NAN
 #  error NAN is required at ygraph.
@@ -157,6 +159,90 @@ ygraph_has_vertex(const struct ygraph *g, const struct yvertex *v) {
 			return TRUE;
 	}
 	return FALSE;
+}
+
+int
+ygraph_has_cycle(const struct ygraph *g __unused,
+                 const struct yvertex *basev) {
+	struct yvertex *v;
+	struct yedge* e;
+	struct ylist *vs = NULL; /* Vertex Stack */
+	struct ylist *es = NULL; /* Edge Stack */
+        yset_t visited = NULL;
+	int r = 0;
+
+#define __mark_visited(v)                                       \
+        if (unlikely(0 > (r = yset_add(visited, (void *)v)))) { \
+                goto done;                                      \
+        }
+#define __is_visited(v) yset_has(visited, (void *)v)
+
+        visited = yseti_create();
+	/* DFS */
+	vs = ylist_create(0, NULL);
+	es = ylist_create(0, NULL);
+
+	if (unlikely(!vs || !es || !visited)) {
+		r = -ENOMEM;
+		goto done;
+	}
+
+	if (unlikely(r = ylist_push(vs, (struct yvertex *)basev)))
+		goto done;
+	ygraph_foreach_iedge(basev, e) {
+		if (unlikely(r = ylist_push(es, e)))
+			goto done;
+	}
+
+	r = 0;
+	while (ylist_size(es)) {
+		e = ylist_pop(es);
+		yassert(e);
+		v = e->vf;
+
+		/* Adjust DFS vertex history.
+		 * Top of vertex stack SHOULD be same with target vertex
+		 *   of current visiting edge.
+		 * That is, vertex stack has right DFS visit-history.
+		 */
+		while (e->vt != ylist_peek_last(vs)
+		       && ylist_size(vs) > 0)
+			ylist_pop(vs);
+
+		if (__is_visited(v)) {
+			if (ylist_has(vs, v)) {
+				r = 1;
+				goto done;
+			}
+			/* It's already discovered. Skip next steps! */
+			continue;
+		}
+
+		/* This is first visit */
+
+		/* save to history stack */
+		__mark_visited(v);
+		if (unlikely(r = ylist_push(vs, v)))
+			goto done;
+
+		ygraph_foreach_iedge(v, e) {
+			if (unlikely(r = ylist_push(es, e)))
+				goto done;
+		}
+	}
+
+ done:
+	if (likely(vs))
+		ylist_destroy(vs);
+	if (likely(es))
+		ylist_destroy(es);
+        if (likely(visited))
+                yset_destroy(visited);
+	return r;
+
+#undef __is_visited
+#undef __mark_visited
+
 }
 
 struct yedge *

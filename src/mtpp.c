@@ -517,98 +517,6 @@ init_rtinfo(struct ymtpp *m) {
 	ylistl_init_link(&m->readyQ);
 }
 
-/*
- * Check cyclic link
- *
- * return
- *     1 : cyclic link exists
- *     0 : cyclic link DOESN'T exists
- *    <0 : -errno
- */
-static int
-check_cyclic_link(struct ymtpp *m, struct yvertex *basev) {
-	struct ylist *vs; /* Vertex Stack */
-	struct ylist *es; /* Edge Stack */
-	struct yvertex *v;
-	struct yedge* e;
-	int r = 0;
-
-#define __mark_discovered(v) do { v2job(v)->flag = 1; } while (0)
-#define __mark_undiscovered(v) do { v2job(v)->flag = 0; } while (0)
-#define __is_discovered(v) (!!v2job(v)->flag)
-
-	/* clear all flag of vertex */
-	ygraph_foreach_vertex(m->g, v) {
-		__mark_undiscovered(v);
-	}
-
-	/* DFS */
-	vs = ylist_create(0, NULL);
-	es = ylist_create(0, NULL);
-
-	if (unlikely(!vs || !es)) {
-		r = -ENOMEM;
-		goto done;
-	}
-
-	if (unlikely(r = ylist_push(vs, basev)))
-		goto done;
-	ygraph_foreach_iedge(basev, e) {
-		if (unlikely(r = ylist_push(es, e)))
-			goto done;
-	}
-
-	r = 0;
-	while (ylist_size(es)) {
-		e = ylist_pop(es);
-		yassert(e);
-		v = e->vf;
-
-		/* Adjust DFS vertex history.
-		 * Top of vertex stack SHOULD be same with target vertex
-		 *   of current visiting edge.
-		 * That is, vertex stack has right DFS visit-history.
-		 */
-		while (e->vt != ylist_peek_last(vs)
-		       && ylist_size(vs) > 0)
-			ylist_pop(vs);
-
-		if (__is_discovered(v)) {
-			if (ylist_has(vs, v)) {
-				r = 1;
-				goto done;
-			}
-			/* It's already discovered. Skip next steps! */
-			continue;
-		}
-
-		/* This is first visit */
-
-		/* save to history stack */
-		__mark_discovered(v);
-		if (unlikely(r = ylist_push(vs, v)))
-			goto done;
-
-		ygraph_foreach_iedge(v, e) {
-			if (unlikely(r = ylist_push(es, e)))
-				goto done;
-		}
-	}
-
- done:
-	if (likely(vs))
-		ylist_destroy(vs);
-	if (likely(es))
-		ylist_destroy(es);
-	dfpr("returns : %d\n", r);
-	return r;
-
-#undef __is_discovered
-#undef __mark_undiscovered
-#undef __mark_discovered
-
-}
-
 static int
 prepare_pp_run_cb(struct yvertex *v,
 		      void *tag __unused) {
@@ -747,7 +655,7 @@ ymtpp_run(struct ymtpp *m,
 	dchkpt();
 
 	/* Cyclic loop is NOT allowed */
-	r = check_cyclic_link(m, targetv);
+	r = ygraph_has_cycle(m->g, targetv);
 	if (unlikely(1 == r))
 		return -EPERM; /* cyclick link */
 	else if (unlikely(r))

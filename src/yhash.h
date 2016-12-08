@@ -134,7 +134,7 @@ yhasho_create(void (*vfree)(void *),
  *
  *****************************************************************************/
 /**
- * Create new empty hash that is same with given hash \a h.
+ * Create new empty hash that is same with given hash.
  * (All hash attributes are same, but hash is empty.)
  *
  * @return NULL if fails(ex. ENOMEM). Otherwise new hash object.

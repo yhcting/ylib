@@ -55,6 +55,7 @@ struct o {
         void (*ofree1)(void *);
         void (*ofree2)(void *);
         void (*ofree3)(void *);
+        void (*ofree4)(void *);
 	struct ylistl_link lk;
 };
 
@@ -81,6 +82,7 @@ oclear(struct o *o) {
 	free_el(1);
 	free_el(2);
 	free_el(3);
+	free_el(4);
 #undef free_el
 }
 
@@ -119,10 +121,11 @@ pool_clear(void) {
  *
  *****************************************************************************/
 struct yo *
-yocreate3(void *o0, void (*ofree0)(void *),
+yocreate4(void *o0, void (*ofree0)(void *),
 	  void *o1, void (*ofree1)(void *),
 	  void *o2, void (*ofree2)(void *),
-	  void *o3, void (*ofree3)(void *)) {
+	  void *o3, void (*ofree3)(void *),
+	  void *o4, void (*ofree4)(void *)) {
 	struct o *o = pool_get();
 	if (unlikely(!o))
 		o = (struct o *)ycalloc(1, sizeof(*o));
@@ -138,6 +141,8 @@ yocreate3(void *o0, void (*ofree0)(void *),
 	o->ofree2 = ofree2;
 	o->o.o3 = o3;
 	o->ofree3 = ofree3;
+	o->o.o4 = o4;
+	o->ofree4 = ofree4;
  	ylistl_init_link(&o->lk);
 	return &o->o;
 }

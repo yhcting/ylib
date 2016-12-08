@@ -48,6 +48,12 @@
 #include "yerrno.h"
 #include "ygp.h"
 
+struct myvalue {
+	struct ygp gp;
+	int a;
+};
+
+
 static void *
 gpaction(void *arg) {
 	struct ygp *gp = arg;
@@ -76,16 +82,21 @@ test_gp(void) {
 	void *retval;
 	int i;
 	struct ygp *gp;
+	struct myvalue *myv;
 	srand(time(NULL));
 
-	gp = ygpcreate(ymalloc(10), &yfree);
+	myv = ymalloc(sizeof(*myv));
+	gp = &myv->gp;
+	ygpinit(gp, myv, &yfree);
 	ygpget(gp);
 	ygpget(gp);
 	ygpget(gp);
 	ygpput(gp);
 	ygpdestroy(gp);
 
-	gp = ygpcreate(ymalloc(10), &yfree);
+	myv = ymalloc(sizeof(*myv));
+	gp = &myv->gp;
+	ygpinit(gp, myv, &yfree);
 	ygpget(gp);
 	i = 16;
 	while (i--)

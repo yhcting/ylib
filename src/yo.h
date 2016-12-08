@@ -52,21 +52,38 @@ struct yo {
         void *o1; /**< user object1 */
         void *o2; /**< user object2 */
         void *o3; /**< user object3 */
+        void *o4; /**< user object4 */
 };
+
+/**
+ * Extended version of {@link yocreate3}
+ */
+YYEXPORT struct yo *
+yocreate4(void *o0, void (*ofree0)(void *),
+	  void *o1, void (*ofree1)(void *),
+	  void *o2, void (*ofree2)(void *),
+	  void *o3, void (*ofree3)(void *),
+	  void *o4, void (*ofree4)(void *));
 
 /**
  * Extended version of {@link yocreate2}
  */
-YYEXPORT struct yo *
+static YYINLINE struct yo *
 yocreate3(void *o0, void (*ofree0)(void *),
 	  void *o1, void (*ofree1)(void *),
 	  void *o2, void (*ofree2)(void *),
-	  void *o3, void (*ofree3)(void *));
+	  void *o3, void (*ofree3)(void *)) {
+	return yocreate4(o0, ofree0,
+			 o1, ofree1,
+			 o2, ofree2,
+			 o3, ofree3,
+			 NULL, NULL);
+}
 
 /**
  * Extended version of {@link yocreate1}
  */
-static inline struct yo *
+static YYINLINE struct yo *
 yocreate2(void *o0, void (*ofree0)(void *),
 	  void *o1, void (*ofree1)(void *),
 	  void *o2, void (*ofree2)(void *)) {
@@ -79,7 +96,7 @@ yocreate2(void *o0, void (*ofree0)(void *),
 /**
  * Extended version of {@link yocreate0}
  */
-static inline struct yo *
+static YYINLINE struct yo *
 yocreate1(void *o0, void (*ofree0)(void *),
 	  void *o1, void (*ofree1)(void *)) {
 	return yocreate2(o0, ofree0,
@@ -92,7 +109,7 @@ yocreate1(void *o0, void (*ofree0)(void *),
  * @param ofree0 Function being used to free \a o at {@link yodestroy}
  * @return yo instance. NULL if fails.
  */
-static inline struct yo *
+static YYINLINE struct yo *
 yocreate0(void *o0, void (*ofree0)(void *)) {
 	return yocreate1(o0, ofree0,
 			 NULL, NULL);

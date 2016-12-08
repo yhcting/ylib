@@ -43,20 +43,30 @@
 #ifndef __YGp_h__
 #define __YGp_h__
 
-/**
- * @param o object managed by ygp module.
- * @param ofree Function being used to free \a o at {@link ygpdestroy}
- */
-YYEXPORT struct ygp *
-ygpcreate(void *o, void (*ofree)(void *));
+#include <pthread.h>
+
+#include "ydef.h"
 
 
 /**
- * Object is destroied by using \a ofree obtained at {@link ygpcreate}
- *   in force.
+ * Entire data struct of ygp struct.
+ * Container can embed this struct and use ygp interfaces.
+ * But DO NOT access internal values directly. Use them via interface!
  */
-YYEXPORT void
-ygpdestroy(struct ygp *);
+struct ygp {
+	void *container;
+        void (*container_free)(void *);
+	pthread_spinlock_t lock;
+        int refcnt;  /* reference count */
+};
+
+/**
+ * Initialize ygp instance.
+ */
+YYEXPORT int
+ygpinit(struct ygp *gp,
+	 void *container,
+	 void (*container_free)(void *));
 
 /**
  * Put object. Reference counter is decreased.
@@ -67,9 +77,24 @@ YYEXPORT void
 ygpput(struct ygp *);
 
 /**
- * Get object. Reference counter is increased.
+ * Increased reference count.
  */
 YYEXPORT void
 ygpget(struct ygp *);
+
+/**
+ * Destroy container and ygp instance in force.
+ */
+YYEXPORT void
+ygpdestroy(struct ygp *);
+
+
+/**
+ * Get container of this ygp.
+ */
+static YYINLINE void *
+ygpcontainer(struct ygp *gp) {
+	return gp->container;
+}
 
 #endif /* __YGp_h__ */

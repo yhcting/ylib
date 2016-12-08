@@ -190,7 +190,7 @@ parse_optarg(struct opt *opt, int argc, char **argv) {
 	}
 	pmod = &opt->mods[0];
 	for (i = optind; i < argc; i++)
-		*pmod = argv[i];
+		*pmod++ = argv[i];
 	*pmod = NULL;
 	return 0;
 }

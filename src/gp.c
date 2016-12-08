@@ -38,25 +38,9 @@
 #include <errno.h>
 
 #include "lib.h"
-#include "yo.h"
 #include "def.h"
 #include "common.h"
-#include "ylistl.h"
-#include "ypool.h"
-
-
-static const int DEFAULT_O_POOL_SIZE = 100;
-
-struct ygp {
-        void *o;
-        void (*ofree)(void *);
-	pthread_spinlock_t lock;
-        int refcnt;  /* reference count */
-	struct ylistl_link lk;
-};
-
-
-static struct ypool *_pool;
+#include "ygp.h"
 
 
 /*****************************************************************************
@@ -64,27 +48,27 @@ static struct ypool *_pool;
  *
  *
  *****************************************************************************/
-static inline void
+static INLINE void
 init_lock(struct ygp *gp) {
 	fatali0(pthread_spin_init(&gp->lock, PTHREAD_PROCESS_PRIVATE));
 }
 
-static inline void
+static INLINE void
 lock(struct ygp *gp) {
 	fatali0(pthread_spin_lock(&gp->lock));
 }
 
-static inline void
+static INLINE void
 unlock(struct ygp *gp) {
 	fatali0(pthread_spin_unlock(&gp->lock));
 }
 
-static inline void
+static INLINE void
 destroy_lock(struct ygp *gp) {
 	fatali0(pthread_spin_destroy(&gp->lock));
 }
 
-static int
+static INLINE int
 inc_refcnt(struct ygp *gp) {
 	int r;
 	lock(gp);
@@ -93,7 +77,7 @@ inc_refcnt(struct ygp *gp) {
 	return r;
 }
 
-static int
+static INLINE int
 dec_refcnt(struct ygp *gp) {
 	int r;
 	lock(gp);
@@ -102,78 +86,31 @@ dec_refcnt(struct ygp *gp) {
 	return r;
 }
 
-/******************************************************************************
- * ISSUE:
- * Should spinlock be destroied and re-initialized? or, those are kept?
- * Resource(space) vs. Performance trade-off.
- * How big spinlock struct is? vs. How fast spinlock can be initialized.
- *
- * At this moment, gp is put in pool with alive-spinlock!
- *****************************************************************************/
-static inline void
-gpclear(struct ygp *gp) {
-	if (likely(gp->ofree))
-		(*gp->ofree)(gp->o);
-	gp->ofree = NULL;
-	gp->refcnt = 0;
-}
-
-static inline void
-gpdestroy(struct ygp *gp) {
-        gpclear(gp);
-        destroy_lock(gp);
-        yfree(gp);
-}
-
-static struct ygp *
-pool_get(void) {
-	struct ylistl_link *lk;
-        lk = ypool_get(_pool);
-        if (unlikely(!lk))
-                return NULL;
-        return containerof(lk, struct ygp, lk);
-}
-
-static bool
-pool_put(struct ygp *gp) {
-        return ypool_put(_pool, &gp->lk);
-}
-
-static void pool_clear(void) __unused;
-static void
-pool_clear(void) {
-        struct ygp *gp;
-        while ((gp = pool_get()))
-                gpdestroy(gp);
-}
-
 /*****************************************************************************
  *
  *
  *
  *****************************************************************************/
-struct ygp *
-ygpcreate(void *o, void (*ofree)(void *)) {
-	struct ygp *gp = pool_get();
-	if (unlikely(!gp)) {
-		gp = (struct ygp *)ycalloc(1, sizeof(*gp));
-                if (unlikely(!gp))
-                        return NULL;
-                init_lock(gp);
-        }
-	yassert(!gp->refcnt);
-	gp->o = o;
-	gp->ofree = ofree;
-	ylistl_init_link(&gp->lk);
-	return gp;
+int
+ygpinit(struct ygp *gp,
+	 void *container,
+	 void (*container_free)(void *)) {
+	if (unlikely(!container || !gp))
+		return -EINVAL;
+	gp->container = container;
+	gp->container_free = container_free;
+	gp->refcnt = 0;
+	init_lock(gp);
+	return 0;
 }
 
 void
 ygpdestroy(struct ygp *gp) {
-        gpclear(gp);
-	if (unlikely(!pool_put(gp)))
-                gpdestroy(gp);
+	destroy_lock(gp);
+	if (likely(gp->container_free))
+		(*gp->container_free)(gp->container);
 }
+
 
 void
 ygpput(struct ygp *gp) {
@@ -202,23 +139,16 @@ ygpget(struct ygp *gp) {
  */
 void
 gp_clear(void) {
-	pool_clear();
 }
 #endif /* CONFIG_DEBUG */
 
 static int
 minit(const struct ylib_config *cfg) {
-	int capacity = cfg && (cfg->ygp_pool_capacity > 0)?
-		cfg->ygp_pool_capacity:
-		DEFAULT_O_POOL_SIZE;
-        _pool = ypool_create(capacity);
-        return _pool? 0: -ENOMEM;
+	return 0;
 }
 
 static void
 mexit(void) {
-        pool_clear();
-        ypool_destroy(_pool);
 }
 
 LIB_MODULE(gp, minit, mexit);

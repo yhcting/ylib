@@ -266,4 +266,10 @@ YYEXPORT bool
 yut_starts_with(const char *str, const char *substr);
 
 
+/**
+ * Get current time in milliseconds. CLOCK_MONOTONIC is used.
+ */
+YYEXPORT uint64_t
+yut_current_time_millis(void);
+
 #endif /* __YUt_h__ */

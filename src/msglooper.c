@@ -379,6 +379,17 @@ ymsglooper_stop(struct ymsglooper *ml) {
  *
  *
  *****************************************************************************/
+#ifdef CONFIG_DEBUG
+/*
+ * This function is used for testing and debugging.
+ */
+extern void msg_clear(void);
+void
+msglooper_clear(void) {
+	msg_clear();
+}
+#endif /* CONFIG_DEBUG */
+
 static int
 minit(const struct ylib_config *cfg) {
 	/*struct ymsglooper object instance may be refered after exiting

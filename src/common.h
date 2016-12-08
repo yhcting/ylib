@@ -112,6 +112,16 @@ EXPORT void dfree(void *);
  *
  *****************************************************************************/
 /**
+ * Die(exit process with exit code 1 with fatal log message.)
+ */
+#define die(fmt, args...)			\
+        do {					\
+		ylogf(fmt, ##args);		\
+		yassert(FALSE);			\
+		exit(1);			\
+        } while (FALSE)
+
+/**
  * Call fatal function that returns 'int 0' if success.
  * If function fails, 'assert' is triggered.
  */
@@ -119,11 +129,9 @@ EXPORT void dfree(void *);
         do {								\
                 int ___Rr___  = int0_return_func_call_stmt;		\
 		if (unlikely(___Rr___)) {				\
-			ylogf("Failure at MUST-SUCCESS-Function!: %d", ___Rr___); \
-			yassert(FALSE);					\
-			exit(1);					\
+			die("Failure at MUST-SUCCESS-Function!: %d",	\
+			    ___Rr___);					\
 		}							\
         } while (FALSE)
-
 
 #endif /* __COMMOn_h__ */

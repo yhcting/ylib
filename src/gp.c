@@ -33,113 +33,165 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-
+#include <limits.h>
 #include <pthread.h>
-#include <string.h>
 #include <errno.h>
 
 #include "lib.h"
+#include "yo.h"
+#include "def.h"
 #include "common.h"
-#include "msg.h"
+#include "ylistl.h"
 #include "ypool.h"
 
 
+static const int DEFAULT_O_POOL_SIZE = 100;
 
-#define DEFAULT_MSG_POOL_SIZE 100  /* Should this be configurable? */
+struct ygp {
+        void *o;
+        void (*ofree)(void *);
+	pthread_spinlock_t lock;
+        int refcnt;  /* reference count */
+	struct ylistl_link lk;
+};
 
 
 static struct ypool *_pool;
 
 
-/******************************************************************************
+/*****************************************************************************
  *
  *
  *
  *****************************************************************************/
-static INLINE void
-minit_to_zero(struct ymsg_ *m) {
-	memset(m, 0, sizeof(*m));
+static inline void
+init_lock(struct ygp *gp) {
+	fatali0(pthread_spin_init(&gp->lock, PTHREAD_PROCESS_PRIVATE));
 }
 
-static INLINE void
-mfree_data(struct ymsg_ *m) {
-	if (likely(YMSG_TYP_INVALID != m->m.type
-		   && m->m.dfree
-		   && m->m.data))
-		(*m->m.dfree)(m->m.data);
-	/* to avoid freeing multiple times. */
-	m->m.dfree = NULL;
-	m->m.data = NULL;
+static inline void
+lock(struct ygp *gp) {
+	fatali0(pthread_spin_lock(&gp->lock));
 }
 
-static void
-mdestroy(struct ymsg_ *m) {
-	if (unlikely(!m))
-		return;
-	mfree_data(m);
-	yfree(m);
+static inline void
+unlock(struct ygp *gp) {
+	fatali0(pthread_spin_unlock(&gp->lock));
 }
 
+static inline void
+destroy_lock(struct ygp *gp) {
+	fatali0(pthread_spin_destroy(&gp->lock));
+}
+
+static int
+inc_refcnt(struct ygp *gp) {
+	int r;
+	lock(gp);
+	r = ++gp->refcnt;
+	unlock(gp);
+	return r;
+}
+
+static int
+dec_refcnt(struct ygp *gp) {
+	int r;
+	lock(gp);
+	r = --gp->refcnt;
+	unlock(gp);
+	return r;
+}
 
 /******************************************************************************
+ * ISSUE:
+ * Should spinlock be destroied and re-initialized? or, those are kept?
+ * Resource(space) vs. Performance trade-off.
+ * How big spinlock struct is? vs. How fast spinlock can be initialized.
  *
- * Message pool
- *
+ * At this moment, gp is put in pool with alive-spinlock!
  *****************************************************************************/
-static struct ymsg_ *
+static inline void
+gpclear(struct ygp *gp) {
+	if (likely(gp->ofree))
+		(*gp->ofree)(gp->o);
+	gp->ofree = NULL;
+	gp->refcnt = 0;
+}
+
+static inline void
+gpdestroy(struct ygp *gp) {
+        gpclear(gp);
+        destroy_lock(gp);
+        yfree(gp);
+}
+
+static struct ygp *
 pool_get(void) {
-        struct ymsg_ *m;
 	struct ylistl_link *lk;
         lk = ypool_get(_pool);
         if (unlikely(!lk))
                 return NULL;
-        m = containerof(lk, struct ymsg_, lk);
-        minit_to_zero(m);
-	return m;
+        return containerof(lk, struct ygp, lk);
 }
 
 static bool
-pool_put(struct ymsg_ *m) {
-        return ypool_put(_pool, &m->lk);
+pool_put(struct ygp *gp) {
+        return ypool_put(_pool, &gp->lk);
 }
 
 static void pool_clear(void) __unused;
 static void
 pool_clear(void) {
-        struct ymsg_ *m;
-        while ((m = pool_get()))
-                mdestroy(m);
+        struct ygp *gp;
+        while ((gp = pool_get()))
+                gpdestroy(gp);
 }
 
-
-/******************************************************************************
+/*****************************************************************************
  *
  *
  *
  *****************************************************************************/
-struct ymsg *
-ymsg_create(void) {
-	struct ymsg_ *m = pool_get();
-	if (unlikely(!m))
-		m = (struct ymsg_ *)ycalloc(1, sizeof(*m));
-	if (unlikely(!m))
-		return NULL;
-	ylistl_init_link(&m->lk);
-	_msg_magic_set(m);
-	dfpr(".");
-	return &m->m;
+struct ygp *
+ygpcreate(void *o, void (*ofree)(void *)) {
+	struct ygp *gp = pool_get();
+	if (unlikely(!gp)) {
+		gp = (struct ygp *)ycalloc(1, sizeof(*gp));
+                if (unlikely(!gp))
+                        return NULL;
+                init_lock(gp);
+        }
+	yassert(!gp->refcnt);
+	gp->o = o;
+	gp->ofree = ofree;
+	ylistl_init_link(&gp->lk);
+	return gp;
 }
 
 void
-ymsg_destroy(struct ymsg *ym) {
-	struct ymsg_ *m = msg_mutate(ym);
-	mfree_data(m);
-	if (unlikely(!pool_put(m)))
-		mdestroy(m);
+ygpdestroy(struct ygp *gp) {
+        gpclear(gp);
+	if (unlikely(!pool_put(gp)))
+                gpdestroy(gp);
+}
+
+void
+ygpput(struct ygp *gp) {
+	int refcnt = dec_refcnt(gp);
+	yassert(0 <= refcnt);
+	if (unlikely(refcnt <= 0))
+		ygpdestroy(gp);
+}
+
+void
+ygpget(struct ygp *gp) {
+	int refcnt __unused;
+	refcnt = inc_refcnt(gp);
+	yassert(0 < refcnt);
 }
 
 
-/******************************************************************************
+/*****************************************************************************
  *
  *
  *
@@ -149,17 +201,16 @@ ymsg_destroy(struct ymsg *ym) {
  * This function is used for testing and debugging.
  */
 void
-msg_clear(void) {
+gp_clear(void) {
 	pool_clear();
 }
 #endif /* CONFIG_DEBUG */
 
-
 static int
 minit(const struct ylib_config *cfg) {
-	int capacity = cfg && (cfg->ymsg_pool_capacity > 0)?
-		cfg->ymsg_pool_capacity:
-		DEFAULT_MSG_POOL_SIZE;
+	int capacity = cfg && (cfg->ygp_pool_capacity > 0)?
+		cfg->ygp_pool_capacity:
+		DEFAULT_O_POOL_SIZE;
         _pool = ypool_create(capacity);
         return _pool? 0: -ENOMEM;
 }
@@ -170,4 +221,4 @@ mexit(void) {
         ypool_destroy(_pool);
 }
 
-LIB_MODULE(msg, minit, mexit);
+LIB_MODULE(gp, minit, mexit);

@@ -19,8 +19,12 @@ modenames="
 :msglooper
 :msghandler
 :threadex
+:task
 :mtpp
 :p
+:o
+:gp
+:pool
 :set
 :statmath
 :statprint

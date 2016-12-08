@@ -33,6 +33,8 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+#include <inttypes.h>
+#include <time.h>
 #include <string.h>
 
 #include "common.h"
@@ -52,4 +54,11 @@ yut_starts_with(const char *str, const char *substr) {
 			return FALSE;
 	}
 	return TRUE;
+}
+
+uint64_t
+yut_current_time_millis(void) {
+    struct timespec ts;
+    fatali0(clock_gettime(CLOCK_MONOTONIC, &ts));
+    return ts.tv_sec * 1000000LL + ts.tv_nsec / 1000000LL;
 }

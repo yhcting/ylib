@@ -40,44 +40,13 @@
 
 #include "common.h"
 #include "lib.h"
-#include "ythreadex.h"
+#include "threadex.h"
 #include "ylog.h"
 #include "ymsghandler.h"
+#include "yo.h"
 
 static long _id;
 static pthread_spinlock_t _id_lock;
-
-#define MAX_THREAD_NAME 32
-
-
-struct ythreadex {
-	/* ---------- READ ONLY values(set only once ----------*/
-	pthread_t thread;
-	long id;
-	char name[MAX_THREAD_NAME];
-	struct ymsghandler *owner;
-	enum ythreadex_priority priority;
-	struct ythreadex_listener listener;
-	void (*free_arg)(void *);
-	void (*free_result)(void *);
-	int (*run)(struct ythreadex *, void **result);
-
-	/* ---------- Dynamically updated values ----------*/
-	enum ythreadex_state state;
-	pthread_mutex_t state_lock;
-	int errcode; /**< error value returned from 'run' */
-	void *arg; /**< argument passed to thread */
-	void *result; /**< result from thread(run) */
-
-	/* ---------- used as internal arguments ----------*/
-	bool cancel_started;
-	bool cancel_pthdcancel;
-	long progress_maxprog;
-	long progress_prog;
-#ifdef CONFIG_DEBUG
-	volatile bool proginit;
-#endif /* CONFIG_DEBUG */
-};
 
 /******************************************************************************
  *
@@ -88,13 +57,17 @@ struct ythreadex {
 #else /* CONFIG_DEBUG */
 #endif /* CONFIG_DEBUG */
 
-
 /******************************************************************************
  *
  * Lock
  *
  *****************************************************************************/
-#define declare_locker_unlocker(tYPE, nAME)                             \
+#define declare_lock(tYPE, nAME, iNIToPT)				\
+	static inline void						\
+	init_##nAME##_lock(struct ythreadex *threadex) {		\
+		fatali0(pthread_##tYPE##_init(&threadex->nAME##_lock,	\
+					      iNIToPT));		\
+	}								\
         static inline void                                              \
         lock_##nAME(struct ythreadex *threadex) {                       \
                 fatali0(pthread_##tYPE##_lock(&threadex->nAME##_lock)); \
@@ -102,11 +75,15 @@ struct ythreadex {
         static inline void                                              \
         unlock_##nAME(struct ythreadex *threadex) {                     \
                 fatali0(pthread_##tYPE##_unlock(&threadex->nAME##_lock)); \
-        }
+        }								\
+	static inline void						\
+	destroy_##nAME##_lock(struct ythreadex *threadex) {		\
+		fatali0(pthread_##tYPE##_destroy(&threadex->nAME##_lock)); \
+	}								\
 
-declare_locker_unlocker(mutex, state)
+declare_lock(mutex, state, NULL)
 
-#undef declare_locker_unlocker
+#undef declare_lock
 
 /******************************************************************************
  *
@@ -159,14 +136,14 @@ declare_with_lock_getter_setter(enum ythreadex_state, state)
 #undef declare_with_lock_getter_setter
 
 /* ------------------------------------------------------------------------- */
-#define declare_simple_getter_setter(tYPE, fIELD)          \
+#define declare_simple_getter_setter(tYPE, fIELD)               \
         static inline tYPE                                      \
-        get_##fIELD(struct ythreadex *threadex) {                \
-                return threadex->fIELD;                          \
+        get_##fIELD(struct ythreadex *threadex) {               \
+                return threadex->fIELD;                         \
         }                                                       \
         static inline void                                      \
-        set_##fIELD(struct ythreadex *threadex, tYPE value) {    \
-                threadex->fIELD = value;                         \
+        set_##fIELD(struct ythreadex *threadex, tYPE value) {   \
+                threadex->fIELD = value;                        \
         }
 
 declare_simple_getter_setter(int, errcode) /* @suppress("Unused static function") */
@@ -178,7 +155,7 @@ declare_simple_getter_setter(void *, result) /* @suppress("Unused static functio
 
 /******************************************************************************
  *
- * Message notifier functions
+ * Macros
  *
  *****************************************************************************/
 #define post_to_owner(threadex, callback)			\
@@ -186,10 +163,15 @@ declare_simple_getter_setter(void *, result) /* @suppress("Unused static functio
 				      threadex, NULL,		\
 				      &callback))
 
-#define post_listener_event(threadex, listener_name)		\
+#define post_event_to_owner(threadex, listener_name)	\
 	post_to_owner(threadex, on_##listener_name)
 
 
+/******************************************************************************
+ *
+ * Message notifier functions
+ *
+ *****************************************************************************/
 static void
 on_started(void *arg) {
         struct ythreadex *threadex = (struct ythreadex *)arg;
@@ -219,9 +201,10 @@ on_cancelled(void *arg) {
 
 static void
 on_cancelling(void *arg) {
-        struct ythreadex *threadex = (struct ythreadex *)arg;
-	bool started = threadex->cancel_started;
-	bool pthdcancel = threadex->cancel_pthdcancel;
+	struct yo *yo = (struct yo *)arg;
+        struct ythreadex *threadex = (struct ythreadex *)yo->o0;
+	bool started = (bool)(intptr_t)yo->o1;
+	bool pthdcancel = (bool)(intptr_t)yo->o2;
 	if (likely(threadex->listener.on_cancelling))
 		(*threadex->listener.on_cancelling)(threadex, started);
 	if (likely(started)) {
@@ -233,26 +216,29 @@ on_cancelling(void *arg) {
 			pthread_cancel(threadex->thread);
 	} else {
 		set_state(threadex, YTHREADEX_CANCELLED);
-                post_listener_event(threadex, cancelled);
+                post_event_to_owner(threadex, cancelled);
 	}
 }
 
 static void
 on_progress_init(void *arg) {
-        struct ythreadex *threadex = (struct ythreadex *)arg;
+	struct yo *yo = (struct yo *)arg;
+        struct ythreadex *threadex = (struct ythreadex *)yo->o0;
+	long maxprog = (long)(intptr_t)yo->o1;
 	if (threadex->listener.on_progress_init)
 		(*threadex->listener.on_progress_init)
-			(threadex, threadex->progress_maxprog);
+			(threadex, maxprog);
 }
 
 static void
 on_progress(void *arg) {
-        struct ythreadex *threadex = (struct ythreadex *)arg;
+	struct yo *yo = (struct yo *)arg;
+        struct ythreadex *threadex = (struct ythreadex *)yo->o0;
+	long prog = (long)(intptr_t)yo->o1;
 	if (threadex->listener.on_progress)
 		(*threadex->listener.on_progress)
-			(threadex, threadex->progress_prog);
+			(threadex, prog);
 }
-
 
 /******************************************************************************
  *
@@ -274,14 +260,13 @@ thread_main_cleanup(void *arg) {
         }
         unlock_state(threadex);
         if (unlikely(cancel))
-                post_listener_event(threadex, cancelled);
+                post_event_to_owner(threadex, cancelled);
         else
-                post_listener_event(threadex, done);
+                post_event_to_owner(threadex, done);
 
 }
 
 static void *
-
 thread_main(void *arg) {
 	enum ythreadex_state state;
         struct ythreadex *threadex = (struct ythreadex *)arg;
@@ -326,7 +311,52 @@ thread_main(void *arg) {
  *
  *
  *****************************************************************************/
+int
+threadex_init(struct ythreadex *threadex,
+              const char *name,
+              struct ymsghandler *owner,
+              enum ythreadex_priority priority,
+              const struct ythreadex_listener *listener,
+              void *arg,
+              void (*free_arg)(void *),
+              void (*free_result)(void *),
+              int (*run)(struct ythreadex *, void **result)) {
+	if (unlikely(!run))
+		return -EINVAL;
+	/* -1 to preserve terminating 0 */
+	strncpy(threadex->name, name, sizeof(threadex->name) - 1);
+	threadex->owner = owner;
+	threadex->priority = priority;
+	threadex->state = YTHREADEX_READY; /* initial state */
+	init_state_lock(threadex);
+        if (listener)
+                threadex->listener = *listener;
+	threadex->errcode = 0;
+	threadex->arg = arg;
+	threadex->free_arg = free_arg;
+	threadex->result = NULL;
+	threadex->free_result = free_result;
+	threadex->run = run;
+	threadex->id = gen_unique_id();
 
+        return 0;
+}
+
+int
+threadex_clean(struct ythreadex *threadex) {
+	if (threadex->arg && threadex->free_arg)
+		(*threadex->free_arg)(threadex->arg);
+	if (threadex->result && threadex->free_result)
+		(*threadex->free_result)(threadex->result);
+	destroy_state_lock(threadex);
+	return 0;
+}
+
+/******************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
 struct ythreadex *
 ythreadex_create(const char *name,
 		 struct ymsghandler *owner,
@@ -337,49 +367,41 @@ ythreadex_create(const char *name,
 		 void (*free_result)(void *),
 		 int (*run)(struct ythreadex *, void **result)) {
 	struct ythreadex *threadex;
-	if (unlikely(!run))
-		return NULL;
+	yassert(name && owner && run);
 	threadex = ycalloc(sizeof(*threadex), 1);
 	if (unlikely(!threadex)) {
 		ylogf("Out of memory!");
 		return NULL;
 	}
-	/* -1 to preserve terminating 0 */
-	strncpy(threadex->name, name, sizeof(threadex->name) - 1);
-	threadex->owner = owner;
-	threadex->priority = priority;
-	threadex->state = YTHREADEX_READY; /* initial state */
-        fatali0(pthread_mutex_init(&threadex->state_lock, NULL));
-	threadex->listener = *listener;
-	threadex->errcode = 0;
-	threadex->arg = arg;
-	threadex->free_arg = free_arg;
-	threadex->result = NULL;
-	threadex->free_result = free_result;
-	threadex->run = run;
-	threadex->id = gen_unique_id();
+        if (unlikely(threadex_init(threadex,
+                                   name,
+                                   owner,
+                                   priority,
+                                   listener,
+                                   arg,
+                                   free_arg,
+                                   free_result,
+                                   run))) {
+                yfree(threadex);
+                return NULL;
+        }
 
-	return threadex;
+        return threadex;
 }
-
 
 int
 ythreadex_destroy(struct ythreadex *threadex) {
-	enum ythreadex_state state;
-	state = ythreadex_get_state(threadex);
-	if (unlikely(!ythreadex_is_terminated(state)))
+	yassert(threadex);
+	if (unlikely(!ythreadex_is_terminated(ythreadex_get_state(threadex))))
 		return -EPERM;
-	if (threadex->arg && threadex->free_arg)
-		(*threadex->free_arg)(threadex->arg);
-	if (threadex->result && threadex->free_result)
-		(*threadex->free_result)(threadex->result);
-        fatali0(pthread_mutex_destroy(&threadex->state_lock));
+	threadex_clean(threadex);
 	yfree(threadex);
 	return 0;
 }
 
 enum ythreadex_state
 ythreadex_get_state(struct ythreadex *threadex) {
+	yassert(threadex);
 	return get_state(threadex);
 }
 
@@ -410,6 +432,7 @@ declare_interface_field_getter(long, id)
 int
 ythreadex_start(struct ythreadex *threadex) {
 	int r;
+	yassert(threadex);
 	lock_state(threadex);
 	if (unlikely(YTHREADEX_READY != get_state_locked(threadex))) {
 		unlock_state(threadex);
@@ -423,20 +446,21 @@ ythreadex_start(struct ythreadex *threadex) {
 		return -r;
 	}
 	set_state_locked(threadex, YTHREADEX_STARTED);
-	post_listener_event(threadex, started);
+	post_event_to_owner(threadex, started);
 	unlock_state(threadex);
 	return 0;
 }
 
 int
 ythreadex_start_sync(struct ythreadex *threadex) {
+	yassert(threadex);
         lock_state(threadex);
         if (unlikely(YTHREADEX_READY != threadex->state)) {
 		unlock_state(threadex);
                 return -EPERM;
         }
         set_state_locked(threadex, YTHREADEX_STARTED);
-        post_listener_event(threadex, started);
+        post_event_to_owner(threadex, started);
         unlock_state(threadex);
         thread_main(threadex);
         return 0;
@@ -444,6 +468,7 @@ ythreadex_start_sync(struct ythreadex *threadex) {
 
 int
 ythreadex_join(struct ythreadex *threadex, void **retval) {
+	yassert(threadex);
 	/* in case of threadex_start_sync, join is impossible. */
 	if (unlikely(YTHREADEX_READY == ythreadex_get_state(threadex)
 		     || !threadex->thread))
@@ -454,6 +479,13 @@ ythreadex_join(struct ythreadex *threadex, void **retval) {
 int
 ythreadex_cancel(struct ythreadex *threadex, bool pthdcancel) {
 	bool started = FALSE;
+	yassert(threadex);
+	struct yo *yo = yocreate2(threadex, NULL,
+				  NULL, NULL,
+				  NULL, NULL);
+	if (unlikely(!yo))
+		return -ENOMEM;
+
 	lock_state(threadex);
 	switch (get_state_locked(threadex)) {
 	case YTHREADEX_READY:
@@ -463,41 +495,69 @@ ythreadex_cancel(struct ythreadex *threadex, bool pthdcancel) {
 		break;
 	default:
 		unlock_state(threadex);
+		yodestroy(yo);
 		return -EPERM;
 	}
-	threadex->cancel_started = started;
-	threadex->cancel_pthdcancel = pthdcancel;
+	yo->o1 = (void *)(intptr_t)started;
+	yo->o2 = (void *)(intptr_t)pthdcancel;
 	set_state_locked(threadex, YTHREADEX_CANCELLING);
-	post_listener_event(threadex, cancelling);
+	fatali0(ymsghandler_post_exec(threadex->owner,
+				      yo, (void(*)(void *))&yodestroy,
+				      &on_cancelling));
 	unlock_state(threadex);
 	return 0;
 }
 
 int
 ythreadex_publish_progress_init(struct ythreadex *threadex, long maxprog) {
-#ifdef CONFIG_DEBUG
-	yassert(!threadex->proginit);
-	threadex->proginit = TRUE;
-#endif /* CONFIG_DEBUG */
-	threadex->progress_maxprog = maxprog;
-	post_listener_event(threadex, progress_init);
+	struct yo *yo;
+	yassert(threadex);
+	if (YTHREADEX_STARTED != ythreadex_get_state(threadex))
+		return -EPERM;
+	yo = yocreate1(threadex, NULL,
+		       (void *)(intptr_t)maxprog, NULL);
+	if (unlikely(!yo))
+		return -ENOMEM;
+	fatali0(ymsghandler_post_exec(threadex->owner,
+				      yo, (void(*)(void *))&yodestroy,
+				      &on_progress_init));
 	return 0;
 }
 
 int
 ythreadex_publish_progress(struct ythreadex *threadex, long prog) {
-	yassert(threadex->proginit);
-	threadex->progress_prog = prog;
-	post_listener_event(threadex, progress);
+	struct yo *yo;
+	yassert(threadex);
+	if (YTHREADEX_STARTED != ythreadex_get_state(threadex))
+		return -EPERM;
+	yo = yocreate1(threadex, NULL,
+		       (void *)prog, NULL);
+	if (unlikely(!yo))
+		return -ENOMEM;
+	fatali0(ymsghandler_post_exec(threadex->owner,
+				      yo, (void(*)(void *))&yodestroy,
+				      &on_progress));
 	return 0;
 }
-
 
 /******************************************************************************
  *
  *
  *
  *****************************************************************************/
+#ifdef CONFIG_DEBUG
+/*
+ * This function is used for testing and debugging.
+ */
+extern void o_clear(void);
+extern void msghandler_clear(void);
+void
+threadex_clear(void) {
+	o_clear();
+	msghandler_clear();
+}
+#endif /* CONFIG_DEBUG */
+
 static int
 minit(const struct ylib_config *cfg) {
 	int r __unused;

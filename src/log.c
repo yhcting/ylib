@@ -143,7 +143,7 @@ ___ylog_write(enum yloglv lv,
  * This function is used for testing and debugging.
  */
 void
-log_clear_thread_specific_buffer(void) {
+log_clear(void) {
 	void *b = pthread_getspecific(_tkey);
 	if (likely(b))
 		yfree(b);

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,37 +33,43 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include "test.h"
-#ifdef CONFIG_DEBUG
 
-#include <string.h>
-#include <assert.h>
+/**
+ * @file ygp.h
+ * @brief Header for general smart object pointer. gp module keep tracking
+ *        reference count of object with MT-safe way(lock).
+ */
 
-#include "common.h"
-#include "yp.h"
+#ifndef __YGp_h__
+#define __YGp_h__
 
-static void
-test_p(void) {
-	int i;
-	int *p, *p2;
-	int *o = ypmalloc(sizeof(int) * 3);
-	ypget(o);
-	p2 = o;
-	ypget(o);
-	p = p2;
-	for (i = 0; i < 3; i++)
-		*p++ = 1;
-	/* sp is assigned to another pointer */
-	ypput(p2); /* put */
-	p = o;
-	for (i = 0; i < 3; i++)
-		++*p++;
-	/*
-	 * should be freed at this point
-	 */
-	ypput(o);
-}
+/**
+ * @param o object managed by ygp module.
+ * @param ofree Function being used to free \a o at {@link ygpdestroy}
+ */
+YYEXPORT struct ygp *
+ygpcreate(void *o, void (*ofree)(void *));
 
-TESTFN(p)
 
-#endif /* CONFIG_DEBUG */
+/**
+ * Object is destroied by using \a ofree obtained at {@link ygpcreate}
+ *   in force.
+ */
+YYEXPORT void
+ygpdestroy(struct ygp *);
+
+/**
+ * Put object. Reference counter is decreased.
+ * If reference count is '0' and \a ofree is NOT NULL, object is freed by
+ *  calling \a ofree.
+ */
+YYEXPORT void
+ygpput(struct ygp *);
+
+/**
+ * Get object. Reference counter is increased.
+ */
+YYEXPORT void
+ygpget(struct ygp *);
+
+#endif /* __YGp_h__ */

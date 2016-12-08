@@ -33,19 +33,30 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-
+#include <limits.h>
 #include <pthread.h>
 #include <string.h>
 #include <errno.h>
 
+#include "yo.h"
+#include "ylib.h"
 #include "lib.h"
+#include "def.h"
 #include "common.h"
-#include "msg.h"
+#include "ylistl.h"
 #include "ypool.h"
 
 
+static const int DEFAULT_O_POOL_SIZE = 1000;
 
-#define DEFAULT_MSG_POOL_SIZE 100  /* Should this be configurable? */
+struct o {
+        struct yo o;
+        void (*ofree0)(void *);
+        void (*ofree1)(void *);
+        void (*ofree2)(void *);
+        void (*ofree3)(void *);
+	struct ylistl_link lk;
+};
 
 
 static struct ypool *_pool;
@@ -56,90 +67,90 @@ static struct ypool *_pool;
  *
  *
  *****************************************************************************/
-static INLINE void
-minit_to_zero(struct ymsg_ *m) {
-	memset(m, 0, sizeof(*m));
-}
+static inline void
+oclear(struct o *o) {
+#define free_el(n)					\
+	do {						\
+		if (likely(o->ofree##n)) {		\
+			(*o->ofree##n)(o->o.o##n);	\
+		}					\
+		o->ofree##n = NULL;			\
+	} while (0)
 
-static INLINE void
-mfree_data(struct ymsg_ *m) {
-	if (likely(YMSG_TYP_INVALID != m->m.type
-		   && m->m.dfree
-		   && m->m.data))
-		(*m->m.dfree)(m->m.data);
-	/* to avoid freeing multiple times. */
-	m->m.dfree = NULL;
-	m->m.data = NULL;
+	free_el(0);
+	free_el(1);
+	free_el(2);
+	free_el(3);
+#undef free_el
 }
-
-static void
-mdestroy(struct ymsg_ *m) {
-	if (unlikely(!m))
-		return;
-	mfree_data(m);
-	yfree(m);
-}
-
 
 /******************************************************************************
  *
- * Message pool
+ *
  *
  *****************************************************************************/
-static struct ymsg_ *
+static struct o *
 pool_get(void) {
-        struct ymsg_ *m;
 	struct ylistl_link *lk;
         lk = ypool_get(_pool);
         if (unlikely(!lk))
                 return NULL;
-        m = containerof(lk, struct ymsg_, lk);
-        minit_to_zero(m);
-	return m;
+        return containerof(lk, struct o, lk);
 }
 
 static bool
-pool_put(struct ymsg_ *m) {
-        return ypool_put(_pool, &m->lk);
+pool_put(struct o *o) {
+        return ypool_put(_pool, &o->lk);
 }
 
 static void pool_clear(void) __unused;
 static void
 pool_clear(void) {
-        struct ymsg_ *m;
-        while ((m = pool_get()))
-                mdestroy(m);
+        struct o *o;
+        while ((o = pool_get())) {
+                oclear(o);
+                yfree(o);
+        }
 }
 
-
-/******************************************************************************
+/*****************************************************************************
  *
  *
  *
  *****************************************************************************/
-struct ymsg *
-ymsg_create(void) {
-	struct ymsg_ *m = pool_get();
-	if (unlikely(!m))
-		m = (struct ymsg_ *)ycalloc(1, sizeof(*m));
-	if (unlikely(!m))
-		return NULL;
-	ylistl_init_link(&m->lk);
-	_msg_magic_set(m);
-	dfpr(".");
-	return &m->m;
+struct yo *
+yocreate3(void *o0, void (*ofree0)(void *),
+	  void *o1, void (*ofree1)(void *),
+	  void *o2, void (*ofree2)(void *),
+	  void *o3, void (*ofree3)(void *)) {
+	struct o *o = pool_get();
+	if (unlikely(!o))
+		o = (struct o *)ycalloc(1, sizeof(*o));
+        else
+                memset(o, 0, sizeof(*o));
+        if (unlikely(!o))
+                return NULL;
+	o->o.o0 = o0;
+	o->ofree0 = ofree0;
+	o->o.o1 = o1;
+	o->ofree1 = ofree1;
+	o->o.o2 = o2;
+	o->ofree2 = ofree2;
+	o->o.o3 = o3;
+	o->ofree3 = ofree3;
+ 	ylistl_init_link(&o->lk);
+	return &o->o;
 }
 
 void
-ymsg_destroy(struct ymsg *ym) {
-	struct ymsg_ *m = msg_mutate(ym);
-	mfree_data(m);
-	if (unlikely(!pool_put(m)))
-		mdestroy(m);
+yodestroy(struct yo *yo) {
+	struct o *o = (struct o *)yo;
+        oclear(o);
+	if (unlikely(!pool_put(o)))
+                yfree(o);
 }
 
-
-/******************************************************************************
+/*****************************************************************************
  *
  *
  *
@@ -149,17 +160,16 @@ ymsg_destroy(struct ymsg *ym) {
  * This function is used for testing and debugging.
  */
 void
-msg_clear(void) {
+o_clear(void) {
 	pool_clear();
 }
 #endif /* CONFIG_DEBUG */
 
-
 static int
 minit(const struct ylib_config *cfg) {
-	int capacity = cfg && (cfg->ymsg_pool_capacity > 0)?
-		cfg->ymsg_pool_capacity:
-		DEFAULT_MSG_POOL_SIZE;
+	int capacity = cfg && (cfg->yo_pool_capacity > 0)?
+		cfg->yo_pool_capacity:
+		DEFAULT_O_POOL_SIZE;
         _pool = ypool_create(capacity);
         return _pool? 0: -ENOMEM;
 }
@@ -170,4 +180,4 @@ mexit(void) {
         ypool_destroy(_pool);
 }
 
-LIB_MODULE(msg, minit, mexit);
+LIB_MODULE(o, minit, mexit);

@@ -55,6 +55,15 @@ struct ylib_config {
 	 */
 	int ymsg_pool_capacity;
 	/**
+	 * capacity of yo-pool. if <=0, then default capacity is used
+	 */
+	int yo_pool_capacity;
+	/**
+	 * capacity of ygp-pool. if <=0, then default capacity is used
+         * It's recommended using smaller value than yo_pool_capacity.
+	 */
+	int ygp_pool_capacity;
+	/**
 	 * File descriptor where standard log - all except for ERR and FATAL -
 	 *  is written to. If it is invalid, default fd is used.
 	 */

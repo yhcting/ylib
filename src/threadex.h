@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,37 +33,62 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include "test.h"
-#ifdef CONFIG_DEBUG
 
-#include <string.h>
-#include <assert.h>
+/**
+ * @file threadex.h
+ * @brief Header to use ythreadex in inside library
+ */
 
-#include "common.h"
-#include "yp.h"
+#ifndef __THREADEx_h__
+#define __THREADEx_h__
 
-static void
-test_p(void) {
-	int i;
-	int *p, *p2;
-	int *o = ypmalloc(sizeof(int) * 3);
-	ypget(o);
-	p2 = o;
-	ypget(o);
-	p = p2;
-	for (i = 0; i < 3; i++)
-		*p++ = 1;
-	/* sp is assigned to another pointer */
-	ypput(p2); /* put */
-	p = o;
-	for (i = 0; i < 3; i++)
-		++*p++;
-	/*
-	 * should be freed at this point
-	 */
-	ypput(o);
-}
+#include "ythreadex.h"
+#include "def.h"
 
-TESTFN(p)
 
-#endif /* CONFIG_DEBUG */
+#define THREADEX_MAX_NAME 32
+
+
+struct ythreadex {
+	/* -------- READ ONLY values(set only once --------*/
+	pthread_t thread;
+	long id;
+	char name[THREADEX_MAX_NAME];
+	struct ymsghandler *owner;
+	enum ythreadex_priority priority;
+	struct ythreadex_listener listener;
+	void (*free_arg)(void *);
+	void (*free_result)(void *);
+	int (*run)(struct ythreadex *, void **result);
+
+	/* ---------- Dynamically updated values ----------*/
+	enum ythreadex_state state;
+	pthread_mutex_t state_lock;
+	int errcode; /**< error value returned from 'run' */
+	void *arg; /**< argument passed to thread */
+	void *result; /**< result from thread(run) */
+};
+
+
+/**
+ * @return 0 if success. -errno if fails.
+ */
+int
+threadex_init(struct ythreadex *,
+              const char *name,
+              struct ymsghandler *owner,
+              enum ythreadex_priority priority,
+              const struct ythreadex_listener *listener,
+              void *arg,
+              void (*free_arg)(void *),
+              void (*free_result)(void *),
+              int (*run)(struct ythreadex *, void **result));
+
+/**
+ * @return 0 if success. -errno if fails.
+ */
+int
+threadex_clean(struct ythreadex *);
+
+
+#endif /* __THREADEx_h__ */

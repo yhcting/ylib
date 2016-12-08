@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,37 +33,79 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+
 #include "test.h"
 #ifdef CONFIG_DEBUG
 
-#include <string.h>
 #include <assert.h>
+#include <pthread.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
 
+#include "ylog.h"
 #include "common.h"
-#include "yp.h"
+#include "yerrno.h"
+#include "ygp.h"
 
-static void
-test_p(void) {
-	int i;
-	int *p, *p2;
-	int *o = ypmalloc(sizeof(int) * 3);
-	ypget(o);
-	p2 = o;
-	ypget(o);
-	p = p2;
-	for (i = 0; i < 3; i++)
-		*p++ = 1;
-	/* sp is assigned to another pointer */
-	ypput(p2); /* put */
-	p = o;
-	for (i = 0; i < 3; i++)
-		++*p++;
-	/*
-	 * should be freed at this point
-	 */
-	ypput(o);
+static void *
+gpaction(void *arg) {
+	struct ygp *gp = arg;
+	usleep(((rand() % 100) + 10) * 1000);
+	ygpget(gp); //1
+	ygpget(gp); //2
+	ygpput(gp); //1
+	ygpget(gp); //2
+	ygpget(gp); //3
+	ygpput(gp); //2
+	ygpput(gp); //1
+	ygpget(gp); //2
+	ygpput(gp); //1
+	ygpget(gp); //2
+	ygpget(gp); //3
+	ygpput(gp); //2
+	ygpput(gp); //1
+	ygpput(gp); //0
+	return NULL;
 }
 
-TESTFN(p)
+
+static void
+test_gp(void) {
+	pthread_t pthd[16];
+	void *retval;
+	int i;
+	struct ygp *gp;
+	srand(time(NULL));
+
+	gp = ygpcreate(ymalloc(10), &yfree);
+	ygpget(gp);
+	ygpget(gp);
+	ygpget(gp);
+	ygpput(gp);
+	ygpdestroy(gp);
+
+	gp = ygpcreate(ymalloc(10), &yfree);
+	ygpget(gp);
+	i = 16;
+	while (i--)
+		pthread_create(&pthd[i], NULL, gpaction, gp);
+	i = 16;
+	while (i--)
+		pthread_join(pthd[i], &retval);
+	ygpput(gp);
+
+	return;
+}
+
+extern void gp_clear(void);
+static void
+clear_gp(void) {
+	gp_clear();
+}
+
+
+TESTFN(gp)
+CLEARFN(gp)
 
 #endif /* CONFIG_DEBUG */

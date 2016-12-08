@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,37 +33,46 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include "test.h"
-#ifdef CONFIG_DEBUG
 
-#include <string.h>
-#include <assert.h>
+/**
+ * @file ypool.h
+ * @brief Header to use pool of data structure
+ */
 
-#include "common.h"
-#include "yp.h"
+#ifndef __YPOOl_h__
+#define __YPOOl_h__
 
-static void
-test_p(void) {
-	int i;
-	int *p, *p2;
-	int *o = ypmalloc(sizeof(int) * 3);
-	ypget(o);
-	p2 = o;
-	ypget(o);
-	p = p2;
-	for (i = 0; i < 3; i++)
-		*p++ = 1;
-	/* sp is assigned to another pointer */
-	ypput(p2); /* put */
-	p = o;
-	for (i = 0; i < 3; i++)
-		++*p++;
-	/*
-	 * should be freed at this point
-	 */
-	ypput(o);
-}
+#include "ydef.h"
+#include "ylistl.h"
 
-TESTFN(p)
 
-#endif /* CONFIG_DEBUG */
+struct ypool;
+
+/**
+ * @param capacity capacity of pool
+ * @return NULL if fails to create.
+ */
+YYEXPORT struct ypool *
+ypool_create(int capacity);
+
+/**
+ * Pool is destroied.
+ * This doesn't destroy any items in the pool.
+ * Its caller's responsiblity, destroying items.
+ */
+YYEXPORT void
+ypool_destroy(struct ypool *);
+
+/**
+ * @return NULL if fails to get from pool.
+ */
+YYEXPORT struct ylistl_link *
+ypool_get(struct ypool *);
+
+/**
+ * @return TRUE if link is put to pool, otherwise FALSE
+ */
+YYEXPORT bool
+ypool_put(struct ypool *, struct ylistl_link *);
+
+#endif /*__Yo_h__ */

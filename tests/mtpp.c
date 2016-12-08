@@ -125,11 +125,11 @@ init_job(struct ymtppjob *ccj,
 }
 
 
-extern void msg_clear_pool(void);
+extern void msg_clear(void);
 
 static void
 clear_mtpp(void) {
-	msg_clear_pool();
+	msg_clear();
 }
 
 /* JOB network

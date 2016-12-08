@@ -215,6 +215,7 @@ ythreadex_start_sync(struct ythreadex *);
 /**
  * Wait until thread is finished.
  * This is ythreadex version of pthread_join.
+ *
  * @return 0 if success. Otherwise -errno.
  *         (ex. -EPERM if thread is NOT started yet or started by
  *          {@link ythreadex_start_sync}.)
@@ -223,16 +224,23 @@ YYEXPORT int
 ythreadex_join(struct ythreadex *, void **retval);
 
 /**
+ * Publishing progress is only allowed at \a YTHREADEX_STARTED state.
+ * -EPERM may be returned if progress is not initialized or not in
+ * STARTED state.
+ *
  * @return 0 if success. Otherwise -errno
  */
 YYEXPORT int
 ythreadex_publish_progress_init(struct ythreadex *, long maxprog);
 
 /**
+ * Publishing progress is only allowed at \a YTHREADEX_STARTED state.
+ * -EPERM may be returned if progress is not initialized or not in
+ * STARTED state.
+ *
  * @return 0 if success. Otherwise -errno
  */
 YYEXPORT int
-
 ythreadex_publish_progress(struct ythreadex *, long prog);
 
 
@@ -319,7 +327,7 @@ ythreadex_get_id(struct ythreadex *);
  * Is in active state?
  * Active state includes STARTED, CANCELLING, CANCELLED, DONE
  */
-static inline bool
+static YYINLINE bool
 ythreadex_is_active(enum ythreadex_state state) {
 	switch (state) {
 	case YTHREADEX_STARTED:
@@ -337,7 +345,7 @@ ythreadex_is_active(enum ythreadex_state state) {
  * If thread is one of CANCELLING, CANCELLED, TERMINATED_CANCELLED, TRUE is
  *   returned.
  */
-static inline bool
+static YYINLINE bool
 ythreadex_is_cancel(enum ythreadex_state state) {
 	switch (state) {
 	case YTHREADEX_CANCELLING:
@@ -353,7 +361,7 @@ ythreadex_is_cancel(enum ythreadex_state state) {
  * Is thread terminated?
  * TRUE if thread is TERMINATED or TERMINATED_CANCELLED state.
  */
-static inline bool
+static YYINLINE bool
 ythreadex_is_terminated(enum ythreadex_state state) {
 	switch (state) {
 	case YTHREADEX_TERMINATED:
@@ -363,6 +371,5 @@ ythreadex_is_terminated(enum ythreadex_state state) {
 		return FALSE;
 	}
 }
-
 
 #endif /* __YTHREADEx_h__ */

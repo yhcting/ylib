@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -60,7 +60,7 @@ YYEXPORT void *
 ypmalloc(uint32_t sz);
 
 /**
- * Free memory allocated by 'ypmalloc' in force.
+ * WARN: Free memory allocated by 'ypmalloc' in force.
  * (reference count is ignored!)
  */
 YYEXPORT void
@@ -77,8 +77,9 @@ ypput(void *);
 /**
  * Get pointer.
  * Reference counter is increased.
+ * @return return pointer itself.
  */
-YYEXPORT void *
+YYEXPORT void
 ypget(void *);
 
 

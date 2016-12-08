@@ -33,9 +33,10 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <malloc.h>
 #include <string.h>
 #include <pthread.h>
@@ -126,74 +127,169 @@ dmem_count(void) {
 
 
 #ifdef CONFIG_DEBUG
-int
-main(int argc, const char *argv[]) {
+struct opt {
+	const char *mods[1024]; /* 1024 is large enough value */
+	int repeat_cnt;
+	int loglv;
+};
+
+static void
+print_usage(const char *cmd) {
+	printf(
+"Usage: %s [options] [module ...]\n"
+"\n"
+"OPTIONS\n"
+"    -h\n"
+"        show this text.\n"
+"    -c repeat-count: Default 5\n"
+"        how many times test is repeated per module.\n"
+"        if < 1 or invalid-value then 1 is set.\n"
+"    -l log-level: Default 4\n"
+"        0(verbose) ~ 4(err) ~ 6(disable).\n"
+"        if < 0 or invalid-value then 0, and > 6 then 6 is set.\n",
+	cmd);
+}
+
+static int
+parse_optarg(struct opt *opt, int argc, char **argv) {
+	int c;
+	int i;
+	const char **pmod;
+	opterr = 0;
+	while (-1 != (c = getopt(argc, argv, "hc:l:"))) {
+		switch (c) {
+		case 'h':
+			print_usage("y");
+			exit(EXIT_SUCCESS);
+		case 'c': {
+			int v = atoi(optarg);
+			if (v < 1)
+				v = 1;
+			opt->repeat_cnt = v;
+		} break;
+		case 'l': {
+			int v = atoi(optarg);
+			if (v < 0)
+				v = 0;
+			if (v > 6)
+				v = 6;
+			opt->loglv = v;
+		} break;
+		case '?':
+			if (isprint (optopt))
+				fprintf(stderr,
+					"Unknown option `-%c'.\n", optopt);
+			else
+				fprintf(stderr,
+					"Unknown option character `\\x%x'.\n",
+					optopt);
+			return -1;
+		default:
+			abort ();
+		}
+	}
+	pmod = &opt->mods[0];
+	for (i = optind; i < argc; i++)
+		*pmod = argv[i];
+	*pmod = NULL;
+	return 0;
+}
+
+static int
+test_mod(struct tstfn *tf, int count) {
 	int sv;
-	struct tstfn *p;
-	const char *modnm = NULL; /* module name to test */
-	int repeat = 5; /* default repeat value */
-	if (1 < argc)
-		modnm = argv[1];
-	if (2 < argc) {
-		repeat = atoi(argv[2]);
+	printf("<< Test [%s] >>\n", tf->modname);
+	sv = dmem_count();
+	/* Repeat same test several times to detect memory corruption
+	 * in each test.
+	 * This is useful to avoid following case.
+	 *
+	 * [ Example ]
+	 * - Test order : modA -> modB
+	 * - Memory is corrupted at test-modA, especially at the end of
+	 * test.
+	 * - Test may fail at modB because of memory corruption caused
+	 * at test-modA
+	 * - This result is NOT good to understand.
+	 */
+	while (count--) {
+		(*tf->fn)();
+		if (tf->clear)
+			(*tf->clear)();
 	}
-	if (3 < argc) {
-		fprintf(stderr, "Usage: y [module name] [repeat count]\n");
+	if (sv != dmem_count()) {
+		fprintf(stderr,
+			"Unbalanced memory at [%s]!\n"
+			"    balance : %d\n",
+			tf->modname,
+			dmem_count() - sv);
 		return -1;
+		/* yassert(0); */
 	}
-	if (repeat <= 0) {
-		fprintf(stderr, "Invalid repeat count\n");
+	printf(" => PASSED\n");
+	return 0;
+}
+
+int
+main(int argc, char *argv[]) {
+	struct opt opt;
+	const char **pmod;
+
+	/* Set default values */
+	memset(&opt, 0, sizeof(opt));
+	opt.repeat_cnt = 5;
+	opt.loglv = 4; /* YLOG_ERR */
+
+	if (parse_optarg(&opt, argc, argv))
 		return -1;
-	}
 
 	pthread_mutex_init(&_mem_count_lock, NULL);
 
 	struct ylib_config yc;
 	memset(&yc, 0, sizeof(yc));
 	yc.ylog_stdfd = yc.ylog_errfd = -1;
-	/* yc.ylog_level = YLOG_VERBOSE; */
-	yc.ylog_level = YLOG_WARN;
+	yc.ylog_level = opt.loglv;
 	ylib_init(&yc);
-	ylogv("TEST-START\n");
-	ylistl_foreach_item(p, &_tstfnl, struct tstfn, lk) {
-		int r = repeat;
-		if (modnm
-		    && strcmp(modnm, p->modname))
-			continue; /* skip not-interesting test */
-		printf("<< Test [%s] >>\n", p->modname);
-		sv = dmem_count();
-		/* Repeat same test several times to detect memory corruption
-		 * in each test.
-		 * This is useful to avoid following case.
-		 *
-		 * [ Example ]
-		 * - Test order : modA -> modB
-		 * - Memory is corrupted at test-modA, especially at the end of
-		 * test.
-		 * - Test may fail at modB because of memory corruption caused
-		 * at test-modA
-		 * - This result is NOT good to understand.
-		 */
-		while (r--) {
-			(*p->fn)();
-			if (p->clear)
-				(*p->clear)();
+	/* This mechanism is ineffective but simple - O(n^2).
+	 * If performance becomes matter, use hashmap!
+	 */
+	/* if module name is NOT specifiec, test all modules */
+	if (!opt.mods[0]) {
+		struct tstfn *p;
+		pmod = &opt.mods[0];
+		ylistl_foreach_item(p, &_tstfnl, struct tstfn, lk) {
+			*pmod++ = p->modname;
 		}
-		if (sv != dmem_count()) {
-			printf("Unbalanced memory at [%s]!\n"
-			       "    balance : %d\n",
-			       p->modname,
-			       dmem_count() - sv);
+		*pmod = NULL;
+	}
+	pmod = &opt.mods[0];
+	while (*pmod) {
+		struct tstfn *tf, *p;
+		tf = NULL;
+		ylistl_foreach_item(p, &_tstfnl, struct tstfn, lk) {
+			if (!strcmp(*pmod, p->modname)) {
+				tf = p;
+				break;
+			}
+		}
+		if (!tf) {
+			fprintf(stderr,
+				"Invalid module name: %s\n", *pmod);
 			return -1;
-			/* yassert(0); */
 		}
-		printf(" => PASSED\n");
+		if (test_mod(tf, opt.repeat_cnt)) {
+			fprintf(stderr,
+				"%s: Test fails\n", *pmod);
+			return -1;
+		}
+		pmod++;
 	}
 	ylib_exit();
 	if (dmem_count()) {
-		printf("Unbalanced memory lib init/exit\n"
-		       "    balance : %d\n",
-		       dmem_count());
+		fprintf(stderr,
+			"Unbalanced memory lib init/exit\n"
+		        "    balance : %d\n",
+		        dmem_count());
 		return -1;
 		/* yassert(0); */
 	}

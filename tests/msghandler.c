@@ -47,7 +47,7 @@
 #include "ymsghandler.h"
 
 
-extern void msg_clear_pool(void);
+extern void msg_clear(void);
 
 
 struct msgA {
@@ -127,7 +127,7 @@ test_msghandler(void) {
 
 static void
 clear_msghandler(void) {
-	msg_clear_pool();
+	msg_clear();
 }
 
 

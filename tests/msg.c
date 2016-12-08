@@ -43,7 +43,7 @@
 #include "ymsg.h"
 
 
-extern void msg_clear_pool(void);
+extern void msg_clear(void);
 
 
 static void
@@ -58,7 +58,7 @@ test_msg(void) {
 
 static void
 clear_msg(void) {
-	msg_clear_pool();
+	msg_clear();
 }
 
 TESTFN(msg)

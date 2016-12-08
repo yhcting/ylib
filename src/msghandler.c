@@ -130,3 +130,19 @@ ymsghandler_post_exec2(struct ymsghandler *mh,
 	msg_set_handler(msg_mutate(m), mh);
 	return ymsgq_en(ymsglooper_get_msgq(mh->ml), m);
 }
+
+/******************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+#ifdef CONFIG_DEBUG
+/*
+ * This function is used for testing and debugging.
+ */
+extern void msg_clear(void);
+void
+msghandler_clear(void) {
+	msg_clear();
+}
+#endif /* CONFIG_DEBUG */

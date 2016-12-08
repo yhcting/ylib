@@ -54,10 +54,6 @@
 #include "ythreadex.h"
 
 
-extern void msg_clear_pool(void);
-extern void log_clear_thread_specific_buffer(void);
-
-
 struct targ {
 	int a;
 	int sti; /* next empty slot of st */
@@ -369,10 +365,12 @@ test_threadex(void) {
 	ymsglooper_destroy(ml);
 }
 
+extern void threadex_clear(void);
+extern void log_clear(void);
 static void
 clear_threadex(void) {
-	msg_clear_pool();
-	log_clear_thread_specific_buffer();
+	log_clear();
+	threadex_clear();
 }
 
 TESTFN(threadex)

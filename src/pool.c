@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,37 +33,92 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include "test.h"
-#ifdef CONFIG_DEBUG
-
-#include <string.h>
-#include <assert.h>
+#include <pthread.h>
 
 #include "common.h"
-#include "yp.h"
+#include "ypool.h"
 
+
+struct ypool {
+	pthread_spinlock_t lock;
+	int sz;
+	int capacity;
+	struct ylistl_link hd;
+};
+
+/******************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
 static void
-test_p(void) {
-	int i;
-	int *p, *p2;
-	int *o = ypmalloc(sizeof(int) * 3);
-	ypget(o);
-	p2 = o;
-	ypget(o);
-	p = p2;
-	for (i = 0; i < 3; i++)
-		*p++ = 1;
-	/* sp is assigned to another pointer */
-	ypput(p2); /* put */
-	p = o;
-	for (i = 0; i < 3; i++)
-		++*p++;
-	/*
-	 * should be freed at this point
-	 */
-	ypput(o);
+init_lock(struct ypool *p) {
+	fatali0(pthread_spin_init(&p->lock, PTHREAD_PROCESS_PRIVATE));
 }
 
-TESTFN(p)
+static inline void
+lock(struct ypool *p) {
+	fatali0(pthread_spin_lock(&p->lock));
+}
 
-#endif /* CONFIG_DEBUG */
+static inline void
+unlock(struct ypool *p) {
+	fatali0(pthread_spin_unlock(&p->lock));
+}
+
+static void
+destroy_lock(struct ypool *p) {
+	fatali0(pthread_spin_destroy(&p->lock));
+}
+
+
+/******************************************************************************
+ *
+ *
+ *
+ *****************************************************************************/
+struct ypool *
+ypool_create(int capacity) {
+        int r __unused;
+        struct ypool *p;
+        p = ycalloc(1, sizeof(*p));
+        if (unlikely(!p))
+                return NULL;
+	init_lock(p);
+	ylistl_init_link(&p->hd);
+	p->capacity = capacity;
+	return p;
+}
+
+void
+ypool_destroy(struct ypool *p) {
+	destroy_lock(p);
+        yfree(p);
+}
+
+struct ylistl_link *
+ypool_get(struct ypool *p) {
+	struct ylistl_link *lk = NULL;
+	lock(p);
+	if (unlikely(ylistl_is_empty(&p->hd)))
+		goto done_unlock;
+	lk = ylistl_remove_first(&p->hd);
+	yassert(p->sz > 0);
+	p->sz--;
+ done_unlock:
+	unlock(p);
+        return lk;
+}
+
+bool
+ypool_put(struct ypool *p, struct ylistl_link *lk) {
+	bool r = FALSE;
+	lock(p);
+	if (likely(p->sz < p->capacity)) {
+		ylistl_add_last(&p->hd, lk);
+		p->sz++;
+		r = TRUE;
+	}
+	unlock(p);
+	return r;
+}

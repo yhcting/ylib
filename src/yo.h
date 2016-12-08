@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,37 +33,75 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include "test.h"
-#ifdef CONFIG_DEBUG
 
-#include <string.h>
-#include <assert.h>
+/**
+ * @file yo.h
+ * @brief Header for simple object knowing how to free itself.
+ */
 
-#include "common.h"
-#include "yp.h"
+#ifndef __Yo_h__
+#define __Yo_h__
 
-static void
-test_p(void) {
-	int i;
-	int *p, *p2;
-	int *o = ypmalloc(sizeof(int) * 3);
-	ypget(o);
-	p2 = o;
-	ypget(o);
-	p = p2;
-	for (i = 0; i < 3; i++)
-		*p++ = 1;
-	/* sp is assigned to another pointer */
-	ypput(p2); /* put */
-	p = o;
-	for (i = 0; i < 3; i++)
-		++*p++;
-	/*
-	 * should be freed at this point
-	 */
-	ypput(o);
+#include "ydef.h"
+
+/**
+ * To easy handle simple multiple value object.
+ */
+struct yo {
+        void *o0; /**< user object0 */
+        void *o1; /**< user object1 */
+        void *o2; /**< user object2 */
+        void *o3; /**< user object3 */
+};
+
+/**
+ * Extended version of {@link yocreate2}
+ */
+YYEXPORT struct yo *
+yocreate3(void *o0, void (*ofree0)(void *),
+	  void *o1, void (*ofree1)(void *),
+	  void *o2, void (*ofree2)(void *),
+	  void *o3, void (*ofree3)(void *));
+
+/**
+ * Extended version of {@link yocreate1}
+ */
+static inline struct yo *
+yocreate2(void *o0, void (*ofree0)(void *),
+	  void *o1, void (*ofree1)(void *),
+	  void *o2, void (*ofree2)(void *)) {
+	return yocreate3(o0, ofree0,
+			 o1, ofree1,
+			 o2, ofree2,
+			 NULL, NULL);
 }
 
-TESTFN(p)
+/**
+ * Extended version of {@link yocreate0}
+ */
+static inline struct yo *
+yocreate1(void *o0, void (*ofree0)(void *),
+	  void *o1, void (*ofree1)(void *)) {
+	return yocreate2(o0, ofree0,
+			 o1, ofree1,
+			 NULL, NULL);
+}
 
-#endif /* CONFIG_DEBUG */
+/**
+ * @param o0 user object that can be freed by \a ofree0
+ * @param ofree0 Function being used to free \a o at {@link yodestroy}
+ * @return yo instance. NULL if fails.
+ */
+static inline struct yo *
+yocreate0(void *o0, void (*ofree0)(void *)) {
+	return yocreate1(o0, ofree0,
+			 NULL, NULL);
+}
+
+/**
+ * Object is destroied by using \a ofree obtained at {@link yocreate0}
+ */
+YYEXPORT void
+yodestroy(struct yo *);
+
+#endif /*__Yo_h__ */

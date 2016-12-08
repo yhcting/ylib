@@ -45,9 +45,6 @@
 #include "ymsglooper.h"
 
 
-extern void msg_clear_pool(void);
-
-
 static void
 test_msglooper(void) {
 	/* create looper thread and stop it */
@@ -69,9 +66,10 @@ test_msglooper(void) {
 	ymsglooper_destroy(ml1);
 }
 
+extern void msglooper_clear(void);
 static void
 clear_msglooper(void) {
-	msg_clear_pool();
+	msglooper_clear();
 }
 
 

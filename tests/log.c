@@ -42,16 +42,20 @@
 #include "common.h"
 #include "ylog.h"
 
-extern void log_clear_thread_specific_buffer(void);
-
 static void
 test_log(void) {
 	ylogd("Test: this is debug log\n");
 	ylogv("Test: this is verbose log\n");
-	log_clear_thread_specific_buffer();
+}
+
+extern void log_clear(void);
+static void
+clear_log(void) {
+	log_clear();
 }
 
 
 TESTFN(log) /* @suppress("Unused static function") */
+CLEARFN(log)
 
 #endif /* CONFIG_DEBUG */

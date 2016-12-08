@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,37 +33,41 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+
 #include "test.h"
 #ifdef CONFIG_DEBUG
 
 #include <string.h>
 #include <assert.h>
 
+#include "ylog.h"
 #include "common.h"
-#include "yp.h"
+#include "yerrno.h"
+#include "yo.h"
+
 
 static void
-test_p(void) {
-	int i;
-	int *p, *p2;
-	int *o = ypmalloc(sizeof(int) * 3);
-	ypget(o);
-	p2 = o;
-	ypget(o);
-	p = p2;
-	for (i = 0; i < 3; i++)
-		*p++ = 1;
-	/* sp is assigned to another pointer */
-	ypput(p2); /* put */
-	p = o;
-	for (i = 0; i < 3; i++)
-		++*p++;
-	/*
-	 * should be freed at this point
-	 */
-	ypput(o);
+test_o(void) {
+	char *s;
+	struct yo *o;
+	o = yocreate0((void *)(intptr_t)1, NULL);
+	yodestroy(o);
+	s = ymalloc(10);
+	strcpy(s, "why");
+	o = yocreate0(s, &yfree);
+	yodestroy(o);
+	return;
 }
 
-TESTFN(p)
+
+extern void o_clear(void);
+static void
+clear_o(void) {
+	o_clear();
+}
+
+
+TESTFN(o)
+CLEARFN(o)
 
 #endif /* CONFIG_DEBUG */

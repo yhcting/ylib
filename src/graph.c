@@ -53,22 +53,19 @@
  *
  *****************************************************************************/
 static struct yedge *
-edge_create(struct yvertex *from, struct yvertex *to, u32 exdsz) {
-	struct yedge *e = ymalloc(sizeof(*e) + exdsz);
+edge_create(struct yvertex *from, struct yvertex *to) {
+	struct yedge *e = ymalloc(sizeof(*e));
 	if (unlikely(!e))
 		return NULL;
 	ylistl_init_link(&e->ilk);
 	ylistl_init_link(&e->olk);
 	e->vf = from;
 	e->vt = to;
-	memset(&e->d, 0, exdsz);
 	return e;
 }
 
 static INLINE void
-edge_destroy(struct ygraph *g, struct yedge *e) {
-	if (g->edfree)
-		(*g->edfree)((void *)&e->d);
+edge_destroy(struct yedge *e) {
 	yfree(e);
 }
 
@@ -83,50 +80,6 @@ edge_remove(struct yedge *e) {
  * Interfaces
  *
  *****************************************************************************/
-struct ygraph *
-ygraph_create(u32 vexdatasz,
-	      void (*vdfree)(void *),
-	      u32 eexdatasz,
-	      void (*edfree)(void *)) {
-	struct ygraph *g = ymalloc(sizeof(*g));
-	if (unlikely(!g))
-		return NULL;
-	g->vdfree = vdfree;
-	g->vexdsz = vexdatasz;
-	g->edfree = edfree;
-	g->eexdsz = eexdatasz;
-	ylistl_init_link(&g->vl);
-	return g;
-}
-
-void
-ygraph_destroy(struct ygraph *g) {
-	struct yvertex *v, *vtmp;
-	ygraph_foreach_vertex_removal_safe(g, v, vtmp) {
-		ygraph_remove_vertex(g, v);
-		ygraph_destroy_vertex(g, v);
-	}
-	yfree(g);
-}
-
-struct yvertex *
-ygraph_create_vertex(struct ygraph *g) {
-	struct yvertex *v;
-	if (unlikely(!(v = ymalloc(sizeof(*v) + g->vexdsz))))
-		return NULL;
-	ylistl_init_link(&v->ie);
-	ylistl_init_link(&v->oe);
-	ylistl_init_link(&v->lk);
-	return v;
-}
-
-void
-ygraph_destroy_vertex(struct ygraph *g, struct yvertex *v) {
-	if (g->vdfree)
-		(*g->vdfree)((void *)&v->d);
-	yfree(v);
-}
-
 int
 ygraph_remove_vertex(struct ygraph *g __unused, struct yvertex *v) {
 	struct yedge *e, *etmp;
@@ -135,12 +88,12 @@ ygraph_remove_vertex(struct ygraph *g __unused, struct yvertex *v) {
 	/* removing connecting edges */
 	ygraph_foreach_oedge_removal_safe(v, e, etmp) {
 		edge_remove(e);
-		edge_destroy(g, e);
+		edge_destroy(e);
 	}
 
 	ygraph_foreach_iedge_removal_safe(v, e, etmp) {
 		edge_remove(e);
-		edge_destroy(g, e);
+		edge_destroy(e);
 	}
 
 	/* check "vertex is isolated" from other vertices */
@@ -163,11 +116,13 @@ ygraph_has_vertex(const struct ygraph *g, const struct yvertex *v) {
 
 int
 ygraph_has_cycle(const struct ygraph *g __unused,
-                 const struct yvertex *basev) {
+                 const struct yvertex *basev,
+		 int *n_visited) {
 	struct yvertex *v;
 	struct yedge* e;
 	struct ylist *vs = NULL; /* Vertex Stack */
 	struct ylist *es = NULL; /* Edge Stack */
+	int nv = 0;
         yset_t visited = NULL;
 	int r = 0;
 
@@ -193,7 +148,7 @@ ygraph_has_cycle(const struct ygraph *g __unused,
 		if (unlikely(r = ylist_push(es, e)))
 			goto done;
 	}
-
+	nv++; /* count base vertex */
 	r = 0;
 	while (ylist_size(es)) {
 		e = ylist_pop(es);
@@ -221,6 +176,7 @@ ygraph_has_cycle(const struct ygraph *g __unused,
 		/* This is first visit */
 
 		/* save to history stack */
+		nv++;
 		__mark_visited(v);
 		if (unlikely(r = ylist_push(vs, v)))
 			goto done;
@@ -230,6 +186,9 @@ ygraph_has_cycle(const struct ygraph *g __unused,
 				goto done;
 		}
 	}
+
+	if (n_visited)
+		*n_visited = nv;
 
  done:
 	if (likely(vs))
@@ -269,7 +228,7 @@ ygraph_add_edge(struct ygraph *g,
 	yassert(g && from && to);
 	if (ygraph_has_edge(g, from, to))
 		return -EEXIST;
-	if (unlikely(!(e = edge_create(from, to, g->eexdsz))))
+	if (unlikely(!(e = edge_create(from, to))))
 		return -ENOMEM;
 	ylistl_add_last(&from->oe, &e->olk);
 	ylistl_add_last(&to->ie, &e->ilk);
@@ -287,6 +246,6 @@ ygraph_remove_edge(struct ygraph *g,
 	if (unlikely(!(e = ygraph_find_edge(g, from, to))))
 		return -ENOENT;
 	edge_remove(e);
-	edge_destroy(g, e);
+	edge_destroy(e);
 	return 0;
 }

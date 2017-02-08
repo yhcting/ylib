@@ -350,7 +350,7 @@ test_threadex(void) {
 	srand(time(NULL));
 
 	ml = ymsglooper_start_looper_thread(FALSE);
-	mh = ymsghandler_create(ml, NULL); /* use default handle */
+	mh = ymsghandler_create(ml, NULL, NULL, NULL); /* use default handle */
 
 	tc1(mh);
 	tc2(mh);

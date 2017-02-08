@@ -53,7 +53,7 @@
  *
  ****************************************************************************/
 /**
- * Declare initialized \a struct \a ylistl_link variable.
+ * Declare initialized struct {@link ylistl_link} variable.
  *
  * @param hd Variable name to be declared and initialized.
  */
@@ -64,9 +64,9 @@
  * DO NOT access struct directly, except that you have to!.
  */
 struct ylistl_link {
-	/* \cond */
+	/* @cond */
 	struct ylistl_link *next, *prev;
-	/* \endcond */
+	/* @endcond */
 };
 
 /**
@@ -91,7 +91,7 @@ ylistl_is_empty(const struct ylistl_link *head) {
 }
 
 /**
- * Does \a link has next link in the list whose head is \a head.
+ * Does {@code link} has next link in the list whose head is {@code head}.
  *
  * @param head Head link of the list
  * @param link Link
@@ -104,7 +104,7 @@ ylistl_has_next(const struct ylistl_link *head,
 }
 
 /**
- * Does \a link has next link in the list whose head is \a head.
+ * Does {@code link} has next link in the list whose head is {@code head}.
  *
  * @param head Head link of the list
  * @param link Link
@@ -117,8 +117,9 @@ ylistl_has_prev(const struct ylistl_link *head,
 }
 
 /**
- * Add new link between \a prev and \a next.
- * Existing link of \a prev and \a next are replaced whth \a anew.
+ * Add new link between {@code prev} and {@code next}.
+ * Existing link of {@code prev} and {@code next} are replaced with
+ *   {@code anew}.
  *
  * @param prev Previous node
  * @param next Next node
@@ -133,7 +134,7 @@ ylistl_add(struct ylistl_link *prev,
 }
 
 /**
- * Add new link at next to \a link.
+ * Add new link at next to {@code link}.
  *
  * @param link Base link
  * @param anew Node to add
@@ -205,10 +206,10 @@ ylistl_remove_last(struct ylistl_link *head) {
 
 
 /**
- * Replace \a old node with \a anew node
+ * Replace {@code old} node with {@code anew} node
  *
  * @param old Node to be replaced with.
- * @param anew Node replacing \a old
+ * @param anew Node replacing {@code old}
  */
 static YYINLINE void
 ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
@@ -268,10 +269,10 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
 /**
  * Iterates item of the list.
  *
- * @param pos (\a type *) iteration cursor
- * @param head (struct ylistl_link *) the head for list
- * @param type Type of list item iterated by \a pos.
- * @param member Name of the {@link ylistl_link} within item-struct(\a type)
+ * @param pos ({@code type} *) iteration cursor
+ * @param head ({@link struct ylistl_link} *) the head for list
+ * @param type Type of list item iterated by {@code pos}.
+ * @param member Name of the {@link ylistl_link} within item-struct
  */
 #define ylistl_foreach_item(pos, head, type, member)			\
         for ((pos) = YYcontainerof((head)->next, type, member);		\
@@ -295,7 +296,7 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
  * Same with {@link ylistl_foreach_item}. And it is safe from remove operation.
  *
  * @param pos See {@link ylistl_foreach_item}
- * @param n (\a type *) Temporary storage
+ * @param n ({@code type} *) Temporary storage
  * @param head See {@link ylistl_foreach_item}
  * @param type See {@link ylistl_foreach_item}
  * @param member See {@link ylistl_foreach_item}
@@ -334,17 +335,17 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
  * @param head Head node of the list.
  * @return size
  */
-static YYINLINE uint32_t
+static YYINLINE int
 ylistl_size(const struct ylistl_link *head) {
 	struct ylistl_link *pos;
-	uint32_t size = 0;
+	int size = 0;
 	ylistl_foreach(pos, head)
 		size++;
 	return size;
 }
 
 /**
- * Check \a node is in the list(\a head).
+ * Check {@code node} is in the list({@code head}).
  *
  * @param head Head node of the list.
  * @param node Node to check.
@@ -363,7 +364,8 @@ ylistl_contains(const struct ylistl_link *head,
 
 /**
  * Delete link.
- * If \a node is NOT in the list headed by \a head, FALSE is returned.
+ * If {@code node} is NOT in the list headed by {@code head}, FALSE is
+ *   returned.
  *
  * @param head Head of list.
  * @param node Node link.

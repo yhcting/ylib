@@ -59,100 +59,126 @@ struct ytask;
  */
 struct ytask_listener {
         /**
-         * \a STARTED ythreadex state, and BEFORE notifying to listeners.
+         * {@code STARTED} ythreadex state, and BEFORE notifying to listeners.
          * NULL is allowed.
          */
 	void (*on_early_started)(struct ytask *);
         /**
-         * \a STARTED ythreadex state, and AFTER notifying to listeners.
+         * {@code STARTED} ythreadex state, and AFTER notifying to listeners.
          * NULL is allowed.
          */
 	void (*on_late_started)(struct ytask *);
         /**
-         * \a DONE ythreadex state, and BEFORE notifying to listeners.
+         * {@code DONE} ythreadex state, and BEFORE notifying to listeners.
          * NULL is allowed.
          */
 	void (*on_early_done)(struct ytask *, void *result, int errcode);
         /**
-         * \a DONE ythreadex state, and AFTER notifying to listeners.
+         * {@code DONE} ythreadex state, and AFTER notifying to listeners.
          * NULL is allowed.
          */
 	void (*on_late_done)(struct ytask *, void *result, int errcode);
         /**
-         * \a CANCELLING ythreadex state, and BEFORE notifying to listeners.
+         * {@code CANCELLING} ythreadex state, and BEFORE notifying to
+	 *   listeners.
          * NULL is allowed.
          */
 	void (*on_early_cancelling)(struct ytask *, bool started);
         /**
-         * \a CANCELLING ythreadex state, and AFTER notifying to listeners.
+         * {@code CANCELLING} ythreadex state, and AFTER notifying to
+	 *   listeners.
          * NULL is allowed.
          */
 	void (*on_late_cancelling)(struct ytask *, bool started);
         /**
-         * \a CANCELLED ythreadex state, and BEFORE notifying to listeners.
+         * {@code CANCELLED} ythreadex state, and BEFORE notifying to
+	 *   listeners.
          * NULL is allowed.
          */
 	void (*on_early_cancelled)(struct ytask *, int errcode);
         /**
-         * \a CANCELLED ythreadex state, and AFTER notifying to listeners.
+         * {@code CANCELLED} ythreadex state, and AFTER notifying to listeners.
          * NULL is allowed.
          */
 	void (*on_late_cancelled)(struct ytask *, int errcode);
         /**
-         * \a BEFORE notifying progress init to listeners.
+         * {@code BEFORE} notifying progress init to listeners.
          * NULL is allowed.
          */
 	void (*on_early_progress_init)(struct ytask *, long max_prog);
         /**
-         * \a AFTER notifying progress init to listeners.
+         * {@code AFTER} notifying progress init to listeners.
          * NULL is allowed.
          */
 	void (*on_late_progress_init)(struct ytask *, long max_prog);
         /**
-         * \a BEFORE notifying progress to listeners.
+         * {@code BEFORE} notifying progress to listeners.
          * NULL is allowed.
          */
 	void (*on_early_progress)(struct ytask *, long prog);
         /**
-         * \a AFTER notifying progress to listeners.
+         * {@code AFTER} notifying progress to listeners.
          * NULL is allowed.
          */
 	void (*on_late_progress)(struct ytask *, long prog);
 };
 
+
+/**
+ * Handle created and returned inside library
+ */
+struct ytask_event_listener_handle;
+
 /**
  * Event listener registered to ytask.
  * Multiple event listeners can be registered to one ytask instance.
+ * Shallow-copied struct is used inside library.
  * See {@link ytask_add_event_listener}.
  */
 struct ytask_event_listener {
         /**
-         * \a Entered STARTED state.
+         * {@code Entered} STARTED state.
          */
-	void (*on_started)(struct ytask *);
+	void (*on_started)(struct ytask_event_listener *, struct ytask *);
         /**
          * This message is sent after DONE state.
          */
-	void (*on_done)(struct ytask *, void *result, int errcode);
+	void (*on_done)(struct ytask_event_listener *,
+			struct ytask *, void *result, int errcode);
 	/**
-	 * \a started is TRUE if cancel is requrested after task is started
+	 * {@code started} is TRUE if cancel is requrested after task is
+	 *   started
 	 */
-	void (*on_cancelling)(struct ytask *, bool started);
+	void (*on_cancelling)(struct ytask_event_listener *,
+			      struct ytask *, bool started);
         /**
          * This message is sent after CANCELLED state.
          */
-	void (*on_cancelled)(struct ytask *, int errcode);
+	void (*on_cancelled)(struct ytask_event_listener *,
+			     struct ytask *, int errcode);
         /**
          * Progress is ready.
          */
-	void (*on_progress_init)(struct ytask *, long max_prog);
+	void (*on_progress_init)(struct ytask_event_listener *,
+				 struct ytask *, long max_prog);
         /**
          * Progress notification
          */
-	void (*on_progress)(struct ytask *, long prog);
+	void (*on_progress)(struct ytask_event_listener *,
+			    struct ytask *, long prog);
+	/**
+	 * Function to free extra data. This can be NULL.
+	 * NULL means, nothing to do for freeing extra data.
+	 * Argument of this function is
+	 * {@code & struct ytask_event_listener.extra}.
+	 * So, argument itself MUST NOT be freed in it.
+	 */
+	void (*free_extra)(void *, unsigned int extrasz);
+	unsigned int extrasz; /**< size of extra data in bytes */
+	char extra[0]; /**< extra user data */
 };
 
-/* >>> \cond */
+/* >>> @cond */
 /*
  * This function is ONLY for INTERNAL use.
  */
@@ -160,12 +186,12 @@ static YYINLINE struct ythreadex *
 __ytask_super(struct ytask *tsk) {
         return (struct ythreadex *)tsk;
 }
-/* <<< \endcond */
+/* <<< @endcond */
 
 /**
- * Once \a result is assigned in side \a run (user-thread-function),
+ * Once {@code result} is assigned in side {@code run} (user-thread-function),
  *   ythreadex module has responsibility for freeing memory by calling
- *   \a free_result.
+ *   {@code free}_result.
  *
  * @param name See {@link ythreadex_create}
  * @param owner See {@link ythreadex_create}
@@ -175,25 +201,56 @@ __ytask_super(struct ytask *tsk) {
  * @param free_arg See {@link ythreadex_create}
  * @param free_result See {@link ythreadex_create}
  * @param run See {@link ythreadex_create}
- * @param pthdcancel \a pthread_cancel is used for cancelling task.
+ * @param pthdcancel To cancel task, {@code pthread_cancel} is used.
  * @return NULL if fails.
  */
 YYEXPORT struct ytask *
+ytask_create3(const char *name,
+	      struct ymsghandler *owner,
+	      enum ythreadex_priority priority,
+	      const struct ytask_listener *listener,
+	      void *arg,
+	      void (*free_arg)(void *),
+	      void (*free_result)(void *),
+	      int (*run)(struct ytask *, void **result),
+	      bool pthdcancel);
+
+/**
+ * See {@link ytask_create3} for details.
+ */
+static YYINLINE struct ytask *
+ytask_create2(const char *name,
+	      struct ymsghandler *owner,
+	      const struct ytask_listener *listener,
+	      void *arg,
+	      void (*free_arg)(void *),
+	      void (*free_result)(void *),
+	      int (*run)(struct ytask *, void **result),
+	      bool pthdcancel) {
+	return ytask_create3(name, owner, YTHREADEX_NORMAL, listener,
+			     arg, free_arg, free_result, run, pthdcancel);
+}
+
+/**
+ * See {@link ytask_create2} for details.
+ */
+static YYINLINE struct ytask *
 ytask_create(const char *name,
              struct ymsghandler *owner,
-             enum ythreadex_priority priority,
-             const struct ytask_listener *listener,
              void *arg,
              void (*free_arg)(void *),
              void (*free_result)(void *),
-             int (*run)(struct ytask *, void **result),
-             bool pthdcancel);
+             int (*run)(struct ytask *, void **result)) {
+	return ytask_create2(name, owner, NULL,
+			     arg, free_arg, free_result, run, FALSE);
+}
 
 /**
  * Destroy ytask instance.
  *
  * @return 0 if success otherwise -errno.
- *         (Ex. thread is in invalid state, -EPERM is returned.)
+ *         (Ex. thread is in invalid state(ex. not-terminated yet.),
+ *            -EPERM is returned.)
  */
 YYEXPORT int
 ytask_destroy(struct ytask *);
@@ -225,7 +282,7 @@ ytask_join(struct ytask *tsk, void **retval) {
 
 /**
  * Cancel task.
- * \a pthdcancel value passed at {@link ytask_create}, is used.
+ * {@code pthdcancel} value passed at {@link ytask_create}, is used.
  * See {@link ythreadex_cancel}
  */
 YYEXPORT int
@@ -341,7 +398,7 @@ ytask_is_terminated(struct ytask *tsk) {
 }
 
 /**
- * Tag is destroied by using \a tagfree when task is destroied.
+ * Tag is destroied by using {@code tagfree} when task is destroied.
  *
  * @return # of newly added tag (0 means overwritten). -errno if fails.
  */
@@ -379,35 +436,33 @@ ytask_remove_tag(struct ytask *,
  * @return handle for newly added event listener.
  *         NULL if fail to add event listener(May be ENOMEM?)
  */
-YYEXPORT void *
-ytask_add_event_listener(struct ytask *,
-			 struct ymsghandler *event_listener_owner,
-			 const struct ytask_event_listener *yel,
-			 bool progress_notice);
+YYEXPORT struct ytask_event_listener_handle *
+ytask_add_event_listener2(struct ytask *,
+			  struct ymsghandler *event_listener_owner,
+			  const struct ytask_event_listener *yel,
+			  bool progress_notice);
 
 /**
- * See {@link ytask_add_event_listener}
+ * See {@link ytask_add_event_listener2}
  */
-static YYINLINE void *
-ytask_add_event_listener2(struct ytask *tsk,
+static YYINLINE struct ytask_event_listener_handle *
+ytask_add_event_listener(struct ytask *tsk,
 			  const struct ytask_event_listener *yel,
 			  bool progress_notice) {
-        return ytask_add_event_listener(tsk,
-					ytask_get_owner(tsk),
-					yel,
-					progress_notice);
+        return ytask_add_event_listener2(tsk,
+					 ytask_get_owner(tsk),
+					 yel,
+					 progress_notice);
 }
 
+
 /**
- * Remove event listener. After this function, \a event_listener_handle is no
- *   more valule.
- *
- * @param event_listener_handle handle returned by
- *                              {@link ytask_add_event_listener}
+ * Remove event listener. After this function, {@code event_listener_handle} is
+ *   no more valule.
  */
 YYEXPORT int
 ytask_remove_event_listener(struct ytask *,
-                            void *event_listener_handle);
+                            struct ytask_event_listener_handle *);
 
 
 #endif /* __YTASk_h__ */

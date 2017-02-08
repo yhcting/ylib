@@ -50,7 +50,7 @@
  *
  *****************************************************************************/
 /**
- * Get \a bitsz bits at \a offset from LSB.
+ * Get {@code bitsz} bits at {@code offset} from LSB.
  * Ex. 0xc == %yut_bits(0xfcda, 8, 4)
  *
  * @param x Value
@@ -61,7 +61,7 @@
 	(((x) >> (offset)) & ((1LL << (bitsz)) - 1))
 
 /**
- * Get one bit at \a offset from LSB.
+ * Get one bit at {@code offset} from LSB.
  * See {@link yut_bits}.
  *
  * @param x Value
@@ -71,14 +71,15 @@
 	yut_bits(x, offset, 1)
 
 /**
- * Clear \a bitsz bits at \a offset from LSB.
+ * Clear {@code bitsz} bits at {@code offset} from LSB.
  * See {@link yut_bits}.
  */
 #define yut_clear_bits(x, offset, bitsz)		\
 	((x) & ~(((1LL << (bitsz)) - 1) << (offset)))
 
 /**
- * Replace \a bitsz bits at \a offset with \a bitsz bits at 0 of x.
+ * Replace {@code bitsz} bits at {@code offset} with {@code bitsz} bits at 0 of
+ *   x.
  *
  * @param x Value
  * @param offset Offset from LSB
@@ -90,7 +91,7 @@
 	 | ((((1LL << (bitsz)) - 1) & (v)) << (offset)))
 
 /**
- * Test whether bit at \a bit is set.
+ * Test whether bit at {@code bit} is set.
  *
  * @param x Value
  * @param bit offset from LSB.
@@ -99,7 +100,7 @@
 	(((x) >> (bit)) & 1LL)
 
 /**
- * Set bit at offset \a bit
+ * Set bit at offset {@code bit}
  *
  * @param x Value
  * @param bit offset from LSB.
@@ -108,7 +109,7 @@
 	((x) | (1LL << (bit)))
 
 /**
- * Clear bit at offset \a bit
+ * Clear bit at offset {@code bit}
  *
  * @param x Value
  * @param bit offset from LSB.
@@ -126,8 +127,8 @@
 /**
  * Compare two data.
  *
- * @param small (Out) Smaller value between \a d0 and \a d1
- * @param big (Out) Bigger value between \a d0 and \a d1
+ * @param small (Out) Smaller value between {@code d0} and {@code d1}
+ * @param big (Out) Bigger value between {@code d0} and {@code d1}
  * @param d0 (In)
  * @param d1 (In)
  * @param suffix Suffix of data.
@@ -147,8 +148,8 @@
  * Compare two data.
  *
  * @param d0small (Out) (bool) small == d0
- * @param small (Out) Smaller value between \a d0 and \a d1
- * @param big (Out) Bigger value between \a d0 and \a d1
+ * @param small (Out) Smaller value between {@code d0} and {@code d1}
+ * @param big (Out) Bigger value between {@code d0} and {@code d1}
  * @param d0 (In)
  * @param d1 (In)
  * @param suffix Suffix of data.
@@ -256,9 +257,9 @@
 	((int)(sizeof(a)/sizeof((a)[0])))
 
 /**
- * Check \a str stars with \a substr.
+ * Check {@code str} stars with {@code substr}.
  * This is inspired from String.startsWith of Java.
- * If \a str or \a substr are NULL, FALSE is returned.
+ * If {@code str} or {@code substr} are NULL, FALSE is returned.
  *
  * @return TRUE or FALSE
  */

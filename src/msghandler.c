@@ -43,7 +43,8 @@
 #include "msghandler.h"
 
 static void
-default_handle(const struct ymsg *m) {
+default_handle(struct ymsghandler *handler __unused,
+	       const struct ymsg *m) {
 	if (unlikely(YMSG_TYP_EXEC != m->type
 		     || !m->run)) {
 		ylogw("Invalid message(default handler): type:%d, %p => ignored\n,",
@@ -55,7 +56,9 @@ default_handle(const struct ymsg *m) {
 
 struct ymsghandler *
 ymsghandler_create(struct ymsglooper *ml,
-		   void (*handle)(const struct ymsg *)) {
+		   void *tag,
+		   void (*tagfree)(void *),
+		   void (*handle)(struct ymsghandler *, const struct ymsg *)) {
 	struct ymsghandler *mh;
 	if (unlikely(!ml))
 		return NULL;
@@ -65,14 +68,23 @@ ymsghandler_create(struct ymsglooper *ml,
 	mh->ml = ml;
 	if (!handle)
 		handle = &default_handle;
+	mh->tag = tag;
+	mh->tagfree = tagfree;
 	mh->handle = handle;
 	return mh;
 }
 
 void
 ymsghandler_destroy(struct ymsghandler *mh) {
+	if (mh->tag && mh->tagfree)
+		(*mh->tagfree)(mh->tag);
 	if (likely(mh))
 		yfree(mh);
+}
+
+void *
+ymsghandler_get_tag(struct ymsghandler *mh) {
+	return mh->tag;
 }
 
 struct ymsglooper *

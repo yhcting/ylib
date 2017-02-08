@@ -50,6 +50,11 @@
 
 /**
  * Macro helps to make initialization data of yrect structure.
+ *
+ * @param t Top
+ * @param b Bottom
+ * @param l Left
+ * @param r Right
  */
 #define yrect_struct_init(t, b, l, r) { { { { t, b }, { l, r } } } }
 

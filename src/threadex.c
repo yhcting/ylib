@@ -391,7 +391,7 @@ ythreadex_get_state(struct ythreadex *threadex) {
                 return threadex->nAME;                          \
         }
 
-/* Value of \a result are \a errcode may be updated at other thread.
+/* Value of {@code result} are {@code errcode} may be updated at other thread.
  * And reading and updating value may not be atomic.
  * But, It is caller's responsibility, getting stable value.
  * (Reading after thread is DONE of CANCELLED)

@@ -75,6 +75,7 @@ oclear(struct o *o) {
 		if (likely(o->ofree##n)) {		\
 			(*o->ofree##n)(o->o.o##n);	\
 		}					\
+		o->o.o##n = NULL;			\
 		o->ofree##n = NULL;			\
 	} while (0)
 

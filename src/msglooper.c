@@ -65,7 +65,7 @@ struct ymsglooper {
 	struct ymsgq *mq; /**< Message Q. */
 	pthread_t thread; /**< Attached thread */
 	bool destroy_on_exit; /**< destroy instance on exiting thread */
-	pthread_mutex_t state_lock; /**< lock for \a state */
+	pthread_mutex_t state_lock; /**< lock for {@code state} */
 	volatile enum ymsglooper_state state; /**< state of looper */
 };
 
@@ -256,7 +256,7 @@ ymsglooper_loop(void) {
 			continue;
 		/* Handler code here! */
 		yassert(m_->handler && m_->handler->handle);
-		(*m_->handler->handle)(m);
+		(*m_->handler->handle)(m_->handler, m);
 		ymsg_destroy(m);
 	}
  skip_loop:
@@ -353,6 +353,8 @@ ymsglooper_get_state(struct ymsglooper *ml) {
 int
 ymsglooper_stop(struct ymsglooper *ml) {
 	int r __unused;
+	if (ymsgq_sz(ml->mq) > 0)
+		return -EPERM; /* There is not-handled-message. */
 	lock_state(ml);
 	switch (get_state_locked(ml)) {
 	case YMSGLOOPER_LOOP:

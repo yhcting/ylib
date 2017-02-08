@@ -117,10 +117,10 @@ yheap_sz(const struct yheap *);
  *     callback called whenever visiting element.
  *     If callback returns TRUE, iteration keeps going.
  *     But if callback returns FALSE, iteration stops and function is returned.
- * @return
- *    -1 if fails (ex. internal error.)
- *     0 if iteration to all heap nodes are done.
- *     1 if iteration is stopped in the middle because \a cb returns FALSE.
+ * @return -1 if fails (ex. internal error.)
+ *         0 if iteration to all heap nodes are done.
+ *         1 if iteration is stopped in the middle because {@code cb} returns
+ *           FALSE.
  */
 YYEXPORT int
 yheap_iterates(struct yheap *,

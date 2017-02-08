@@ -158,8 +158,8 @@ ygeob_eq(const struct yband *b0, const struct yband *b1) {
  * @param obs (Out) Non-overlapping sub-band at small-value-side.
  * @param obo (Out) Overlapping sub-band in the middle.
  * @param obb (Out) Non-overlapping sub-band at big-value-side.
- * @param bs Band whose \a s value is smaller than \a bb.
- * @param bb Band whose \a s value is bigger than \a bs.
+ * @param bs Band whose {@code s} value is smaller than {@code bb}.
+ * @param bb Band whose {@code s} value is bigger than {@code bs}.
  * @return Band position. See. {@link ybandpos}
  */
 static YYINLINE enum ybandpos

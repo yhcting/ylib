@@ -92,7 +92,7 @@ yhashi_create(void (*vfree)(void *));
  * In this hash, mem. address of key is interpreted as string that has null
  * terminator.
  *
- * @param vfree See \a vfree at {@link yhashi_create}
+ * @param vfree See {@code vfree} at {@link yhashi_create}
  * @param key_deepcopy TRUE to use deepcopy for hash 'key', otherwise FALSE.
  * @return NULL if fails(ex. ENOMEM). Otherwise new hash object.
  */
@@ -108,8 +108,8 @@ yhashs_create(void (*vfree)(void *), bool key_deepcopy);
 /**
  * Create hash that uses general object value as key(YHASH_KEYTYPE_O).
  *
- * @param vfree See \a vfree at {@link yhashi_create}
- * @param keyfree Same with \a vfree
+ * @param vfree See {@code vfree} at {@link yhashi_create}
+ * @param keyfree Same with {@code vfree}
  * @param keycopy
  *     Callback function to copy key. Set NULL to use shallow copy.
  *     This should return 0 if success. Otherwise non-zero.
@@ -117,7 +117,7 @@ yhashs_create(void (*vfree)(void *), bool key_deepcopy);
  *     Callback function to compare key objects.
  *     Set as NULL to compare mem-addresses of key-objects.
  *     This should return 0 if same. Otherewise non-zero.
- * @param hfunc Hash function creating 32bit hash value from \a key.
+ * @param hfunc Hash function creating 32bit hash value from {@code key}.
  * @return NULL if fails(ex. ENOMEM). Otherwise new hash object.
  */
 YYEXPORT struct yhash *
@@ -144,7 +144,7 @@ yhash_create(const struct yhash *);
 
 /**
  * Destroy hash object.
- * Hash \a h becomes invalid.
+ * Hash {@code h} becomes invalid.
  */
 YYEXPORT void
 yhash_destroy(struct yhash *);
@@ -183,12 +183,12 @@ yhash_keytype(const struct yhash *);
 
 /**
  * Get keys in the hash.
- * If size of \a keysbuf is not large enough, this fills \a keysbuf fully and
- * returns \a bufsz.
+ * If size of {@code keysbuf} is not large enough, this fills {@code keysbuf}
+ *   fully and returns {@code bufsz}.
  * So, caller may need to compare returned value and hash size.
  *
  * @param keysbuf Buffer to store key object.
- * @param bufsz Size of \a keysbuf.
+ * @param bufsz Size of {@code keysbuf}.
  * @return Number of keys stored in keysbuf.
  */
 YYEXPORT uint32_t
@@ -200,7 +200,7 @@ yhash_keys(const struct yhash *, const void **keysbuf, uint32_t bufsz);
  * @param key Key
  * @param v Value
  * @param overwrite
- *     Function fails if this is FALSE and \a key is already in the hash.
+ *     Function fails if this is FALSE and {@code key} is already in the hash.
  * @return # of newly added item (0 means overwritten). -errno if fails.
  */
 YYEXPORT int
@@ -214,7 +214,7 @@ yhash_add(struct yhash *, const void *key, void *v, int overwrite);
  *     Existing old value object.
  *     If function doesn't overwrite anything, this is un-touched.
  *     If this is NULL, function is exactly same with {@link yhash_add} whose
- *     \a overwrite argument is TRUE.
+ *     {@code overwrite} argument is TRUE.
  * @param v new value object
  * @return # of newly added item (0 means overwritten). -errno if fails.
  */
@@ -231,7 +231,7 @@ yhash_add2(struct yhash *, const void *key, void **oldv, void *v);
  * @param key Key
  * @param v New value
  * @param overwrite
- *     Function fails if this is FALSE and \a key is already in the hash.
+ *     Function fails if this is FALSE and {@code key} is already in the hash.
  * @return # of newly added item (0 means overwritten). -errno if fails.
  */
 YYEXPORT int
@@ -271,7 +271,7 @@ YYEXPORT int
 yhash_find(const struct yhash *, void **value, const void *key);
 
 /**
- * Is the \a key is in the hash?
+ * Is the {@code key} is in the hash?
  *
  * @param h Hash object
  * @param key Hash key

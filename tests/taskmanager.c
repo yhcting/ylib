@@ -93,7 +93,8 @@ task_runnable(struct ytask *tsk, void **result) {
  *
  *****************************************************************************/
 static void
-tm_on_event(struct ytaskmanager *tm,
+tm_on_event(struct ytaskmanager_qevent_listener *tel,
+	    struct ytaskmanager *tm,
 	    enum ytaskmanager_qevent ev,
 	    int readyq_sz,
 	    int runq_sz,
@@ -133,15 +134,15 @@ tc0(struct ymsghandler *mh0,
 		strcpy(ta->s, "TC0");
 		ta->sleep_cnt = rand() % 10;
 		ta->sleep_interval = rand() % 10;
-		tsk = ytask_create("TC0-0",
-				   mh0,
-				   rand() % YTHREADEX_NUM_PRIORITY,
-				   NULL,
-				   ta,
-				   &free_arg,
-				   NULL,
-				   &task_runnable,
-				   TRUE);
+		tsk = ytask_create3("TC0-0",
+				    mh0,
+				    rand() % YTHREADEX_NUM_PRIORITY,
+				    NULL,
+				    ta,
+				    &free_arg,
+				    NULL,
+				    &task_runnable,
+				    TRUE);
 		ytaskmanager_add_task(tm, tsk);
 		ptsks[ptski++] = tsk;
 	}
@@ -154,15 +155,15 @@ tc0(struct ymsghandler *mh0,
 		strcpy(ta->s, "TC0");
 		ta->sleep_cnt = rand() % 10;
 		ta->sleep_interval = rand() % 10;
-		tsk = ytask_create("TC0-1",
-				   mh1,
-				   rand() % YTHREADEX_NUM_PRIORITY,
-				   NULL,
-				   ta,
-				   &free_arg,
-				   NULL,
-				   &task_runnable,
-				   TRUE);
+		tsk = ytask_create3("TC0-1",
+				    mh1,
+				    rand() % YTHREADEX_NUM_PRIORITY,
+				    NULL,
+				    ta,
+				    &free_arg,
+				    NULL,
+				    &task_runnable,
+				    TRUE);
 		ytaskmanager_add_task(tm, tsk);
 		ptsks[ptski++] = tsk;
 	}
@@ -182,9 +183,9 @@ test_taskmanager(void) {
 	srand(time(NULL));
 
 	ml0 = ymsglooper_start_looper_thread(FALSE);
-	mh0 = ymsghandler_create(ml0, NULL); /* use default handle */
+	mh0 = ymsghandler_create(ml0, NULL, NULL, NULL); /* use default handle */
 	ml1 = ymsglooper_start_looper_thread(FALSE);
-	mh1 = ymsghandler_create(ml1, NULL); /* use default handle */
+	mh1 = ymsghandler_create(ml1, NULL, NULL, NULL); /* use default handle */
 
 	tc0(mh0, mh1);
 

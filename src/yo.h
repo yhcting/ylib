@@ -105,8 +105,8 @@ yocreate1(void *o0, void (*ofree0)(void *),
 }
 
 /**
- * @param o0 user object that can be freed by \a ofree0
- * @param ofree0 Function being used to free \a o at {@link yodestroy}
+ * @param o0 user object that can be freed by {@code ofree0}
+ * @param ofree0 Function being used to free {@code o} at {@link yodestroy}
  * @return yo instance. NULL if fails.
  */
 static YYINLINE struct yo *
@@ -116,7 +116,7 @@ yocreate0(void *o0, void (*ofree0)(void *)) {
 }
 
 /**
- * Object is destroied by using \a ofree obtained at {@link yocreate0}
+ * Object is destroied by using {@code ofree} obtained at {@link yocreate0}
  */
 YYEXPORT void
 yodestroy(struct yo *);

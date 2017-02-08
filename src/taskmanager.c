@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2017
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -44,50 +44,37 @@
 
 #include "common.h"
 #include "lib.h"
-#include "ytaskmanager.h"
 #include "ymsglooper.h"
 #include "ymsghandler.h"
 #include "ylistl.h"
 #include "yo.h"
 #include "ygp.h"
 #include "task.h"
+#include "taskmanager.h"
 
 
 #define UNLIMITED_SLOTS 99999999
-#define TASK_TAG_NAME "___ytaskmanager___"
 
-struct ytaskmanager {
-        /* -------- READ ONLY values(set only once) --------*/
-	struct ymsghandler *owner;
-	int slots;
-        /* ---------- Dynamically updated values ----------*/
-        struct yhash *tagmap;
-	pthread_mutex_t tagmap_lock;
-
-	pthread_mutex_t el_lock;
-        struct ylistl_link elhd; /* head of event listener */
-
-	pthread_mutex_t q_lock;
-        struct ylistl_link readyq_hd[YTHREADEX_NUM_PRIORITY];
-        struct ylistl_link runq_hd; /* head of run Q */
-
-};
-
-struct taskmanager_qevent_listener {
-	struct ytaskmanager_qevent_listener el;
+struct ytaskmanager_qevent_listener_handle {
 	struct ymsghandler *owner;
         /**
          * Fields used inside task module. This value is initialized inside
          * task module.
          */
         struct ylistl_link lk;
+	/**
+	 * {@code el} MUST be at the end of this struct, because
+	 *   {@code struct ytaskmanager_qevent_listener} has extra bytes at
+	 *   the end of struct
+	 */
+	struct ytaskmanager_qevent_listener el;
 };
 
 struct ttg {
-	void *tm; /* owner task manager */
+	struct ytaskmanager *tm; /* owner task manager */
 	struct ytask *tsk; /* task in where this tag belonging to */
 	struct ylistl_link lk; /* q link */
-	void *task_event_listener_handle;
+	struct ytask_event_listener_handle * elh;
 };
 
 /******************************************************************************
@@ -98,7 +85,7 @@ struct ttg {
 /* Hash operation is quite expensive. So mutex lock is chosen */
 declare_lock(mutex, struct ytaskmanager, tagmap, NULL)
 /* List operation is very cheap. But calling listeners requires lock */
-declare_lock(mutex, struct ytaskmanager, el, NULL)
+declare_lock(mutex, struct ytaskmanager, elh, NULL)
 declare_lock(mutex, struct ytaskmanager, q, NULL)
 
 /******************************************************************************
@@ -123,15 +110,15 @@ static INLINE bool
 verify_ttg(struct ytaskmanager *tm, struct ytask *tsk) __unused;
 static INLINE bool
 verify_ttg(struct ytaskmanager *tm, struct ytask *tsk) {
-	struct ttg *ttg = tsk->tm.tag;
+	struct ttg *ttg = tsk->tmtag;
 	return ttg
 		&& ttg->tm == tm
 		&& ttg->tsk == tsk;
 }
 
 static INLINE bool
-verify_empty_ttg(struct ytask *tsk) {
-	return !tsk->tm.tag && !tsk->tm.tagfree;
+has_empty_ttg(struct ytask *tsk) {
+	return !tsk->tmtag;
 }
 
 static INLINE struct ytask *
@@ -142,7 +129,7 @@ ttglk_task(struct ylistl_link *tmtaglk) {
 
 static INLINE struct ttg *
 task_ttg(struct ytask *tsk) {
-	return (struct ttg *)tsk->tm.tag;
+	return (struct ttg *)tsk->tmtag;
 }
 
 static INLINE struct ylistl_link *
@@ -154,29 +141,24 @@ static struct ttg *
 create_ttg(struct ytaskmanager *tm, struct ytask *tsk) {
 	struct ttg *ttg = ycalloc(1, sizeof(*ttg));
 	yassert(tm && tsk
-		&& !tsk->tm.tag
-		&& !tsk->tm.tagfree);
+		&& !tsk->tmtag);
 	if (unlikely(!ttg))
 		return NULL;
 	ttg->tm = tm;
 	ttg->tsk = tsk;
 	ylistl_init_link(&ttg->lk);
 
-	tsk->tm.tag = ttg;
-	tsk->tm.tagfree = &yfree;
+	tsk->tmtag = ttg;
 	return ttg;
 }
 
 static INLINE void
 destroy_ttg(struct ytask *tsk) {
-	struct ttg *ttg __unused = tsk->tm.tag;
-	yassert(ttg
-		&& tsk->tm.tagfree);
+	struct ttg *ttg __unused = tsk->tmtag;
+	yassert(ttg);
 	yassert(ttg->tsk == tsk);
-
-	(*tsk->tm.tagfree)(tsk->tm.tag);
-	tsk->tm.tag = NULL;
-	tsk->tm.tagfree = NULL;
+	yfree(tsk->tmtag);
+	tsk->tmtag = NULL;
 }
 
 /******************************************************************************
@@ -293,27 +275,29 @@ remove_task_from_runq(struct ytaskmanager *tm,
 static void
 task_event_on_finished(struct ytask *tsk) {
 	struct ttg *ttg = task_ttg(tsk);
-	yassert(!verify_empty_ttg(tsk)
+	yassert(!has_empty_ttg(tsk)
 		&& is_in_owner_thread(ttg->tm));
 	remove_task_from_runq(ttg->tm, tsk);
 }
 
 static void
-task_event_on_done(struct ytask *tsk,
+task_event_on_done(struct ytask_event_listener *el __unused,
+		   struct ytask *tsk,
 		   void *result __unused,
 		   int errcode __unused) {
 	task_event_on_finished(tsk);
 }
 
 static void
-task_event_on_cancelled(struct ytask *tsk,
+task_event_on_cancelled(struct ytask_event_listener *el __unused,
+			struct ytask *tsk,
 			int errcode) {
 	task_event_on_finished(tsk);
 }
 
 const static struct ytask_event_listener _tsk_event_listener = {
 	.on_cancelled = &task_event_on_cancelled,
-	.on_done = &task_event_on_done
+	.on_done = &task_event_on_done,
 };
 
 
@@ -323,45 +307,58 @@ const static struct ytask_event_listener _tsk_event_listener = {
  *
  *****************************************************************************/
 struct qevent_arg {
-	/* DO NOT USE pointer for 'el'!. Memory may be freed at other context
-	 *   before referencing it.
-	 */
-	struct ytaskmanager_qevent_listener el;
  	struct ytaskmanager *tm;
 	enum ytaskmanager_qevent ev;
 	int readyq_sz;
 	int runq_sz;
 	struct ytask *tsk;
+	/* DO NOT USE pointer for 'el'!. Memory may be freed at other context
+	 *   before referencing it.
+	 * 'el' may have extra data at the end of it.
+	 */
+	struct ytaskmanager_qevent_listener el;
 };
+
+static void
+taskmanager_qevent_listener_free
+(struct ytaskmanager_qevent_listener_handle *elh) {
+	if (elh->el.free_extra)
+		(*elh->el.free_extra)(&elh->el.extra, elh->el.extrasz);
+	yfree(elh);
+}
 
 static void
 notify_qevent_to_listener(void *arg) {
 	struct qevent_arg *a = arg;
-	a->el.on_event(a->tm, a->ev, a->readyq_sz, a->runq_sz, a->tsk);
+	a->el.on_event(&a->el, a->tm, a->ev, a->readyq_sz, a->runq_sz, a->tsk);
 }
+
 
 static void
 notify_qevent_locked(struct ytaskmanager *tm,
 		     enum ytaskmanager_qevent ev,
 		     struct ytask *tsk) {
 	struct qevent_arg *a;
-	struct taskmanager_qevent_listener *el;
+	struct ytaskmanager_qevent_listener_handle *elh;
 	int readyq_sz = readyq_size_locked(tm);
 	int runq_sz = runq_size_locked(tm);
-	ylistl_foreach_item(el,
-			    &tm->elhd,
-			    struct taskmanager_qevent_listener,
+	ylistl_foreach_item(elh,
+			    &tm->elhhd,
+			    struct ytaskmanager_qevent_listener_handle,
 			    lk) {
-		if (unlikely(!(a = ymalloc(sizeof(*a)))))
+		if (unlikely(!(a = ymalloc(sizeof(*a) + elh->el.extrasz))))
 			die2("Out-of-memory");
-		a->el = el->el; /* deep copy */
+		/* Copied value is passed because handle may be freed before
+		 *   msg is executed.
+		 */
+		memcpy(&a->el, &elh->el, sizeof(elh->el) + elh->el.extrasz);
 		a->tm = tm;
 		a->ev = ev;
 		a->readyq_sz = readyq_sz;
 		a->runq_sz = runq_sz;
 		a->tsk = tsk;
 		fatali0(ymsghandler_post_exec
-			(el->owner, a, &yfree,
+			(elh->owner, a, &yfree,
 			 &notify_qevent_to_listener));
 	}
 
@@ -394,12 +391,12 @@ balance_taskq(struct ytaskmanager *tm) {
 		ttg = task_ttg(tsk);
 		yassert(YTHREADEX_READY == ytask_get_state(tsk));
 		yassert(verify_ttg(tm, tsk));
-		ttg->task_event_listener_handle =
-			ytask_add_event_listener(tsk,
-						 tm->owner,
-						 &_tsk_event_listener,
-						 FALSE);
-		yassert(ttg->task_event_listener_handle);
+		ttg->elh =
+			ytask_add_event_listener2(tsk,
+						  tm->owner,
+						  &_tsk_event_listener,
+						  FALSE);
+		yassert(ttg->elh);
 		fatali0(runq_enq_locked(tm, tsk));
 		notify_qevent_locked(tm, YTASKMANAGERQ_MOVED_TO_RUN, tsk);
 	}
@@ -441,9 +438,9 @@ remove_task_from_runq(struct ytaskmanager *tm,
 	struct ttg *ttg = task_ttg(tsk);
 	yassert(is_in_owner_thread(tm)
 		&& verify_ttg(tm, tsk)
-		&& ttg->task_event_listener_handle);
+		&& ttg->elh);
 	fatali0(ytask_remove_event_listener
-		(tsk, ttg->task_event_listener_handle));
+		(tsk, ttg->elh));
 	lock_q(tm);
 	yassert(ylistl_contains(&tm->runq_hd, &ttg->lk));
 	ylistl_remove(&ttg->lk);
@@ -479,24 +476,32 @@ ytaskmanager_create(struct ymsghandler *owner, int slots) {
 		slots = 999999999; /* large enough value */
 	tm->owner = owner;
 	tm->slots = slots;
-	init_el_lock(tm);
+	init_elh_lock(tm);
 	init_q_lock(tm);
 	init_tagmap_lock(tm);
 	int nrpri = YTHREADEX_NUM_PRIORITY;
 	while (nrpri--)
 		ylistl_init_link(&tm->readyq_hd[nrpri]);
 	ylistl_init_link(&tm->runq_hd);
-	ylistl_init_link(&tm->elhd);
+	ylistl_init_link(&tm->elhhd);
 	return tm;
 }
 
 int
 ytaskmanager_destroy(struct ytaskmanager *tm) {
+	struct ytaskmanager_qevent_listener_handle *elh, *elhtmp;
 	if (ytaskmanager_size(tm) > 0)
 		return -EPERM;
+	ylistl_foreach_item_removal_safe(elh,
+					 elhtmp,
+					 &tm->elhhd,
+					 struct ytaskmanager_qevent_listener_handle,
+					 lk) {
+		yfree(elh);
+	}
 	destroy_q_lock(tm);
 	destroy_tagmap_lock(tm);
-	destroy_el_lock(tm);
+	destroy_elh_lock(tm);
         yhash_destroy(tm->tagmap);
 	yfree(tm);
 	return 0;
@@ -574,7 +579,7 @@ ytaskmanager_size(struct ytaskmanager *tm) {
 int
 ytaskmanager_add_task(struct ytaskmanager *tm, struct ytask *tsk) {
 	int r = 0;
-	if (unlikely(!verify_empty_ttg(tsk)
+	if (unlikely(!has_empty_ttg(tsk)
 		     || YTHREADEX_READY != ytask_get_state(tsk)))
 		return -EINVAL;
 	if (unlikely(!create_ttg(tm, tsk)))
@@ -605,6 +610,31 @@ ytaskmanager_cancel_task(struct ytaskmanager *tm, struct ytask *tsk) {
 	ytask_cancel(tsk);
 	return 0;
 }
+
+int
+ytaskmanager_cancel_all(struct ytaskmanager *tm) {
+	struct ylistl_link *p, *n;
+	int nrpri = YTHREADEX_NUM_PRIORITY;
+	lock_q(tm);
+	/* Cancel all tasks at the ready Q */
+	while (nrpri--) {
+		ylistl_foreach_removal_safe(p, n, &tm->readyq_hd[nrpri]) {
+			struct ytask *tsk = ttglk_task(p);
+			fatali0(readyq_remove_locked(tm, tsk));
+			notify_qevent_locked(tm,
+					     YTASKMANAGERQ_REMOVED_FROM_READY,
+					     tsk);
+			ytask_cancel(tsk);
+		}
+	}
+	/* Cancel all tasks at the run Q */
+	ylistl_foreach(p, &tm->runq_hd) {
+		ytask_cancel(ttglk_task(p));
+	}
+	unlock_q(tm);
+	return 0;
+}
+
 
 struct ytask *
 ytaskmanager_find_task(struct ytaskmanager *tm,
@@ -639,32 +669,36 @@ ytaskmanager_find_task(struct ytaskmanager *tm,
 	return ret_tsk;
 }
 
-void *
-ytaskmanager_add_qevent_listener
+struct ytaskmanager_qevent_listener_handle *
+ytaskmanager_add_qevent_listener2
 (struct ytaskmanager *tm,
  struct ymsghandler *owner,
  const struct ytaskmanager_qevent_listener *qel) {
-	struct taskmanager_qevent_listener *elh;
-	if (unlikely(!(elh = ymalloc(sizeof(*elh)))))
+	struct ytaskmanager_qevent_listener_handle *elh;
+	if (unlikely(!(elh = ymalloc(sizeof(*elh) + qel->extrasz))))
 		return NULL;
-	elh->el = *qel;
+	memcpy(&elh->el, qel, sizeof(*qel) + qel->extrasz);
 	elh->owner = owner;
 	ylistl_init_link(&elh->lk);
-	lock_el(tm);
-	ylistl_add_last(&tm->elhd, &elh->lk);
-	unlock_el(tm);
+	lock_elh(tm);
+	ylistl_add_last(&tm->elhhd, &elh->lk);
+	unlock_elh(tm);
 	return elh;
 }
 
 int
 ytaskmanager_remove_qevent_listener
-(struct ytaskmanager *tm, void *el_handle) {
+(struct ytaskmanager *tm,
+ struct ytaskmanager_qevent_listener_handle *elh) {
 	bool r;
-	struct taskmanager_qevent_listener *elh = el_handle;
-	lock_el(tm);
-	r = ylistl_remove2(&tm->elhd, &elh->lk);
-	unlock_el(tm);
-	return r? 0: -EINVAL;
+	lock_elh(tm);
+	r = ylistl_remove2(&tm->elhhd, &elh->lk);
+	unlock_elh(tm);
+	if (likely(r)) {
+		taskmanager_qevent_listener_free(elh);
+		return 0;
+	} else
+		return -EINVAL;
 }
 
 /******************************************************************************

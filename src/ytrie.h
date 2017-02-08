@@ -57,7 +57,7 @@ struct ytrie;
  *
  * @param key Key of trie
  * @param keysz Key size
- * @return NULL if fails (ex. \a key isn't in the trie.)
+ * @return NULL if fails (ex. {@code key} isn't in the trie.)
  *         Otherwise pointer of trie value.
  */
 YYEXPORT void **
@@ -80,7 +80,7 @@ ytrie_get(struct ytrie *, const uint8_t *key, uint32_t keysz);
  *
  * @param tag Tag during iteration.
  * @param key Key of node where tree iteration starts at.
- * @param keysz Size of \a fromkey
+ * @param keysz Size of {@code fromkey}
  * @param cb
  *     Callback called whenever visiting trie value.
  *     If callback returns 1, iteration keeps going.
@@ -102,7 +102,7 @@ ytrie_iterate(struct ytrie *,
  * Insert value to the trie
  *
  * @param key Key of node where tree iteration starts at.
- * @param keysz Size of \a fromkey
+ * @param keysz Size of {@code fromkey}
  * @param v Value to add.
  * @return
  *     - 1: value is overwritten
@@ -140,7 +140,7 @@ ytrie_destroy(struct ytrie *);
  * Remove trie value.
  *
  * @param key Key of node where tree iteration starts at.
- * @param keysz Size of \a fromkey
+ * @param keysz Size of {@code fromkey}
  * @return Number of deleted values (0 means nothing deleted).
  *         -errno if fails.
  */
@@ -167,12 +167,12 @@ ytrie_equal(const struct ytrie *, const struct ytrie *,
 	    int(*cmp)(const void *, const void *));
 
 /**
- * Copy trie. Key is deep-copied. And value is copied by using \a clonev
+ * Copy trie. Key is deep-copied. And value is copied by using {@code clonev}
  *
  * @param dst Destination trie object where value is copied to.
  *            All existing values will be removed and filled with new values.
  * @param src Source trie object where value is copied from.
- * @param tag Tag object passed to \a clonev
+ * @param tag Tag object passed to {@code clonev}
  * @param clonev Function used to copy trie value.
  *               It should returns NULL if fails.
  * @return 0 if success. Otherwise -errno.
@@ -184,7 +184,7 @@ ytrie_copy(struct ytrie *dst, const struct ytrie *src, void *tag,
 /**
  * Clone trie object.
  *
- * @param tag Tag object passed to \a clonev
+ * @param tag Tag object passed to {@code clonev}
  * @param clonev Callback function cloning element.
  *               It should returns NULL if fails.
  */
@@ -193,17 +193,18 @@ ytrie_clone(const struct ytrie *,
 	    void *tag, void *(*clonev)(void *tag, const void *v));
 
 /**
- * Find unique key that starts with \a start_with.
+ * Find unique key that starts with {@code start_with}.
  *
  * @param start_with Prefix value of key to find
- * @param sz Size of \a start_with key
+ * @param sz Size of {@code start_with} key
  * @param buf (out)
  * @param bufsz
  * @return
- *     - 0: There are more than one candidates that starts with \a start_with.
+ *     - 0: There are more than one candidates that starts with
+ *            {@code start_with}.
  *     - 1: There is only one candidate.
  *     - 2: There is no matching candidate key.
- *     - <0: -errno. Ex. size of \a buf is not large enough.
+ *     - <0: -errno. Ex. size of {@code buf} is not large enough.
  */
 YYEXPORT int
 ytrie_auto_complete(struct ytrie *,

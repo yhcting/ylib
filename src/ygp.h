@@ -70,8 +70,8 @@ ygpinit(struct ygp *gp,
 
 /**
  * Put object. Reference counter is decreased.
- * If reference count is '0' and \a ofree is NOT NULL, object is freed by
- *  calling \a ofree.
+ * If reference count is '0' and {@code ofree} is NOT NULL, object is freed by
+ *  calling {@code ofree}.
  *
  * @return Reference count after put.
  */

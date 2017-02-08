@@ -39,7 +39,7 @@
  * @brief Easy-to-use list module compared with 'ylistl'.
  *
  * In performance point of view, this is slower.
- * Interface of \a ylist may return not-essential-value for easy-to-use;
+ * Interface of {@code ylist} may return not-essential-value for easy-to-use;
  * For example, parameter value itself.
  *
  * Operation to the empty list is not defined. It's user's responsibility!
@@ -61,30 +61,30 @@
  ****************************************************************************/
 /** List node object. */
 struct ylist_node {
-	/* \cond */
+	/* @cond */
         /* This MUST be on top of struct members */
 	void *item; /* node data */
 	struct ylistl_link lk; /* node for list link */
-	/* \endcond */
+	/* @endcond */
 };
 
 /** List object */
 struct ylist {
-	/* \cond */
+	/* @cond */
 	void (*ifree)(void *); /* callback to free list item(Item FREE) */
 	struct ylistl_link head; /* head of list */
 	uint32_t sz; /* current list size */
 	uint32_t max; /* maximum list size allowed, 0 means 'no limit' */
-	/* \endcond */
+	/* @endcond */
 };
 
 /** List iterator object */
 struct ylisti {
-	/* \cond */
+	/* @cond */
 	struct ylist *list;
 	struct ylistl_link *lnext, *lcurr;
 	void *(*next)(struct ylisti *);
-	/* \endcond */
+	/* @endcond */
 };
 
 
@@ -94,7 +94,7 @@ struct ylisti {
  *
  ****************************************************************************/
 /**
- * Free \a item.
+ * Free {@code item}.
  *
  * @param l List object.
  * @param item List item to free.
@@ -162,7 +162,7 @@ ylist_size(const struct ylist *l) {
 }
 
 /**
- * Is \a item in the list?
+ * Is {@code item} in the list?
  *
  * @param item Item to check
  * @return TRUE or FALSE

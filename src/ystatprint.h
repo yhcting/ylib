@@ -67,7 +67,7 @@
  * @param idxs Index array to add comment at.
  *             This SHOULD be incrementally sorted array.
  * @param cmts Array of comment string.
- * @param isz Array size of \a idxs and \a cmts
+ * @param isz Array size of {@code idxs} and {@code cmts}
  * @param isp Inter-space. # of spaces between bar.
  * @param barc Ascii character to represent bar.
  * @return 0 for success otherwise -(error number).
@@ -108,7 +108,7 @@ ystpr_bargraph(int fd,
  * </PRE>
  *
  * @param fd File to write.
- * @param vs Array of values 
+ * @param vs Array of values
  * @param vsz Size of value array
  * @param w Graph width
  * @param h Graph height

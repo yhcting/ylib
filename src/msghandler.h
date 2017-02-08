@@ -42,7 +42,9 @@
 
 struct ymsghandler {
 	struct ymsglooper *ml;
-	void (*handle)(const struct ymsg *);
+	void (*handle)(struct ymsghandler *, const struct ymsg *);
+	void *tag;
+	void (*tagfree)(void *);
 };
 
 #endif /* __MSGHANDLEr_h__ */

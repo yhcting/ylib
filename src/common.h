@@ -153,12 +153,12 @@ EXPORT void dfree(void *);
  */
 #define die2(fmt, args...)			\
         do {					\
-		ylogf(fmt, ##args);		\
+		ylogf(fmt"\n", ##args);		\
 		die();				\
         } while (FALSE)
 
 /**
- * Die if \a cond is NOT TRUE.
+ * Die if {@code cond} is NOT TRUE.
  */
 #define fatal(cond)				\
 	if (unlikely(!(cond))) {		\
@@ -166,7 +166,7 @@ EXPORT void dfree(void *);
 	}
 
 /**
- * Die if \a cond is NOT TRUE with given message.
+ * Die if {@code cond} is NOT TRUE with given message.
  */
 #define fatal2(cond, fmt, args...)		\
 	if (unlikely(!(cond))) {		\

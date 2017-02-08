@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2017
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -70,19 +70,37 @@ struct ymsghandler;
 struct ytask;
 
 /**
+ * Handle created and returned inside library
+ */
+struct ytaskmanager_qevent_listener_handle;
+
+/**
  * Queue event listener struct.
  * At this moment, only one function is in the struct.
  * But, this is for future expansion.
+ * Copied value of this struct is used inside library.
+ * So, DO NOT add additional extra data at the end of this struct.
  */
 struct ytaskmanager_qevent_listener {
 	/**
 	 * Callback function executed at owner's context.
 	 */
- 	void (*on_event)(struct ytaskmanager *,
+ 	void (*on_event)(struct ytaskmanager_qevent_listener *,
+			 struct ytaskmanager *,
 			 enum ytaskmanager_qevent,
 			 int readyq_sz, /**< Size of readyQ */
 			 int runq_sz, /**< Size of runQ */
 			 struct ytask *);
+	/**
+	 * Function to free extra data. This can be NULL.
+	 * NULL means, nothing to do for freeing extra data.
+	 * Argument of this function is
+	 * {@code & struct ytask_event_listener.extra}.
+	 * So, argument itself MUST NOT be freed in it.
+	 */
+	void (*free_extra)(void *, unsigned int extrasz);
+	unsigned int extrasz; /**< size of extra data in bytes */
+	char extra[0]; /**< extra user data */
 };
 
 /**
@@ -94,7 +112,7 @@ struct ytaskmanager_qevent_listener {
  *              < 0 means not-limited.
  * @return NULL if fails.
  */
-struct ytaskmanager *
+YYEXPORT struct ytaskmanager *
 ytaskmanager_create(struct ymsghandler *owner,
 		    int slots);
 
@@ -104,28 +122,28 @@ ytaskmanager_create(struct ymsghandler *owner,
  *
  * @return 0 for success. Otherwise -errno.
  */
-int
+YYEXPORT int
 ytaskmanager_destroy(struct ytaskmanager *);
 
 /**
  * Get owner.
  */
-struct ymsghandler *
+YYEXPORT struct ymsghandler *
 ytaskmanager_get_owner(struct ytaskmanager *);
 
 /**
  * Get number of concurrency slots. See {@link ytaskmanager_create}
  */
-int
+YYEXPORT int
 ytaskmanager_get_slots(struct ytaskmanager *);
 
 
 /**
- * Tag is destroied by using \a tagfree when task is destroied.
+ * Tag is destroied by using {@code tagfree} when task is destroied.
  *
  * @return # of newly added tag (0 means overwritten). -errno if fails.
  */
-int
+YYEXPORT int
 ytaskmanager_add_tag(struct ytaskmanager *,
 		     const char *key,
 		     void *tag,
@@ -136,7 +154,7 @@ ytaskmanager_add_tag(struct ytaskmanager *,
  * That is, tag is destroied too, when task is destroied.
  * @return Tag object
  */
-void *
+YYEXPORT void *
 ytaskmanager_get_tag(struct ytaskmanager *,
 		     const char *key);
 
@@ -146,7 +164,7 @@ ytaskmanager_get_tag(struct ytaskmanager *,
  * @return Number of deleted tags (0 means nothing deleted).
  *         -errno if fails.
  */
-int
+YYEXPORT int
 ytaskmanager_remove_tag(struct ytaskmanager *,
 			const char *key);
 
@@ -155,71 +173,82 @@ ytaskmanager_remove_tag(struct ytaskmanager *,
  *
  * @return Queue type
  */
-enum ytaskmanager_qtype
+YYEXPORT enum ytaskmanager_qtype
 ytaskmanager_contains(struct ytaskmanager *, struct ytask *);
 
 /**
  * Number of tasks in the task manager(ready + run).
  */
-int
+YYEXPORT int
 ytaskmanager_size(struct ytaskmanager *);
 
 /**
  * ytask can be added to only one ytaskmanager!
  */
-int
+YYEXPORT int
 ytaskmanager_add_task(struct ytaskmanager *, struct ytask *);
 
 /**
  * Cancel task.
  * If task is in the ready queue, task is removed immediately.
  */
-int
+YYEXPORT int
 ytaskmanager_cancel_task(struct ytaskmanager *, struct ytask *);
 
 /**
- * @param arg Argument passed to \a match function
+ * Cancel all tasks in the taskmanager.
+ * If task is in the ready queue, task is removed immediately.
+ */
+YYEXPORT int
+ytaskmanager_cancel_all(struct ytaskmanager *);
+
+/**
+ * @param arg Argument passed to {@code match} function
  * @param match Return whether task matches requirement.
- *              TRUE is returned by \a match, the task becomes final return
- *                value of this interface function.
+ *              TRUE is returned by {@code match}, the task becomes final
+ *                return value of this interface function.
  * @return Task matched.
  */
-struct ytask *
+YYEXPORT struct ytask *
 ytaskmanager_find_task(struct ytaskmanager *,
 		       void *arg,
 		       bool (*match)(struct ytask *, void *));
 
 /**
- * Add queue event listener.
+ * Add queue event listener executed on taskmanager's msghandler context.
+ * See {@link ytaskmanager_add_qevent_listener}
  *
  * @param owner Handler in where listener is executed.
  * @return Handle of event listener. NULL is returned if fails.
  */
-void *
-ytaskmanager_add_qevent_listener
+YYEXPORT struct ytaskmanager_qevent_listener_handle *
+ytaskmanager_add_qevent_listener2
 (struct ytaskmanager *,
  struct ymsghandler *owner,
  const struct ytaskmanager_qevent_listener *);
 
 /**
- * Add queue event listener executed on taskmanager's msghandler context.
- * See {@link ytaskmanager_add_qevent_listener}
+ * Add queue event listener.
+ *
+ * @param tm ytaskmanager instance
+ * @param qel Value of struct {@link ytaskmanager_qevent_listener} object.
+ * @return Handle of event listener. NULL is returned if fails.
  */
-void *
-ytaskmanager_add_qevent_listener2
+static YYINLINE struct ytaskmanager_qevent_listener_handle *
+ytaskmanager_add_qevent_listener
 (struct ytaskmanager *tm,
  const struct ytaskmanager_qevent_listener *qel) {
-	return ytaskmanager_add_qevent_listener
+	return ytaskmanager_add_qevent_listener2
 		(tm, ytaskmanager_get_owner(tm), qel);
 }
 
 /**
- * @param el_handle Handle returned by {@link ytaskmanager_add_qevent_listener}
  * @return 0 if success. Otherwise -errno.
  */
-int
+YYEXPORT int
 ytaskmanager_remove_qevent_listener
-(struct ytaskmanager *, void *el_handle);
+(struct ytaskmanager *,
+ struct ytaskmanager_qevent_listener_handle *);
 
 
 #endif /* __YTASKMANAGEr_h__ */

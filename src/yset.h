@@ -74,7 +74,7 @@ ysets_create(void) {
 
 /**
  * Create set whose key-type is general-object.
- * See, \a yhasho_create in {@link yhash.h} for details
+ * See, {@code yhasho}_create in {@link yhash.h} for details
  *
  * @return NULL if fails.
  */
@@ -127,10 +127,10 @@ yset_sz(const yset_t s) {
  *     Buffer to contain pointer of element.
  *     'shallow copy' of elements are stored at buffer.
  *     So, DO NOT free/modify element's value pointed
- * @param bufsz sizeof \a elemsbuf
- * @return number keys assigned to \a elemsbuf
- *         'return value == \a bufsz' may mean that \a elemsbuf is not large
- *         enough to contains all elements in the set.
+ * @param bufsz sizeof {@code elemsbuf}
+ * @return number keys assigned to {@code elemsbuf}
+ *         'return value == {@code bufsz}' may mean that {@code elemsbuf} is
+ *         not large enough to contains all elements in the set.
  */
 static YYINLINE uint32_t
 yset_elements(const yset_t s,
@@ -141,8 +141,8 @@ yset_elements(const yset_t s,
 
 /**
  * Add to the set.
- * \a elem is used as key by shallow or deep copy. It is decided when set is
- *   created(ysetX_create).
+ * {@code elem} is used as key by shallow or deep copy. It is decided when set
+ *   is created(ysetX_create).
  *
  * @param s Set
  * @param elem data value(item)
@@ -168,7 +168,7 @@ yset_remove(yset_t s, const void *elem) {
 }
 
 /**
- * Is set contains \a elem?
+ * Is set contains {@code elem}?
  *
  * @param s Set
  * @param elem Element
@@ -208,7 +208,7 @@ YYEXPORT yset_t
 yset_union(const yset_t, const yset_t);
 
 /**
- * Create new set which is diff \a s0 - \a s1
+ * Create new set which is diff {@code s0} - {@code s1}
  * (NOT IMPLEMENTED YET)
  * See {@link yset_intersect}
  */

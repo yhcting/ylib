@@ -165,32 +165,37 @@ on_late_progress(struct ytask *tsk, long prog) {
  *****************************************************************************/
 
 static void
-on_started(struct ytask *tsk) {
+on_started(struct ytask_event_listener *el, struct ytask *tsk) {
 	ylogv("[%p]started\n", pthread_self());
 }
 
 static void
-on_done(struct ytask *tsk, void *result, int errcode) {
+on_done(struct ytask_event_listener *el,
+	struct ytask *tsk, void *result, int errcode) {
 	ylogv("[%p]done\n", pthread_self());
 }
 
 static void
-on_cancelling(struct ytask *tsk, bool started) {
+on_cancelling(struct ytask_event_listener *el,
+	      struct ytask *tsk, bool started) {
 	ylogv("[%p]cancelling: %d\n", pthread_self(), started);
 }
 
 static void
-on_cancelled(struct ytask *tsk, int errcode) {
+on_cancelled(struct ytask_event_listener *el,
+	     struct ytask *tsk, int errcode) {
 	ylogv("[%p]cancelled\n", pthread_self());
 }
 
 static void
-on_progress_init(struct ytask *tsk, long max_prog) {
+on_progress_init(struct ytask_event_listener *el,
+		 struct ytask *tsk, long max_prog) {
 	ylogv("[%p]progress_init: %ld\n", pthread_self(), max_prog);
 }
 
 static void
-on_progress(struct ytask *tsk, long prog) {
+on_progress(struct ytask_event_listener *el,
+	    struct ytask *tsk, long prog) {
 	ylogv("[%p]progress: %ld\n", pthread_self(), prog);
 }
 
@@ -265,17 +270,17 @@ tc1(struct ymsghandler *mh0,
 	ta = ycalloc(1, sizeof(*ta));
 	ta->s = ymalloc(16);
 	strcpy(ta->s, "T0:arg");
-	t = ytask_create("T0",
-			 mh0,
-			 YTHREADEX_NORMAL,
-			 &_tlis,
-			 ta,
-			 &free_arg,
-			 &free_result,
-			 &runnable0,
-			 TRUE);
+	t = ytask_create3("T0",
+			  mh0,
+			  YTHREADEX_NORMAL,
+			  &_tlis,
+			  ta,
+			  &free_arg,
+			  &free_result,
+			  &runnable0,
+			  TRUE);
 	yassert(ytask_destroy(t));
-	ytask_add_event_listener(t, mh0, &_telis, TRUE);
+	ytask_add_event_listener2(t, mh0, &_telis, TRUE);
 	yassert(!ytask_start_sync(t));
 	usleep(300 * 1000); /* wait 300 ms until callbacks are handled */
 	tr = ytask_get_result(t);
@@ -306,17 +311,17 @@ tc2(struct ymsghandler *mh0,
 	ta->sleep_cnt = 2;
 	ta->sleep_interval = 200; /* 200 ms */
 	strcpy(ta->s, "T1:arg");
-	t = ytask_create("T0",
-			 mh0,
-			 YTHREADEX_NORMAL,
-			 &_tlis,
-			 ta,
-			 &free_arg,
-			 &free_result,
-			 &runnable0,
-			 TRUE);
+	t = ytask_create3("T0",
+			  mh0,
+			  YTHREADEX_NORMAL,
+			  &_tlis,
+			  ta,
+			  &free_arg,
+			  &free_result,
+			  &runnable0,
+			  TRUE);
 	yassert(ytask_destroy(t));
-	ytask_add_event_listener(t, mh0, &_telis, TRUE);
+	ytask_add_event_listener2(t, mh0, &_telis, TRUE);
 	yassert(!ytask_start_sync(t));
 	tr = ytask_get_result(t);
 	while (ytask_destroy(t)); /* try destroy until success */
@@ -340,20 +345,20 @@ tc3(struct ymsghandler *mh0,
 	ta->sleep_cnt = 2;
 	ta->sleep_interval = 200; /* 200 ms */
 	strcpy(ta->s, "T1:arg");
-	t = ytask_create("T0",
-			 mh0,
-			 YTHREADEX_NORMAL,
-			 &_tlis,
-			 ta,
-			 &free_arg,
-			 &free_result,
-			 &runnable0,
-			 TRUE);
+	t = ytask_create3("T0",
+			  mh0,
+			  YTHREADEX_NORMAL,
+			  &_tlis,
+			  ta,
+			  &free_arg,
+			  &free_result,
+			  &runnable0,
+			  TRUE);
 	yassert(ytask_destroy(t));
-	ytask_add_event_listener(t, mh1, &_telis, TRUE);
+	ytask_add_event_listener2(t, mh1, &_telis, TRUE);
 	yassert(!ytask_start(t));
 	usleep(10 * 1000);
-	ytask_add_event_listener(t, mh1, &_telis, TRUE);
+	ytask_add_event_listener2(t, mh1, &_telis, TRUE);
 	while (!ytask_is_terminated(t))
 		usleep(10 * 1000);
 	tr = ytask_get_result(t);
@@ -369,9 +374,9 @@ test_task(void) {
 	srand(time(NULL));
 
 	ml0 = ymsglooper_start_looper_thread(FALSE);
-	mh0 = ymsghandler_create(ml0, NULL); /* use default handle */
+	mh0 = ymsghandler_create(ml0, NULL, NULL, NULL); /* use default handle */
 	ml1 = ymsglooper_start_looper_thread(FALSE);
-	mh1 = ymsghandler_create(ml1, NULL); /* use default handle */
+	mh1 = ymsghandler_create(ml1, NULL, NULL, NULL); /* use default handle */
 
 	tc1(mh0, mh1);
 	tc2(mh0, mh1);
@@ -384,7 +389,7 @@ test_task(void) {
 	ymsglooper_stop(ml1);
 	while (YMSGLOOPER_TERMINATED != ymsglooper_get_state(ml0)
 	       || YMSGLOOPER_TERMINATED != ymsglooper_get_state(ml1))
-		usleep(10*1000);
+		usleep(10 * 1000);
 	ymsglooper_destroy(ml0);
 	ymsglooper_destroy(ml1);
 	return;
@@ -392,8 +397,12 @@ test_task(void) {
 
 extern void task_clear(void);
 extern void log_clear(void);
+extern void msglooper_clear(void);
+extern void msghandler_clear(void);
 static void
 clear_task(void) {
+	msglooper_clear();
+	msghandler_clear();
 	task_clear();
 	log_clear();
 }

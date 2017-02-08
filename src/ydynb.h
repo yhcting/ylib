@@ -66,7 +66,7 @@ ydynb_dump(const struct ydynb *);
 
 /**
  * Create new dynamic-buffer.
- * 
+ *
  * @param init_limit Initial buffer capacity(# of elements) that should be >0.
  * @param esz Element sz in bytes
  * @param align Alignment(bytes) of each element in the buffer.
@@ -98,7 +98,7 @@ ydynb_reset(struct ydynb *b) {
 /**
  * Destroy dynamic-buffer
  * Memory also be freed.
- * So, pointer \a b is not valid anymore.
+ * So, pointer {@code b} is not valid anymore.
  *
  * @param b Dynamic buffer object
  * @param pop_buf TRUE to return elements array(memory is preserved).
@@ -215,7 +215,7 @@ YYEXPORT int
 ydynb_expand(struct ydynb *);
 
 /**
- * Increase buffer size until it can cover \a sz_required.
+ * Increase buffer size until it can cover {@code sz_required}.
  *
  * @param b Dynamic buffer object
  * @param sz_required Free size(# of elements) required to the buffer.
@@ -229,7 +229,7 @@ ydynb_expand2(struct ydynb *b, uint32_t sz_required) {
 }
 
 /**
- * Shrink buffer size to \a sz_to to reduce memory consumption.
+ * Shrink buffer size to {@code sz_to} to reduce memory consumption.
  *
  * @param sz_to Size(# of elements) that buffer should be shrinked to.
  * @return 0 if success, otherwise -errno.

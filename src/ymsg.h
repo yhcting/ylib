@@ -79,11 +79,11 @@ struct ymsg {
 	uint8_t pri; /**< Priority [0-255] */
 	uint32_t opt; /**< Option - reserved for future use */
 	void *data; /**< Data or argument of action */
-	void (*dfree)(void *); /**< Function to free \a data */
+	void (*dfree)(void *); /**< Function to free {@code data} */
 	union {
 		/** Message code - int type to use as switch argument. */
 		int code;
-		/** Callback function to execute with argument \a data */
+		/** Callback function to execute with argument {@code data} */
 		void (*run)(void *);
 	};
 };

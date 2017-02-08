@@ -34,6 +34,11 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
+/**
+ * @file yproc.h
+ * @brief Module for easy-use linux /proc file system.
+ */
+
 #ifndef __YPROc_h__
 #define __YPROc_h__
 
@@ -43,7 +48,7 @@
 
 #include "ydef.h"
 
-/* At inux kernel it is set as 16 - See TASK_COMM_LEN. */
+/**< At inux kernel it is set as 16 - See TASK_COMM_LEN. */
 #define YPROC_TCOMM_LEN 16
 
 /**
@@ -66,7 +71,7 @@ struct yproc_pid_stat {
  *
  * @param fd File descriptor
  * @param buf Buffer in where file path is stored.
- * @param bufsz Bytes of \a buf buffer.
+ * @param bufsz Bytes of {@code buf} buffer.
  * @return 0 for success. Otherwise -errno.
  */
 YYEXPORT int
@@ -78,7 +83,7 @@ yproc_self_fd_path(int fd, char *buf, unsigned bufsz);
  *
  * @param pid Process id
  * @param buf Buffer in where command-line is stored.
- * @param bufsz Bytes of \a buf buffer.
+ * @param bufsz Bytes of {@code buf} buffer.
  * @return 0 for success. Otherwise -errno.
  */
 YYEXPORT int

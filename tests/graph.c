@@ -62,27 +62,38 @@
  *  |<----------------------------------
  */
 
-static struct yvertex *
+struct mynode {
+	struct yvertex v;
+	const char *name;
+};
+
+static struct mynode *
 find_vertex(struct ygraph *g, const char *name) {
 	struct yvertex *v;
+	struct mynode *mn;
 	ygraph_foreach_vertex(g, v) {
-		if (!strcmp(*((char **)v->d), name))
-			return v;
+		mn = YYcontainerof(v, struct mynode, v);
+		if (!strcmp(mn->name, name))
+			return mn;
 	}
 	return NULL;
 }
 
 static void
 make_test_graph(struct ygraph *g) {
-	struct yvertex *v000, *v001, *v002, *v003, *v012, *v022, *v032;
-	struct yvertex *v112;
+	struct mynode *v000, *v001, *v002, *v003, *v012, *v022, *v032;
+	struct mynode *v112;
 
-#define __add_v(g, v, name)						\
+#define __add_v(g, N, NAMe)						\
 	do {								\
-		v = ygraph_create_vertex(g);				\
-		*((char **)v->d) = (char *)name;			\
-		ygraph_add_vertex(g, v);				\
+		N = ymalloc(sizeof(*N));				\
+		N->name = NAMe;						\
+		ygraph_init_vertex(&N->v);				\
+		ygraph_add_vertex(g, &N->v);				\
 	} while (0)
+
+#define __add_edge(g, oe, mn0, mn1)			\
+	ygraph_add_edge(g, oe, &mn0->v, &mn1->v);
 
 	__add_v(g, v000, "v000");
 	__add_v(g, v001, "v001");
@@ -93,42 +104,46 @@ make_test_graph(struct ygraph *g) {
 	__add_v(g, v032, "v032");
 	__add_v(g, v112, "v112");
 
-	ygraph_add_edge(g, NULL, v000, v001);
-	ygraph_add_edge(g, NULL, v000, v002);
-	ygraph_add_edge(g, NULL, v000, v003);
-	ygraph_add_edge(g, NULL, v000, v022);
-	ygraph_add_edge(g, NULL, v001, v001);
-	ygraph_add_edge(g, NULL, v002, v012);
-	ygraph_add_edge(g, NULL, v002, v022);
-	ygraph_add_edge(g, NULL, v002, v003);
-	ygraph_add_edge(g, NULL, v003, v022);
-	ygraph_add_edge(g, NULL, v012, v002);
-	ygraph_add_edge(g, NULL, v022, v002);
-	ygraph_add_edge(g, NULL, v022, v000);
-	ygraph_add_edge(g, NULL, v022, v022);
-	ygraph_add_edge(g, NULL, v032, v002);
-	ygraph_add_edge(g, NULL, v112, v012);
+	__add_edge(g, NULL, v000, v001);
+	__add_edge(g, NULL, v000, v002);
+	__add_edge(g, NULL, v000, v003);
+	__add_edge(g, NULL, v000, v022);
+	__add_edge(g, NULL, v001, v001);
+	__add_edge(g, NULL, v002, v012);
+	__add_edge(g, NULL, v002, v022);
+	__add_edge(g, NULL, v002, v003);
+	__add_edge(g, NULL, v003, v022);
+	__add_edge(g, NULL, v012, v002);
+	__add_edge(g, NULL, v022, v002);
+	__add_edge(g, NULL, v022, v000);
+	__add_edge(g, NULL, v022, v022);
+	__add_edge(g, NULL, v032, v002);
+	__add_edge(g, NULL, v112, v012);
 
+#undef __add_edge
 #undef __add_v
 }
 
 
 static void
 test_graph(void) {
+	struct ygraph g_;
 	struct ygraph *g;
 	struct yedge *e;
-	struct yvertex *v000, *v002, *v012, *v112, *v022;
+	struct yvertex *v, *vtmp;
+	struct mynode *v000, *v002, *v012, *v112, *v022;
 
+	g = &g_;
 	/*
 	 * Graph construction & destruction
 	 */
-	g = ygraph_create(sizeof(void *), NULL, 0, NULL);
-	ygraph_destroy(g);
+	ygraph_init(g);
+	ygraph_clean(g);
 
 	/*
 	 * Verify graph construction.
 	 */
-	g = ygraph_create(sizeof(void *), NULL, 0, NULL);
+	ygraph_init(g);
 	make_test_graph(g);
 
 	v000 = find_vertex(g, "v000");
@@ -139,44 +154,50 @@ test_graph(void) {
 
 	yassert(!ygraph_has_vertex(g, NULL));
 
-	yassert(ygraph_has_edge(g, v002, v012));
-	yassert(ygraph_has_edge(g, v012, v002));
-	yassert(ygraph_has_edge(g, v112, v012));
-	yassert(ygraph_has_edge(g, v022, v022));
-	yassert(!ygraph_has_edge(g, v002, v112));
+	yassert(ygraph_has_edge(g, &v002->v, &v012->v));
+	yassert(ygraph_has_edge(g, &v012->v, &v002->v));
+	yassert(ygraph_has_edge(g, &v112->v, &v012->v));
+	yassert(ygraph_has_edge(g, &v022->v, &v022->v));
+	yassert(!ygraph_has_edge(g, &v002->v, &v112->v));
 
 	/*
 	 * Test graph update operations
 	 */
-	yassert(!ygraph_remove_edge(g, v002, v022));
-	yassert(!ygraph_has_edge(g, v002, v022));
-	yassert(!ygraph_remove_edge(g, v022, v022));
-	yassert(!ygraph_has_edge(g, v022, v022));
-	yassert(!ygraph_add_edge(g, NULL, v022, v022));
-	yassert(ygraph_has_edge(g, v022, v022));
-	yassert(!ygraph_remove_vertex(g, v022));
-	ygraph_destroy_vertex(g, v022);
+	yassert(!ygraph_remove_edge(g, &v002->v, &v022->v));
+	yassert(!ygraph_has_edge(g, &v002->v, &v022->v));
+	yassert(!ygraph_remove_edge(g, &v022->v, &v022->v));
+	yassert(!ygraph_has_edge(g, &v022->v, &v022->v));
+	yassert(!ygraph_add_edge(g, NULL, &v022->v, &v022->v));
+	yassert(ygraph_has_edge(g, &v022->v, &v022->v));
+	yassert(!ygraph_remove_vertex(g, &v022->v));
+
+	yfree(v022);
 	/*
 	 * Graph sanity test
 	 */
-	ygraph_foreach_oedge(v002, e) {
-		yassert(e->vt != v022
-			&& e->vf != v022);
+	ygraph_foreach_oedge(&v002->v, e) {
+		yassert(e->vt != &v022->v
+			&& e->vf != &v022->v);
 	}
-	ygraph_foreach_iedge(v002, e) {
-		yassert(e->vt != v022
-			&& e->vf != v022);
+	ygraph_foreach_iedge(&v002->v, e) {
+		yassert(e->vt != &v022->v
+			&& e->vf != &v022->v);
 	}
-	ygraph_foreach_oedge(v000, e) {
-		yassert(e->vt != v022
-			&& e->vf != v022);
+	ygraph_foreach_oedge(&v000->v, e) {
+		yassert(e->vt != &v022->v
+			&& e->vf != &v022->v);
 	}
-	ygraph_foreach_iedge(v000, e) {
-		yassert(e->vt != v022
-			&& e->vf != v022);
+	ygraph_foreach_iedge(&v000->v, e) {
+		yassert(e->vt != &v022->v
+			&& e->vf != &v022->v);
 	}
 
-	ygraph_destroy(g);
+	ygraph_foreach_vertex_removal_safe(g, v, vtmp) {
+		ygraph_remove_vertex(g, v);
+		yfree(YYcontainerof(v, struct mynode, v));
+	}
+
+	ygraph_clean(g);
 }
 
 TESTFN(graph)

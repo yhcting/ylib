@@ -61,7 +61,7 @@ static const u64 PROG_DEFAULT_INTERVAL = 500; /* ms */
 /* Hash operation is quite expensive. So mutex lock is chosen */
 declare_lock(mutex, struct ytask, tagmap, NULL)
 /* List operation is very cheap. But calling listeners requires lock */
-declare_lock(mutex, struct ytask, el, NULL)
+declare_lock(mutex, struct ytask, elh, NULL)
 
 /******************************************************************************
  *
@@ -85,7 +85,7 @@ on_started_runnable(void *arg) {
 	struct ytask *tsk = o->o0;
 	struct ytask_event_listener *el = o->o1;
 	/* arg will be freed at out-side */
-	(*el->on_started)(tsk);
+	(*el->on_started)(el, tsk);
 }
 
 static void
@@ -96,7 +96,7 @@ on_done_runnable(void *arg) {
 	void *result = o->o2;
 	int errcode = (int)(intptr_t)o->o3;
 	/* arg will be freed at out-side */
-	(*el->on_done)(tsk, result, errcode);
+	(*el->on_done)(el, tsk, result, errcode);
 }
 
 static void
@@ -106,7 +106,7 @@ on_cancelling_runnable(void *arg) {
 	struct ytask_event_listener *el = o->o1;
 	bool started = (bool)(intptr_t)o->o2;
 	/* arg will be freed at out-side */
-	(*el->on_cancelling)(tsk, started);
+	(*el->on_cancelling)(el, tsk, started);
 }
 
 static void
@@ -116,7 +116,7 @@ on_cancelled_runnable(void *arg) {
 	struct ytask_event_listener *el = o->o1;
 	int errcode = (int)(intptr_t)o->o2;
 	/* arg will be freed at out-side */
-	(*el->on_cancelled)(tsk, errcode);
+	(*el->on_cancelled)(el, tsk, errcode);
 }
 
 static void
@@ -126,7 +126,7 @@ on_progress_init_runnable(void *arg) {
 	struct ytask_event_listener *el = o->o1;
 	long max_prog = (long)(intptr_t)o->o2;
 	/* arg will be freed at out-side */
-	(*el->on_progress_init)(tsk, max_prog);
+	(*el->on_progress_init)(el, tsk, max_prog);
 }
 
 static void
@@ -136,7 +136,7 @@ on_progress_runnable(void *arg) {
 	struct ytask_event_listener *el = o->o1;
 	long prog = (long)(intptr_t)o->o2;
 	/* arg will be freed at out-side */
-	(*el->on_progress)(tsk, prog);
+	(*el->on_progress)(el, tsk, prog);
 }
 
 /*****************************************************************************/
@@ -144,16 +144,16 @@ on_progress_runnable(void *arg) {
 #define listener_stmt(nAME, yOnUM, yOaRG, cALLaRG)			\
 	do {								\
 		struct ytask *tsk = (struct ytask *)threadex;		\
-		struct task_event_listener *el;				\
+		struct ytask_event_listener_handle *elh;		\
 		if (tsk->listener.on_early_##nAME) {			\
 			(*tsk->listener.on_early_##nAME) cALLaRG;	\
 		}							\
-                lock_el(tsk);                                           \
-		ylistl_foreach_item(el,					\
-				    &tsk->elhd,				\
-				    struct task_event_listener,		\
+                lock_elh(tsk);						\
+		ylistl_foreach_item(elh,				\
+				    &tsk->elhhd,			\
+				    struct ytask_event_listener_handle,	\
 				    lk) {				\
-			if (el->el.on_##nAME) {				\
+			if (elh->el.on_##nAME) {			\
 				struct yo *o = yocreate##yOnUM yOaRG;	\
 				if (unlikely(!o)) {			\
 					die2("Out of memory!");		\
@@ -163,17 +163,17 @@ on_progress_runnable(void *arg) {
 				 */					\
 				task_get(tsk);				\
 				fatali0(ymsghandler_post_exec		\
-					(el->owner,			\
+					(elh->owner,			\
 					 o, (void(*)(void *))&yodestroy, \
 					 &on_##nAME##_runnable));	\
 				/* Put tsk object after handling listener */ \
 				fatali0(ymsghandler_post_exec		\
-					(el->owner,			\
+					(elh->owner,			\
 					 tsk, NULL,			\
 					 &task_put_runnable));		\
 			}						\
 		}							\
-                unlock_el(tsk);                                         \
+                unlock_elh(tsk);					\
 		if (tsk->listener.on_late_##nAME) {			\
 			(*tsk->listener.on_late_##nAME) cALLaRG;	\
 		}							\
@@ -182,7 +182,7 @@ on_progress_runnable(void *arg) {
 static void
 on_started(struct ythreadex *threadex) {
 	listener_stmt(started, 1,
-		      (tsk, NULL, &el->el, NULL),
+		      (tsk, NULL, &elh->el, NULL),
 		      (tsk));
 }
 
@@ -190,7 +190,7 @@ static void
 on_done(struct ythreadex *threadex, void *result, int errcode) {
 	listener_stmt(done, 3,
 		      (tsk, NULL,
-		       &el->el,
+		       &elh->el,
 		       NULL, result,
 		       NULL, (void *)(intptr_t)errcode, NULL),
 		      (tsk, result, errcode));
@@ -200,7 +200,7 @@ static void
 on_cancelling(struct ythreadex *threadex, bool started) {
 	listener_stmt(cancelling, 2,
 		      (tsk, NULL,
-		       &el->el, NULL,
+		       &elh->el, NULL,
 		       (void *)(intptr_t)started, NULL),
 		      (tsk, started));
 }
@@ -209,7 +209,7 @@ static void
 on_cancelled(struct ythreadex *threadex, int errcode) {
 	listener_stmt(cancelled, 2,
 		      (tsk, NULL,
-		       &el->el, NULL,
+		       &elh->el, NULL,
 		       (void *)(intptr_t)errcode, NULL),
 		      (tsk, errcode));
 }
@@ -218,7 +218,7 @@ static void
 on_progress_init(struct ythreadex *threadex, long max_prog) {
 	listener_stmt(progress_init, 2,
 		      (tsk, NULL,
-		       &el->el, NULL,
+		       &elh->el, NULL,
 		       (void *)(intptr_t)max_prog, NULL),
 		      (tsk, max_prog));
 }
@@ -227,7 +227,7 @@ static void
 on_progress(struct ythreadex *threadex, long prog) {
 	listener_stmt(progress, 2,
 		      (tsk, NULL,
-		       &el->el, NULL,
+		       &elh->el, NULL,
 		       (void *)(intptr_t)prog, NULL),
 		      (tsk, prog));
 }
@@ -249,6 +249,13 @@ static const struct ythreadex_listener _threadex_listener = {
  *
  *
  *****************************************************************************/
+static void
+free_event_listener_handle(struct ytask_event_listener_handle *elh) {
+	if (elh->el.free_extra)
+		(*elh->el.free_extra)(&elh->el.extra, elh->el.extrasz);
+	yfree(elh);
+}
+
 static void
 task_destroy(struct ytask *tsk) {
 	task_clean(tsk);
@@ -279,7 +286,7 @@ task_init(struct ytask *tsk,
 		      (int(*)(struct ythreadex *, void **))run)))
 		return r;
         tsk->pthdcancel = pthdcancel;
-        ylistl_init_link(&tsk->elhd);
+        ylistl_init_link(&tsk->elhhd);
         tsk->prog.interval = PROG_DEFAULT_INTERVAL;
         if (listener)
                 tsk->listener = *listener;
@@ -289,10 +296,11 @@ task_init(struct ytask *tsk,
 		goto clean_threadex;
 	}
 	init_tagmap_lock(tsk);
-	init_el_lock(tsk);
+	init_elh_lock(tsk);
 	ygpinit(&tsk->gp, tsk, (void(*)(void *))&task_destroy);
 	/* Initialize library internal values */
-	memset(&tsk->tm, 0, sizeof(tsk->tm));
+	tsk->tmtag = NULL;
+	tsk->tdmtag = NULL;
 	return 0;
 
  clean_threadex:
@@ -303,39 +311,36 @@ task_init(struct ytask *tsk,
 int
 task_clean(struct ytask *tsk) {
 	int r;
-	struct task_event_listener *pos, *n;
+	struct ytask_event_listener_handle *pos, *n;
 	if (unlikely(r = threadex_clean(&tsk->t)))
 		return r;
 	/* clean up listeners */
 	ylistl_foreach_item_removal_safe(pos,
 					 n,
-					 &tsk->elhd,
-					 struct task_event_listener,
+					 &tsk->elhhd,
+					 struct ytask_event_listener_handle,
 					 lk) {
-		yfree(pos);
+		free_event_listener_handle(pos);
 	}
         yhash_destroy(tsk->tagmap);
 	destroy_tagmap_lock(tsk);
-	destroy_el_lock(tsk);
-	/* Cleanup library internal values */
-	if (unlikely(tsk->tm.tag && tsk->tm.tagfree))
-		(*tsk->tm.tagfree)(tsk->tm.tag);
+	destroy_elh_lock(tsk);
         return 0;
 }
 
 static bool
 task_has_event_listener(struct ytask *tsk,
-			struct task_event_listener *el) {
+			struct ytask_event_listener_handle *el) {
 	struct ylistl_link *n;
 	bool ret = TRUE;
-	lock_el(tsk);
-	ylistl_foreach(n, &tsk->elhd) {
+	lock_elh(tsk);
+	ylistl_foreach(n, &tsk->elhhd) {
 		if (n == &el->lk)
 			goto done;
 	}
 	ret = FALSE;
  done:
-	unlock_el(tsk);
+	unlock_elh(tsk);
 	return ret;
 }
 
@@ -344,13 +349,12 @@ notify_current_progress_to_new_listener(void *arg) {
 	/* Runs at tsk owner's context. */
 	struct yo *yo = (struct yo *)arg;
 	struct ytask *tsk = yo->o0;
-	struct task_event_listener *el = yo->o1;
-	yodestroy(yo);
+	struct ytask_event_listener_handle *el = yo->o1;
 	yassert(tsk->prog.init);
         if (unlikely(YTHREADEX_STARTED != ythreadex_get_state(&tsk->t)))
 		return; /* ignore notifying progress requrest */
-	(*el->el.on_progress_init)(tsk, tsk->prog.max);
-	(*el->el.on_progress)(tsk, tsk->prog.prog);
+	(*el->el.on_progress_init)(&el->el, tsk, tsk->prog.max);
+	(*el->el.on_progress)(&el->el, tsk, tsk->prog.prog);
 	task_put(tsk);
 }
 
@@ -360,15 +364,15 @@ notify_current_progress_to_new_listener(void *arg) {
  *
  *****************************************************************************/
 struct ytask *
-ytask_create(const char *name,
-             struct ymsghandler *owner,
-             enum ythreadex_priority priority,
-             const struct ytask_listener *listener,
-             void *arg,
-             void (*free_arg)(void *),
-             void (*free_result)(void *),
-             int (*run)(struct ytask *, void **result),
-             bool pthdcancel) {
+ytask_create3(const char *name,
+	      struct ymsghandler *owner,
+	      enum ythreadex_priority priority,
+	      const struct ytask_listener *listener,
+	      void *arg,
+	      void (*free_arg)(void *),
+	      void (*free_result)(void *),
+	      int (*run)(struct ytask *, void **result),
+	      bool pthdcancel) {
 	struct ytask *tsk;
 	tsk = ycalloc(sizeof(*tsk), 1);
 	if (unlikely(!tsk)) {
@@ -470,47 +474,49 @@ ytask_remove_tag(struct ytask *tsk, const char *name) {
 	return r;
 }
 
-void *
-ytask_add_event_listener(struct ytask *tsk,
-                         struct ymsghandler *event_listener_owner,
-                         const struct ytask_event_listener *yel,
-			 bool progress_notice) {
+struct ytask_event_listener_handle *
+ytask_add_event_listener2(struct ytask *tsk,
+			  struct ymsghandler *event_listener_owner,
+			  const struct ytask_event_listener *yel,
+			  bool progress_notice) {
 	struct yo *yo;
-	struct task_event_listener *el = ymalloc(sizeof(*el));
+	struct ytask_event_listener_handle *elh;
 	yassert(tsk && event_listener_owner && yel);
-	if (unlikely(!el))
+	if (unlikely(!(elh = ymalloc(sizeof(*elh) + yel->extrasz))))
 		return NULL;
-	el->el = *yel;
-	el->owner = event_listener_owner;
-	lock_el(tsk);
-	ylistl_add_last(&tsk->elhd, &el->lk);
-	unlock_el(tsk);
+	memcpy(&elh->el, yel, sizeof(*yel) + yel->extrasz);
+	elh->owner = event_listener_owner;
+	lock_elh(tsk);
+	ylistl_add_last(&tsk->elhhd, &elh->lk);
+	unlock_elh(tsk);
 	if (!(tsk->prog.max > 0
 	      && YTHREADEX_STARTED == ythreadex_get_state(&tsk->t)
 	      && progress_notice))
-		return el;
-	if (unlikely(!(yo = yocreate1(tsk, NULL, el, NULL)))) {
-		yfree(el);
+		return elh;
+	if (unlikely(!(yo = yocreate1(tsk, NULL, elh, NULL)))) {
+		/* At failure, extra data SHOULD be preserved.
+		 * So, yfree is used instead of free_event_listener_handle
+		 */
+		yfree(elh);
 		return NULL;
 	}
 	task_get(tsk);
 	fatali0(ymsghandler_post_exec
 		(event_listener_owner, yo, (void(*)(void *))&yodestroy,
 		 &notify_current_progress_to_new_listener));
-	return el; /* el is used as event-listener-handler */
+	return elh; /* el is used as event-listener-handler */
 }
 
 int
 ytask_remove_event_listener(struct ytask *tsk,
-                            void *event_listener_handle) {
-	struct task_event_listener *el = event_listener_handle;
-	yassert(tsk && event_listener_handle);
-	if (!task_has_event_listener(tsk, el))
+                            struct ytask_event_listener_handle *elh) {
+	yassert(tsk && elh);
+	if (!task_has_event_listener(tsk, elh))
 		return -EINVAL;
-	lock_el(tsk);
-	ylistl_remove(&el->lk);
-	unlock_el(tsk);
-	yfree(el);
+	lock_elh(tsk);
+	ylistl_remove(&elh->lk);
+	unlock_elh(tsk);
+	free_event_listener_handle(elh);
 	return 0;
 }
 

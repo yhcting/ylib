@@ -56,10 +56,10 @@
  * Structure to calculate incremental mean value.
  */
 struct ysm_imean {
-	/* \cond */
+	/* @cond */
 	uint32_t n; /* # of elements accumulated */
 	double u; /* current mean */
-	/* \endcond */
+	/* @endcond */
 };
 
 /**
@@ -126,7 +126,7 @@ ysm_imean_n(const struct ysm_imean *im) {
 
 /**
  * Combine two samples(incremental mean).
- * Destination \a out SHOULD NOT be used as source.
+ * Destination {@code out} SHOULD NOT be used as source.
  *
  * @param out (out) Object in where combined value is set.
  */
@@ -230,8 +230,8 @@ ysm_ivar_n(const struct ysm_ivar *iv) {
 }
 
 /**
- * Combine two samples and save result to \a out.
- * Destination \a out SHOULD NOT be used as source.
+ * Combine two samples and save result to {@code out}.
+ * Destination {@code out} SHOULD NOT be used as source.
  *
  * @param out (out) Object in where combined value is set.
  */

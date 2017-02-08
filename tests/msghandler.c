@@ -82,7 +82,8 @@ run(void *a) {
 
 
 static void
-handle0(const struct ymsg *m) {
+handle0(struct ymsghandler *handler __unused,
+	const struct ymsg *m) {
 	if (YMSG_TYP_DATA == m->type) {
 		struct msgA *ma = (struct msgA *)m->data;
 		yassert(m->code == ma->a && ma->a == ma->b);
@@ -97,8 +98,8 @@ test_msghandler(void) {
 	struct ymsghandler *mh0, *mh1;
 	struct ymsglooper *ml0 = ymsglooper_start_looper_thread(FALSE);
 	struct ymsglooper *ml1 = ymsglooper_start_looper_thread(FALSE);
-	mh0 = ymsghandler_create(ml0, NULL); /* use default handle */
-	mh1 = ymsghandler_create(ml1, &handle0);
+	mh0 = ymsghandler_create(ml0, NULL, NULL, NULL); /* use default handle */
+	mh1 = ymsghandler_create(ml1, NULL, NULL, &handle0);
 
 	for (i = 0; i < 10; i++) {
 		struct msgA *ma = ymalloc(sizeof(*ma));
@@ -112,8 +113,8 @@ test_msghandler(void) {
 	        sprintf(m->s, "ABC %d: message", i);
 		ymsghandler_post_exec(mh0, m, &free_msgB, &run);
 	}
-	ymsglooper_stop(ymsghandler_get_looper(mh0));
-	ymsglooper_stop(ymsghandler_get_looper(mh1));
+	while (ymsglooper_stop(ymsghandler_get_looper(mh0)));
+	while (ymsglooper_stop(ymsghandler_get_looper(mh1)));
 
 	ymsghandler_destroy(mh0);
 	ymsghandler_destroy(mh1);

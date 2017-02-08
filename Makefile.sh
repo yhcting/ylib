@@ -21,7 +21,7 @@ modenames="
 :threadex
 :task
 :taskmanager
-:mtpp
+:taskdepman
 :p
 :o
 :gp

@@ -83,7 +83,7 @@ ylrus_create(uint32_t maxsz,
 
 /**
  * Create lru cache that uses string value as key.
- * See {@link ylrui_create} and \a yhasho_create in {@link yhash.h}
+ * See {@link ylrui_create} and {@link yhasho_create} in {@link yhash.h}
  */
 YYEXPORT struct ylru *
 ylruo_create(uint32_t maxsz,
@@ -99,7 +99,7 @@ ylruo_create(uint32_t maxsz,
 
 /**
  * Create empty lru cache that has same attributes with given one.
- * See \a yhash_create in {@link yhash.h} for details.
+ * See {@link yhash_create} in {@link yhash.h} for details.
  *
  * @return NULL if fails
  */
@@ -146,8 +146,9 @@ ylru_get(struct ylru *, void **data, const void *key);
 
 /**
  * Get size of cached data.
- * This is based on \a datasize function passed when cache object is created.
- * See \a datasize at {@link ylrui_create}, {@link ylrus_create} and
+ * This is based on {@code datasize} function passed when cache object is
+ *   created.
+ * See {@code datasize} at {@link ylrui_create}, {@link ylrus_create} and
  * {@link ylruo_create}
  *
  * @return data size of the cache.

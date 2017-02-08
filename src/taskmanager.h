@@ -35,40 +35,31 @@
  *****************************************************************************/
 
 /**
- * @file yerrno.h
- * @brief ylib specific error number is defined.
+ * @file task.h
+ * @brief Header to use ytask in inside library
  */
 
-#ifndef __YERRNo_h__
-#define __YERRNo_h__
+#ifndef __TASKMANAGEr_h__
+#define __TASKMANAGEr_h__
 
-/* yerrno SHOULD be SUPER-SET of standard errno */
-#include <errno.h>
+#include "ytaskmanager.h"
+#include "ythreadex.h"
 
-#include "ydef.h"
+struct ytaskmanager {
+        /* -------- READ ONLY values(set only once) --------*/
+	struct ymsghandler *owner;
+	int slots;
+        /* ---------- Dynamically updated values ----------*/
+        struct yhash *tagmap;
+	pthread_mutex_t tagmap_lock;
 
-/**
- * ylib specific errno.
- *
- * Note that errno MUST NOT be overlapped with standard or glibc errno.
- * And, it SHOULD NOT be too large not to be considered as valid memory address
- *   value, because sometimes, errno may be used as return value of function
- *   having pointer as it's return type.
- */
-enum {
-	YERRNO_BASE = 0x7ff,
-	YEILLST = YERRNO_BASE, /**< Illegal state */
-	YERRNO_LIMIT
+	pthread_mutex_t elh_lock;
+        struct ylistl_link elhhd; /* head of event listener handle */
+
+	pthread_mutex_t q_lock;
+        struct ylistl_link readyq_hd[YTHREADEX_NUM_PRIORITY];
+        struct ylistl_link runq_hd; /* head of run Q */
 };
 
-/** check errno is yerrno specific or standard one */
-#define yerrno_is_yerr(e) (YERRNO_BASE <= (e) && YERRNO_LIMIT > (e))
 
-/**
- * Return string describing errno.
- * In case of {@code ec} is standard errno, this works same as {@code strerror}
- */
-YYEXPORT const char *
-yerrno_str(int ec);
-
-#endif /* __YERRNo_h__ */
+#endif /* __TASKMANAGEr_h__ */

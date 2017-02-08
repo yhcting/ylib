@@ -60,8 +60,8 @@ struct ytask {
         /* ---------- Dynamically updated values ----------*/
         struct yhash *tagmap;
 	pthread_mutex_t tagmap_lock;
-        struct ylistl_link elhd; /**< event listener header */
-	pthread_mutex_t el_lock;
+        struct ylistl_link elhhd; /**< header of event listener handle */
+	pthread_mutex_t elh_lock;
 	struct ygp gp;
         struct {
                 u64 interval; /**< interval between progress. ms */
@@ -82,20 +82,24 @@ struct ytask {
 	 * But, it's slow and requires more memory space.
 	 */
 	/* Values used by taskmanager. */
-	struct {
-		void *tag;
-		void (*tagfree)(void *);
-	} tm;
+	void *tmtag;
+	/* Values used by taskdepman. */
+	void *tdmtag;
 };
 
-struct task_event_listener {
-        struct ytask_event_listener el;
+struct ytask_event_listener_handle {
 	struct ymsghandler *owner;
         /**
          * Fields used inside task module. This value is initialized inside
          * task module.
          */
         struct ylistl_link lk;
+	/**
+	 * {@code el} MUST be at the end of this struct, because
+	 *   {@code struct ytask_event_listener} has extra bytes at the end of
+	 *   struct
+	 */
+        struct ytask_event_listener el;
 };
 
 /**

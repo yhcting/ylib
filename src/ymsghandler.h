@@ -34,6 +34,11 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
+/**
+ * @file ymsghandler.h
+ * @brief message handler
+ */
+
 #ifndef __YMSGHANDLEr_h__
 #define __YMSGHANDLEr_h__
 
@@ -49,6 +54,8 @@ struct ymsglooper;
  * Create message handler.
  *
  * @param ml message looper in which this handler works, in terms of 'context'.
+ * @param tag Custom tag.
+ * @param tagfree Function to free {@code tag}
  * @param handle message handle function.
  *        'handle' MUST NOT change value or destroy(free) msg object!
  *        To use default handler, set to NULL.
@@ -56,7 +63,9 @@ struct ymsglooper;
  */
 YYEXPORT struct ymsghandler *
 ymsghandler_create(struct ymsglooper *ml,
-		   void (*handle)(const struct ymsg *));
+		   void *tag,
+		   void (*tagfree)(void *),
+		   void (*handle)(struct ymsghandler *, const struct ymsg *));
 
 /**
  * Destroy handler.
@@ -65,8 +74,14 @@ YYEXPORT void
 ymsghandler_destroy(struct ymsghandler *);
 
 /**
- * Get msglooper in where this handler belonging to.
+ * Get tag set at {@link ymsghandler_create}.
  */
+YYEXPORT void *
+ymsghandler_get_tag(struct ymsghandler *);
+
+/**
+ * Get msglooper in where this handler belonging to.
+*/
 YYEXPORT struct ymsglooper *
 ymsghandler_get_looper(struct ymsghandler *);
 
@@ -105,7 +120,8 @@ ymsghandler_post_exec2(struct ymsghandler *,
 		       uint8_t pri, uint32_t opt);
 
 /**
- * If msghandler is run on current context, \a run is executed immediately.
+ * If msghandler is run on current context, {@code run} is executed
+ *   immediately.
  * Otherwise, this function works exactly same with
  *   {@link ymsghandler_post_exec}
  */

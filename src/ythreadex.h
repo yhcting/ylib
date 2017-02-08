@@ -109,13 +109,13 @@ enum ythreadex_state {
 	YTHREADEX_CANCELLING, /**< thread is cancelling */
         /**
          * New thread is cancelled. But, post processing(sending
-         *   \a on_cancelled notification message to owner thread
+         *   {@code on}_cancelled notification message to owner thread
          *   is not done yet.
          */
 	YTHREADEX_CANCELLED,
         /**
          * New thread is done. But, post processing(sending
-         *   \a on_post_run notification message to owner thread
+         *   {@code on}_post_run notification message to owner thread
          *   is not done yet.
          */
 	YTHREADEX_DONE,
@@ -134,7 +134,7 @@ enum ythreadex_state {
  */
 struct ythreadex_listener {
         /**
-         * \a ythreadex enter STARTED state.
+         * {@code ythreadex} enter STARTED state.
          */
 	void (*on_started)(struct ythreadex *);
         /**
@@ -142,7 +142,7 @@ struct ythreadex_listener {
          */
 	void (*on_done)(struct ythreadex *, void *result, int errcode);
 	/**
-	 * \a started is TRUE if cancel is requrested after thread is started
+	 * {@code started} is TRUE if cancel is requrested after thread is started
 	 */
 	void (*on_cancelling)(struct ythreadex *, bool started);
         /**
@@ -161,17 +161,17 @@ struct ythreadex_listener {
 
 
 /**
- * Once \a result is assigned in side \a run (user-thread-function),
+ * Once {@code result} is assigned in side {@code run} (user-thread-function),
  *   ythreadex module has responsibility for freeing memory by calling
- *   \a free_result.
+ *   {@code free_result}.
  *
  * @param name DEEP-COPIED value is used. Can be NULL.
  * @param owner Passed by reference. Can be NULL.
  * @param priority Priority
  * @param listener DEEP-COPIED struct is used. Can be NULL.
- * @param arg argument used at \a run. Can be NULL.
- * @param free_arg Function to free \a arg. Can be NULL.
- * @param free_result Function to free return of \a run. Can be NULL.
+ * @param arg argument used at {@code run}. Can be NULL.
+ * @param free_arg Function to free {@code arg}. Can be NULL.
+ * @param free_result Function to free return of {@code run}. Can be NULL.
  * @param run Routine run at new thread. Not NULL.
  *            It MUST return 0 if success, otherwise -errno.
  *            In case of not-success, result of threadex is ignored.
@@ -225,7 +225,7 @@ YYEXPORT int
 ythreadex_join(struct ythreadex *, void **retval);
 
 /**
- * Publishing progress is only allowed at \a YTHREADEX_STARTED state.
+ * Publishing progress is only allowed at {@code YTHREADEX_STARTED} state.
  * -EPERM may be returned if progress is not initialized or not in
  * STARTED state.
  *
@@ -235,7 +235,7 @@ YYEXPORT int
 ythreadex_publish_progress_init(struct ythreadex *, long maxprog);
 
 /**
- * Publishing progress is only allowed at \a YTHREADEX_STARTED state.
+ * Publishing progress is only allowed at {@code YTHREADEX_STARTED} state.
  * -EPERM may be returned if progress is not initialized or not in
  * STARTED state.
  *
@@ -253,7 +253,7 @@ ythreadex_publish_progress(struct ythreadex *, long prog);
  * So, user SHOULD consider this case in the thread function
  * (Using pthread_push_cleanup may be one opion.)
  *
- * @param pthdcancel If it is True, \a pthread_cancel is applied.
+ * @param pthdcancel If it is True, {@code pthread_cancel} is applied.
  * @return 0 if success. Otherwise -errno
  *         (ex -EPERM if thread is NOT in READY or STARTED.)
  */
@@ -267,7 +267,7 @@ YYEXPORT enum ythreadex_state
 ythreadex_get_state(struct ythreadex *);
 
 /**
- * Get argument of thread. This is the value \a arg passed via
+ * Get argument of thread. This is the value {@code arg} passed via
  *   {@link ythreadex_create}
  */
 YYEXPORT void *
@@ -298,21 +298,21 @@ YYEXPORT int
 ythreadex_get_errcode(struct ythreadex *);
 
 /**
- * Get priority of thread. This is the value \a priority passed via
+ * Get priority of thread. This is the value {@code priority} passed via
  *   {@link ythreadex_create}
  */
 YYEXPORT enum ythreadex_priority
 ythreadex_get_priority(struct ythreadex *);
 
 /**
- * Get owner of thread. This is the value \a owner passed via
+ * Get owner of thread. This is the value {@code owner} passed via
  *   {@link ythreadex_create}
  */
 YYEXPORT struct ymsghandler *
 ythreadex_get_owner(struct ythreadex *);
 
 /**
- * Get name of thread. This is the value \a name passed via
+ * Get name of thread. This is the value {@code name} passed via
  *   {@link ythreadex_create}
  */
 YYEXPORT const char *
@@ -326,15 +326,13 @@ ythreadex_get_id(struct ythreadex *);
 
 /**
  * Is in active state?
- * Active state includes STARTED, CANCELLING, CANCELLED, DONE
+ * Active state includes STARTED, CANCELLING
  */
 static YYINLINE bool
 ythreadex_is_active(enum ythreadex_state state) {
 	switch (state) {
 	case YTHREADEX_STARTED:
 	case YTHREADEX_CANCELLING:
-	case YTHREADEX_CANCELLED:
-	case YTHREADEX_DONE:
 		return TRUE;
 	default:
 		return FALSE;

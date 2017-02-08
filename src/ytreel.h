@@ -59,12 +59,12 @@
  * DO NOT access struct directly, except that you have to!.
  */
 struct ytreel_link {
-	/* \cond */
+	/* @cond */
 	struct ytreel_link *parent; /* parent link */
 	/* head of children list - see ylistl for details */
 	struct ylistl_link child;
 	struct ylistl_link sibling; /* list link for siblings */
-	/* \endcond */
+	/* @endcond */
 };
 
 /**
@@ -113,7 +113,7 @@ ytreel_has_child(const struct ytreel_link *lk) {
 }
 
 /**
- * Add new link as next sibling of \a lk.
+ * Add new link as next sibling of {@code lk}.
  *
  * @param lk Base tree link
  * @param lnew New tree link
@@ -125,7 +125,7 @@ ytreel_add_next(struct ytreel_link *lk, struct ytreel_link *lnew) {
 }
 
 /**
- * Add new link as next sibling of \a lk.
+ * Add new link as next sibling of {@code lk}.
  *
  * @param lk Base tree link
  * @param lnew New tree link
@@ -137,7 +137,7 @@ ytreel_add_prev(struct ytreel_link *lk, struct ytreel_link *lnew) {
 }
 
 /**
- * Add new link as the first child of \a lk.
+ * Add new link as the first child of {@code lk}.
  *
  * @param lk Base tree link
  * @param lnew New tree link
@@ -149,7 +149,7 @@ ytreel_add_first_child(struct ytreel_link *lk, struct ytreel_link *lnew) {
 }
 
 /**
- * Add new link as the last child of \a lk.
+ * Add new link as the last child of {@code lk}.
  *
  * @param lk Base tree link
  * @param lnew New tree link
@@ -162,7 +162,7 @@ ytreel_add_last_child(struct ytreel_link *lk, struct ytreel_link *lnew) {
 
 /**
  * Remove link and all its subtree from current tree link.
- * \a lk becomes new root of subtree.
+ * {@code lk} becomes new root of subtree.
  *
  * @param lk Tree link
  */
@@ -174,7 +174,7 @@ ytreel_remove(struct ytreel_link *lk) {
 
 /**
  * Replace tree link with new one (includes all sub tree).
- * \a lold is removed from the tree.
+ * {@code lold} is removed from the tree.
  *
  * @param lold Existing tree link
  * @param lnew New tree link
@@ -197,8 +197,8 @@ ytreel_next(const struct ytreel_link *lk) {
 }
 
 /**
- * Get previous tree link.\n
- * Prerequisite : \a lk has parent.
+ * Get previous tree link.
+ * Prerequisite : {@code lk} has parent.
  *
  * @param lk Tree link
  * @return Previous tree link
@@ -209,8 +209,8 @@ ytreel_prev(const struct ytreel_link *lk) {
 }
 
 /**
- * Does it have next sibling?\n
- * Prerequisite : \a lk has parent.
+ * Does it have next sibling?
+ * Prerequisite : {@code lk} has parent.
  *
  * @param lk Tree link
  * @return TRUE or FALSE
@@ -223,7 +223,7 @@ ytreel_has_next(const struct ytreel_link *lk) {
 
 /**
  * Does it have previous sibling?
- * Prerequisite : \a lk has parent.
+ * Prerequisite : {@code lk} has parent.
  *
  * @param lk Tree link
  * @return TRUE or FALSE
@@ -236,7 +236,7 @@ ytreel_has_prev(const struct ytreel_link *lk) {
 
 /**
  * Get the first child.
- * Prerequisite : \a lk has child.
+ * Prerequisite : {@code lk} has child.
  *
  * @param lk Tree link
  * @return First child.
@@ -248,7 +248,7 @@ ytreel_first_child(const struct ytreel_link *lk) {
 
 /**
  * Get the last child.
- * Prerequisite : \a lk has child.
+ * Prerequisite : {@code lk} has child.
  *
  * @param lk Tree link
  * @return First child.

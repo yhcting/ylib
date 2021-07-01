@@ -44,6 +44,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <limits.h>
 
 #include "def.h"
 #include "common.h"
@@ -54,15 +55,15 @@
 int
 yproc_self_fd_path(int fd, char *buf, unsigned bufsz) {
 	int r;
-
+	char pathbuf[PATH_MAX];
 	if (unlikely(fd <= 0
 		     || !buf
 		     || !bufsz))
 		return -EINVAL;
-	r = snprintf(buf, bufsz, "/proc/self/fd/%d", fd);
-	if (unlikely(r >= bufsz))
+	r = snprintf(pathbuf, sizeof(pathbuf), "/proc/self/fd/%d", fd);
+	if (unlikely(r >= sizeof(pathbuf)))
 		return -EINVAL; // truncated!
-	if (0 > (r = readlink(buf, buf, bufsz - 1)))
+	if (0 > (r = readlink(pathbuf, buf, bufsz - 1)))
 		return -errno;
 	buf[r] = 0; // add trailing 0
 	return 0;
@@ -75,7 +76,7 @@ yproc_pid_cmdline(int pid, char *buf, unsigned bufsz) {
 
 	if (unlikely(!buf || !bufsz))
 		return -EINVAL;
-	/* Try to get program name by PID */
+	// Try to get program name by PID
 	r = snprintf(buf, bufsz, "/proc/%d/cmdline", pid);
 	if (unlikely(r >= bufsz))
 		return -EINVAL; // truncated!

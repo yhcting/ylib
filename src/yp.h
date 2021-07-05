@@ -54,10 +54,19 @@
  * Allocate memory having meta-data.
  *
  * @param sz Size in bytes.
- * @return Newly allocated memory.
+ * @return Newly allocated memory. NULL if fails.
  */
 YYEXPORT void *
 ypmalloc(uint32_t sz);
+
+/**
+ * Allocate zero-initialized memory having meta-data.
+ *
+ * @param sz Size in bytes.
+ * @return Newly allocated memory. NULL if fails.
+ */
+YYEXPORT void *
+ypcalloc(uint32_t sz);
 
 /**
  * WARN: Free memory allocated by 'ypmalloc' in force.
@@ -80,7 +89,7 @@ ypput(void *);
  * @return return pointer itself.
  */
 YYEXPORT void
-ypget(void *);
+ypget(const void *);
 
 
 #endif /* __Yp_h__ */

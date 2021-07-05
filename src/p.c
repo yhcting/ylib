@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2021
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -71,29 +71,35 @@
  * 'Magic Number' and 'size allocated' slot exists only with CONFIG_DEBUG
  */
 
+#ifndef __GNUC__
+#	error This module uses GNU C Extentions for atomic operations.
+#endif
+
+
 struct ypmblk {
 	s32 refcnt; /* reference count */
-	pthread_spinlock_t lock;
 #ifdef CONFIG_DEBUG
-	u64 sz; /* Size of user memory allocated
-                 * Excluding overheads
-                 */
+	/* Size of user memory allocated
+         * Excluding overheads
+         */
+	u64 sz;
 	u32 magic;
 #endif /* CONFIG_DEBUG */
-	/* to make 8-byte-alignment for user memory block */
-	uintptr_t blk[0]; /* User memory block position.
-			   * In case of DEBUG, 4-byte-magic-number is
-			   *   added at the end
-			   */
+	/* to make 8(4)-byte-alignment for user memory block
+	 * User memory block position.
+	 * In case of DEBUG, 4-byte-magic-number is
+	 *   added at the end
+	 */
+	uintptr_t blk[0];
 };
 
 
 #ifdef CONFIG_DEBUG
 
 
-#   define YP_MAGIC 0xde
-#   define tail_magic_guard(p)				\
-	((void *)(((char *)&(p)->blk) + (p)->sz))
+#	define YP_MAGIC 0xde
+#	define tail_magic_guard(p) \
+		((void *)(((char *)&(p)->blk) + (p)->sz))
 
 static const char _magicn[sizeof(((struct ypmblk *)0)->magic)] =
 	{[0 ... (yut_arrsz(_magicn) - 1)] = YP_MAGIC };
@@ -123,8 +129,8 @@ chk_magic_guard(struct ypmblk *p) {
 		&& !memcmp(&_magicn, tail_magic_guard(p), sizeof(p->magic)));
 }
 
-#   undef YP_MAGIC
-#   undef tail_magic_guard
+#	undef YP_MAGIC
+#	undef tail_magic_guard
 
 
 #else /* CONFIG_DEBUG */
@@ -148,75 +154,41 @@ static void chk_magic_guard(struct ypmblk *p) { }
  *
  *
  *****************************************************************************/
-static void
-init_lock(struct ypmblk *p) {
-	fatali0(pthread_spin_init(&p->lock, PTHREAD_PROCESS_PRIVATE));
-}
-
-static void
-lock(struct ypmblk *p) {
-	fatali0(pthread_spin_lock(&p->lock));
-}
-
-static void
-unlock(struct ypmblk *p) {
-	fatali0(pthread_spin_unlock(&p->lock));
-}
-
-static void
-destroy_lock(struct ypmblk *p) {
-	fatali0(pthread_spin_destroy(&p->lock));
-}
-
-static s32
-inc_refcnt(struct ypmblk *p) {
-	s32 r;
-	lock(p);
-	r = ++p->refcnt;
-	unlock(p);
-	return r;
-}
-
-static s32
-dec_refcnt(struct ypmblk *p) {
-	s32 r;
-	lock(p);
-	r = --p->refcnt;
-	unlock(p);
-	return r;
-}
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-void *
-ypmalloc(u32 sz) {
+static inline void *
+allocblk(u32 sz, bool use_calloc) {
 	struct ypmblk *p = NULL;
-	p = ymalloc(struct_size(p, sz));
+	p = use_calloc
+		? ycalloc(1, struct_size(p, sz))
+		: ymalloc(struct_size(p, sz));
 	if (unlikely(!p))
 		return NULL;
-
 	p->refcnt = 0;
 	set_size(p, sz);
-	init_lock(p);
 	set_magic_guard(p);
 	return (void *)&p->blk;
+}
+
+void *
+ypmalloc(u32 sz) {
+	return allocblk(sz, FALSE);
+}
+
+void *
+ypcalloc(u32 sz) {
+	return allocblk(sz, TRUE);
 }
 
 void
 ypfree(void *v) {
 	struct ypmblk *p = containerof(v, struct ypmblk, blk);
 	chk_magic_guard(p);
-	destroy_lock(p);
 	yfree(p);
 }
 
 void
 ypput(void *v) {
 	struct ypmblk *p = containerof(v, struct ypmblk, blk);
-	s32 refcnt = dec_refcnt(p);
+	s32 refcnt = __atomic_add_fetch(&p->refcnt, -1, __ATOMIC_SEQ_CST);
 	chk_magic_guard(p);
 	yassert(0 <= refcnt);
 	if (unlikely(refcnt <= 0))
@@ -224,8 +196,8 @@ ypput(void *v) {
 }
 
 void
-ypget(void *v) {
+ypget(const void *v) {
 	struct ypmblk *p = containerof(v, struct ypmblk, blk);
-	inc_refcnt(p);
+	__atomic_add_fetch(&p->refcnt, 1, __ATOMIC_SEQ_CST);
 	chk_magic_guard(p);
 }

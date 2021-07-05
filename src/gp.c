@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2021
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -42,49 +42,9 @@
 #include "common.h"
 #include "ygp.h"
 
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-static INLINE void
-init_lock(struct ygp *gp) {
-	fatali0(pthread_spin_init(&gp->lock, PTHREAD_PROCESS_PRIVATE));
-}
-
-static INLINE void
-lock(struct ygp *gp) {
-	fatali0(pthread_spin_lock(&gp->lock));
-}
-
-static INLINE void
-unlock(struct ygp *gp) {
-	fatali0(pthread_spin_unlock(&gp->lock));
-}
-
-static INLINE void
-destroy_lock(struct ygp *gp) {
-	fatali0(pthread_spin_destroy(&gp->lock));
-}
-
-static INLINE int
-inc_refcnt(struct ygp *gp) {
-	int r;
-	lock(gp);
-	r = ++gp->refcnt;
-	unlock(gp);
-	return r;
-}
-
-static INLINE int
-dec_refcnt(struct ygp *gp) {
-	int r;
-	lock(gp);
-	r = --gp->refcnt;
-	unlock(gp);
-	return r;
-}
+#ifndef __GNUC__
+#	error This module uses GNU C Extentions for atomic operations.
+#endif
 
 /*****************************************************************************
  *
@@ -98,21 +58,23 @@ ygpinit(struct ygp *gp, void *container, void (*container_free)(void *)) {
 	gp->container = container;
 	gp->container_free = container_free;
 	gp->refcnt = 0;
-	init_lock(gp);
 	return 0;
 }
 
 void
 ygpdestroy(struct ygp *gp) {
-	destroy_lock(gp);
 	if (likely(gp->container_free))
 		(*gp->container_free)(gp->container);
 }
 
+int
+ygpref_cnt(const struct ygp *gp) {
+	return gp->refcnt;
+}
 
 int
 ygpput(struct ygp *gp) {
-	int refcnt = dec_refcnt(gp);
+	int refcnt = __atomic_add_fetch(&gp->refcnt, -1, __ATOMIC_SEQ_CST);
 	yassert(0 <= refcnt);
 	if (unlikely(refcnt <= 0))
 		ygpdestroy(gp);
@@ -121,21 +83,10 @@ ygpput(struct ygp *gp) {
 
 int
 ygpget(struct ygp *gp) {
-	int refcnt;
-	refcnt = inc_refcnt(gp);
+	int refcnt = __atomic_add_fetch(&gp->refcnt, 1, __ATOMIC_SEQ_CST);
 	yassert(0 < refcnt);
 	return refcnt;
 }
-
-int
-ygpref_cnt(struct ygp *gp) {
-	int r;
-	lock(gp);
-	r = gp->refcnt;
-	unlock(gp);
-	return r;
-}
-
 
 /*****************************************************************************
  *

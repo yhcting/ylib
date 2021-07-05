@@ -55,9 +55,8 @@
  */
 struct ygp {
 	void *container; /**< Container object */
-        void (*container_free)(void *); /**< Function to free container */
-	pthread_spinlock_t lock; /**< Lock */
-        int refcnt;  /**< reference count */
+	void (*container_free)(void *); /**< Function to free container */
+	int refcnt;  /**< reference count */
 };
 
 /**
@@ -65,8 +64,8 @@ struct ygp {
  */
 YYEXPORT int
 ygpinit(struct ygp *gp,
-	 void *container,
-	 void (*container_free)(void *));
+	void *container,
+	void (*container_free)(void *));
 
 /**
  * Put object. Reference counter is decreased.
@@ -92,7 +91,7 @@ ygpget(struct ygp *);
  * Reference count is NOT changed.
  */
 YYEXPORT int
-ygpref_cnt(struct ygp *);
+ygpref_cnt(const struct ygp *);
 
 /**
  * Destroy container and ygp instance in force.

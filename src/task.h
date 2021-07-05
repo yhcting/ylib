@@ -106,16 +106,17 @@ struct ytask_event_listener_handle {
  * @return 0 if success. -errno if fails.
  */
 int
-task_init(struct ytask *,
-          const char *name,
-          struct ymsghandler *owner,
-          enum ythreadex_priority priority,
-          const struct ytask_listener *listener,
-          void *arg,
-          void (*free_arg)(void *),
-          void (*free_result)(void *),
-          int (*run)(struct ytask *, void **result),
-          bool pthdcancel);
+task_init(
+	struct ytask *,
+	const char *name,
+	struct ymsghandler *owner,
+	enum ythreadex_priority priority,
+	const struct ytask_listener *listener,
+	void *arg,
+	void (*free_arg)(void *),
+	void (*free_result)(void *),
+	int (*run)(struct ytask *, void **result),
+	bool pthdcancel);
 
 /**
  * @return 0 if success. -errno if fails.

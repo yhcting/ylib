@@ -113,7 +113,7 @@ struct rectband {
  *****************************************************************************/
 /* define invalid non-empty band used as dummy-non-empty initial value */
 #define BAND_MIN_INVALID {GEO_INVALID_MIN_VALUE, GEO_INVALID_MIN_VALUE + 1}
-#define verify_band_min_invalid(band) \
+#define verify_band_min_invalid(band) 			\
 	yassert(GEO_INVALID_MIN_VALUE == (band)->s	\
 		&& GEO_INVALID_MIN_VALUE + 1 == (band)->b);
 static const struct yband band_min_invalid = BAND_MIN_INVALID;
@@ -125,7 +125,7 @@ static const struct yband rband_min_invalid[] = {
 
 
 #define BAND_MAX_INVALID {GEO_INVALID_MAX_VALUE - 1, GEO_INVALID_MAX_VALUE}
-#define verify_band_max_invalid(band) \
+#define verify_band_max_invalid(band)			\
 	yassert(GEO_INVALID_MAX_VALUE -1 == (band)->s	\
 		&& GEO_INVALID_MAX_VALUE == (band)->b);
 static const struct yband band_max_invalid = BAND_MAX_INVALID;
@@ -281,9 +281,9 @@ rgn_bsz(const struct yrgn *g) {
 static INLINE bool
 band_can_merge(const struct yband *bs, const struct yband *bb) {
 	YYassert(!ygeob_is_empty(bs)
-		 && !ygeob_is_empty(bb)
-		 && bs->s < bb->s
-		 && bs->b <= bb->s);
+		&& !ygeob_is_empty(bb)
+		&& bs->s < bb->s
+		&& bs->b <= bb->s);
 	return bs->b == bb->s;
 }
 
@@ -292,9 +292,7 @@ band_can_merge(const struct yband *bs, const struct yband *bb) {
  * @return # of bands added to 'outb'(0 or 1).
  */
 static INLINE u32
-band_add(struct yband *prevb,
-	 struct yband *outb,
-	 const struct yband *b) {
+band_add(struct yband *prevb, struct yband *outb, const struct yband *b) {
 	dpr("band_add: prev(%d, %d) b(%d, %d)\n",
 	    prevb->s, prevb->b, b->s, b->b);
 	if (unlikely(ygeob_is_empty(b)))
@@ -315,24 +313,27 @@ band_add(struct yband *prevb,
  *
  */
 static INLINE u32
-band_op_no_overlap(struct yband *prevb,
-		   struct yband *outb,
-		   const struct yband *b,
-		   enum optype opty,
-		   bool b_lho) {
+band_op_no_overlap(
+	struct yband *prevb,
+	struct yband *outb,
+	const struct yband *b,
+	enum optype opty,
+	bool b_lho
+) {
 	/* top band has meaning only in following cases */
 	if (OP_UNION == opty
-	    || (OP_DIFF == opty
-		&& b_lho))
-		return band_add(prevb, outb, b);
+		|| (OP_DIFF == opty && b_lho)
+	) { return band_add(prevb, outb, b); }
 	return 0;
 }
 
 static INLINE u32
-band_op_overlap(struct yband *prevb,
-		struct yband *outb,
-		const struct yband *ol,
-		enum optype opty) {
+band_op_overlap(
+	struct yband *prevb,
+	struct yband *outb,
+	const struct yband *ol,
+	enum optype opty
+) {
 	if (OP_DIFF == opty)
 		return 0;
 	return band_add(prevb, outb, ol);
@@ -344,13 +345,15 @@ band_op_overlap(struct yband *prevb,
  *         (Never fails!)
  */
 static INLINE u32
-band_op(struct yband *outb, /* (Out) array having at least 3 free spaces */
+band_op(
+	struct yband *outb, /* (Out) array having at least 3 free spaces */
 	bool *botb0, /* (Out) bottom from b0 */
 	struct yband *pobb, /* Out */
 	struct yband **pprevb, /* (InOut) */
 	const struct yband *b0, /* (In) */
 	const struct yband *b1, /* (In */
-	enum optype opty) {
+	enum optype opty
+) {
 	enum ybandpos bpr; /* Band Pos Returned */
 	const struct yband *bs, *bb;
 	struct yband obs, obo;
@@ -365,25 +368,16 @@ band_op(struct yband *outb, /* (Out) array having at least 3 free spaces */
 	    "    bpr:%d\n",
 	    bs->s, bs->b, bb->s, bb->b, bs_b0, bpr);
 	/* top band - no overlap */
-	if (likely(band_op_no_overlap(*pprevb,
-				      cob,
-				      &obs,
-				      opty,
-				      bs_b0))) {
+	if (likely(band_op_no_overlap(*pprevb, cob, &obs, opty, bs_b0))) {
 		dpr("band_op(nool): prevb(%d, %d) cob(%d, %d)\n",
-		    (*pprevb)->s, (*pprevb)->b,
-		    cob->s, cob->b);
+			(*pprevb)->s, (*pprevb)->b, cob->s, cob->b);
 		*pprevb = cob;
 		cob++;
 	}
 	/* overlapping band in the middle */
-	if (likely(band_op_overlap(*pprevb,
-				   cob,
-				   &obo,
-				   opty))) {
+	if (likely(band_op_overlap(*pprevb, cob, &obo, opty))) {
 		dpr("band_op(ol): prevb(%d, %d) cob(%d, %d)\n",
-		    (*pprevb)->s, (*pprevb)->b,
-		    cob->s, cob->b);
+			(*pprevb)->s, (*pprevb)->b, cob->s, cob->b);
 		*pprevb = cob;
 		cob++;
 	}
@@ -425,9 +419,11 @@ rband_max_requred_outbands(u32 rb0sz, u32 rb1sz, enum optype opty) {
  * - They are separated (No-overlap)
  */
 static bool
-rband_can_merge(struct rectband *rbs,
-		const struct yband *yb,
-		const struct yband *xbs) {
+rband_can_merge(
+	struct rectband *rbs,
+	const struct yband *yb,
+	const struct yband *xbs
+) {
 	const struct yband *b0, *b1;
 	yassert(!ygeob_is_empty(&rbs->yb)
 		&& !ygeob_is_empty(yb)
@@ -438,13 +434,11 @@ rband_can_merge(struct rectband *rbs,
 		return FALSE;
 	b0 = rbs->xbs;
 	b1 = xbs;
-	while (!ygeob_is_empty(b0)
-	       && !ygeob_is_empty(b1)) {
+	while (!ygeob_is_empty(b0) && !ygeob_is_empty(b1)) {
 		if (!ygeob_eq(b0++, b1++))
 			return FALSE;
 	}
-	if (!ygeob_is_empty(b0)
-	    || !ygeob_is_empty(b1))
+	if (!ygeob_is_empty(b0) || !ygeob_is_empty(b1))
 		return FALSE;
 	return TRUE;
 }
@@ -455,10 +449,12 @@ rband_can_merge(struct rectband *rbs,
  *         (Never fails!)
  */
 static u32
-rband_add(struct rectband *prevrb,
-	  struct yband *outb,
-	  const struct yband *yb,
-	  const struct yband *xbs) {
+rband_add(
+	struct rectband *prevrb,
+	struct yband *outb,
+	const struct yband *yb,
+	const struct yband *xbs
+) {
 	struct yband *p;
 	if (unlikely(ygeob_is_empty(yb)))
 		return 0;
@@ -486,27 +482,30 @@ rband_add(struct rectband *prevrb,
  *         (Never fails!)
  */
 static INLINE u32
-rband_op_no_overlap(struct rectband *prevrb,
-		    struct yband *outb,
-		    const struct yband *yb,
-		    const struct yband *xbs,
-		    enum optype opty,
-		    bool b_lho) {
+rband_op_no_overlap(
+	struct rectband *prevrb,
+	struct yband *outb,
+	const struct yband *yb,
+	const struct yband *xbs,
+	enum optype opty,
+	bool b_lho
+) {
 	/* top band has meaning only in following cases */
 	if (OP_UNION == opty
-	    || (OP_DIFF == opty
-		&& b_lho))
-		return rband_add(prevrb, outb, yb, xbs);
+		|| (OP_DIFF == opty && b_lho)
+	) { return rband_add(prevrb, outb, yb, xbs); }
 	return 0;
 }
 
 static u32
-rband_op_overlap(struct rectband *prevrb,
-		 struct yband *outb,
-		 const struct yband *yb,
-		 const struct yband *xbs0,
-		 const struct yband *xbs1,
-		 enum optype opty) {
+rband_op_overlap(
+	struct rectband *prevrb,
+	struct yband *outb,
+	const struct yband *yb,
+	const struct yband *xbs0,
+	const struct yband *xbs1,
+	enum optype opty
+) {
 	u32 nrb; /* # of bands */
 	struct yband *prevxb; /* PREVious X Band */
 	struct yband oxbb0, oxbb1;
@@ -529,14 +528,13 @@ rband_op_overlap(struct rectband *prevrb,
 	 * Several x-bands may be added.
 	 */
 	*cob++ = *yb;
-	while (!(ygeob_is_empty(pcxb0)
-		 && ygeob_is_empty(pcxb1))) {
+	while (!(ygeob_is_empty(pcxb0) && ygeob_is_empty(pcxb1))) {
 		bool botb0;
 		dpr(">> rband_op overlap loop:\n"
-		    "    pb0(%d, %d), pb1(%d, %d)\n"
-		    "    pcxb0(%d, %d), pcxb1(%d, %d)\n",
-		    pb0->s, pb0->b, pb1->s, pb1->b,
-		    pcxb0->s, pcxb0->b, pcxb1->s, pcxb1->b);
+			"    pb0(%d, %d), pb1(%d, %d)\n"
+			"    pcxb0(%d, %d), pcxb1(%d, %d)\n",
+			pb0->s, pb0->b, pb1->s, pb1->b,
+			pcxb0->s, pcxb0->b, pcxb1->s, pcxb1->b);
 		/* Max invalid band has possible-maximum-value.
 		 * So, it always remains as bottom band.
 		 * That means, pointer to band_max_invalid never move to next
@@ -547,8 +545,7 @@ rband_op_overlap(struct rectband *prevrb,
 			pb0 = (struct yband *)&band_max_invalid;
 		if (unlikely(ygeob_is_empty(pb1)))
 			pb1 = (struct yband *)&band_max_invalid;
-		nrb = band_op(cob, &botb0, pnoxbb, &prevxb,
-			      pb0, pb1, opty);
+		nrb = band_op(cob, &botb0, pnoxbb, &prevxb, pb0, pb1, opty);
 		dpr(">- bot:%d, nrb:%d\n", botb0, nrb);
 		cob += nrb;
 		if (unlikely(ygeob_is_empty(pnoxbb))) {
@@ -595,15 +592,17 @@ rband_op_overlap(struct rectband *prevrb,
  *         (Never fails!)
  */
 static u32
-rband_op(struct yband *outb, /* assumes that it has enough memory */
-	 bool *botrb0, /* bottom band from rb0 */
-	 struct yband *pyobb, /* (Out) */
-	 struct rectband **pprevrb, /* for merging */
-	 const struct yband *yb0,
-	 const struct yband *xbs0,
-	 const struct yband *yb1,
-	 const struct yband *xbs1,
-	 enum optype opty) {
+rband_op(
+	struct yband *outb, /* assumes that it has enough memory */
+	bool *botrb0, /* bottom band from rb0 */
+	struct yband *pyobb, /* (Out) */
+	struct rectband **pprevrb, /* for merging */
+	const struct yband *yb0,
+	const struct yband *xbs0,
+	const struct yband *yb1,
+	const struct yband *xbs1,
+	enum optype opty
+) {
 	/* Function variables */
 	enum ybandpos ybpr;
 	struct yband obs, obo, obb;
@@ -615,9 +614,9 @@ rband_op(struct yband *outb, /* assumes that it has enough memory */
 	bool rbys_rb0;
 
 	dpr("rband: yb0(%d, %d), xbs0(%d, %d)\n"
-	    "       yb1(%d, %d), xbs1(%d, %d)\n",
-	    yb0->s, yb0->b, xbs0->s, xbs0->b,
-	    yb1->s, yb1->b, xbs1->s, xbs1->b);
+		"       yb1(%d, %d), xbs1(%d, %d)\n",
+		yb0->s, yb0->b, xbs0->s, xbs0->b,
+		yb1->s, yb1->b, xbs1->s, xbs1->b);
 
 	cob = outb; /* Current Out Band */
 	if (yb0->s < yb1->s) {
@@ -640,12 +639,9 @@ rband_op(struct yband *outb, /* assumes that it has enough memory */
 	 * top rect band - no overlap
 	 * ==========================
 	 */
-	if ((nrb = rband_op_no_overlap(*pprevrb,
-				       cob,
-				       &obs,
-				       xbss,
-				       opty,
-				       rbys_rb0))) {
+	if ((nrb = rband_op_no_overlap(
+		*pprevrb, cob, &obs, xbss, opty, rbys_rb0))
+	) {
 		*pprevrb = bands2rband(cob);
 		cob += nrb;
 	}
@@ -654,12 +650,9 @@ rband_op(struct yband *outb, /* assumes that it has enough memory */
 	 * overlapping rect band in the middle
 	 * ===================================
 	 */
-	if ((nrb = rband_op_overlap(*pprevrb,
-				    cob,
-				    &obo,
-				    xbs0,
-				    xbs1,
-				    opty))) {
+	if ((nrb = rband_op_overlap(
+		*pprevrb, cob, &obo, xbs0, xbs1, opty))
+	) {
 		*pprevrb = bands2rband(cob);
 		cob += nrb;
 	}
@@ -695,8 +688,9 @@ rgn_op(const struct yrgn *g0, const struct yrgn *g1, enum optype opty) {
 	struct yband oybb0, oybb1;
 	/* Current/Next Out X Bottom Band */
 	struct yband *pcoybb, *pnoybb, *pbtmp;
-	dynb = ydynb_create2(4096 / sizeof(struct yband),
-			     sizeof(struct yband));
+	dynb = ydynb_create2(
+		4096 / sizeof(struct yband),
+		sizeof(struct yband));
 	if (unlikely(!dynb))
 		return NULL;
 
@@ -714,11 +708,10 @@ rgn_op(const struct yrgn *g0, const struct yrgn *g1, enum optype opty) {
 	pnoybb = &oybb1;
 	prevrb = (struct rectband *)rband_min_invalid;
 	while (!(ygeog_is_empty(rband2rgn(rb0))
-		 && ygeog_is_empty(rband2rgn(rb1)))) {
+		&& ygeog_is_empty(rband2rgn(rb1)))
+	) {
 		bool botrb0;
-		bsz = rband_max_requred_outbands(rb0sz,
-						 rb1sz,
-						 opty);
+		bsz = rband_max_requred_outbands(rb0sz, rb1sz, opty);
 		/* +1 for region ending sentinel */
 		if (ydynb_expand2(dynb, bsz + 1))
 			goto fail;
@@ -740,13 +733,14 @@ rgn_op(const struct yrgn *g0, const struct yrgn *g1, enum optype opty) {
 		rb_empty_check(1);
 #undef rb_empty_check
 
-		bsz = rband_op(ydynb_getfree(dynb),
-			       &botrb0,
-			       pnoybb,
-			       &prevrb,
-			       yb0, xbs0,
-			       yb1, xbs1,
-			       opty);
+		bsz = rband_op(
+			ydynb_getfree(dynb),
+			&botrb0,
+			pnoybb,
+			&prevrb,
+			yb0, xbs0,
+			yb1, xbs1,
+			opty);
 		ydynb_incsz(dynb, bsz);
 
 #define rb_move_to_next(N) 						\

@@ -178,20 +178,19 @@ destroy_handled_task_(struct yo *o) {
 	struct ymsghandler *mh = o->o0;
 	struct ytask *tsk = o->o1;
 	r = ytask_destroy(tsk);
-	if (!r)
-		return;
-	else if (-EPERM != r
-		 || ytask_is_active(tsk))
+	if (!r) return;
+	else if (-EPERM != r || ytask_is_active(tsk))
 		die2("Unexpected");
 	if (unlikely(!(newo = yocreate1(mh, NULL, tsk, NULL))))
 		die2("Out of memory!");
 	/* event notification may not be delivered completely yet.
 	 * Try again at next loop
 	 */
-	fatali0(ymsghandler_post_exec
-		(mh,
-		 newo, (void(*)(void *))&yodestroy,
-		 (void(*)(void *))&destroy_handled_task_));
+	fatali0(ymsghandler_post_exec(
+		mh,
+		newo,
+		(void(*)(void *))&yodestroy,
+		(void(*)(void *))&destroy_handled_task_));
 }
 
 static void
@@ -204,10 +203,11 @@ destroy_handled_task(struct ytaskdepman *tdm, struct ytask *tsk) {
 	fatali0(ygraph_remove_vertex(&tdm->g, &task_ttg(tsk)->v));
 	unlock_graph(tdm);
 	destroy_task_ttg(tsk);
-	fatali0(ymsghandler_post_exec
-		(tdm->mh,
-		 o, (void(*)(void *))&yodestroy,
-		 (void(*)(void *))&destroy_handled_task_));
+	fatali0(ymsghandler_post_exec(
+		tdm->mh,
+		o,
+		(void(*)(void *))&yodestroy,
+		(void(*)(void *))&destroy_handled_task_));
 }
 
 static int
@@ -222,8 +222,7 @@ inject_task(struct ytaskdepman *tdm, struct ytask *tsk) {
  *
  *****************************************************************************/
 static void
-on_task_finished(struct ytask_event_listener *el,
-		 struct ytask *tsk) {
+on_task_finished(struct ytask_event_listener *el, struct ytask *tsk) {
 	enum tdm_state state, next_state;
 	struct yedge *e;
 	struct ttg *ttg = task_ttg(tsk);
@@ -281,18 +280,21 @@ on_task_finished(struct ytask_event_listener *el,
 }
 
 static void
-task_on_done(struct ytask_event_listener *el,
-	     struct ytask *tsk,
-	     void *result __unused,
-	     int errcode __unused) {
+task_on_done(
+	struct ytask_event_listener *el,
+	struct ytask *tsk,
+	void *result __unused,
+	int errcode __unused
+) {
 	on_task_finished(el, tsk);
-
 }
 
 static void
-task_on_cancelled(struct ytask_event_listener *el,
-		  struct ytask *tsk,
-		  int errcode __unused) {
+task_on_cancelled(
+	struct ytask_event_listener *el,
+	struct ytask *tsk,
+	int errcode __unused
+) {
 	on_task_finished(el, tsk);
 }
 
@@ -342,9 +344,11 @@ ytaskdepman_remove_task(struct ytaskdepman *tdm, struct ytask *tsk) {
 }
 
 int
-ytaskdepman_add_dependency(struct ytaskdepman *tdm,
-			   struct ytask *target,
-			   struct ytask *prereq) {
+ytaskdepman_add_dependency(
+	struct ytaskdepman *tdm,
+	struct ytask *target,
+	struct ytask *prereq
+) {
 	/* represented as incoming edge of target */
 	int r;
 	struct ttg *tt = task_ttg(target);
@@ -360,9 +364,11 @@ ytaskdepman_add_dependency(struct ytaskdepman *tdm,
 }
 
 int
-ytaskdepman_remove_dependency(struct ytaskdepman *tdm,
-			      struct ytask *target,
-			      struct ytask *prereq) {
+ytaskdepman_remove_dependency(
+	struct ytaskdepman *tdm,
+	struct ytask *target,
+	struct ytask *prereq
+) {
 	int r;
 	struct ttg *tt = task_ttg(target);
 	struct ttg *pt = task_ttg(prereq);
@@ -378,9 +384,11 @@ ytaskdepman_remove_dependency(struct ytaskdepman *tdm,
 }
 
 struct ytaskdepman *
-ytaskdepman_create(struct ymsghandler *mh,
-		   void (*on_done)(struct ytaskdepman *, struct ytask *),
-		   int slots) {
+ytaskdepman_create(
+	struct ymsghandler *mh,
+	void (*on_done)(struct ytaskdepman *, struct ytask *),
+	int slots
+) {
 	struct ytaskdepman *tdm;
 	yassert(mh && on_done);
 	if (unlikely(!(tdm = ycalloc(1, sizeof(*tdm)))))
@@ -404,8 +412,7 @@ ytaskdepman_create(struct ymsghandler *mh,
 int
 ytaskdepman_destroy(struct ytaskdepman *tdm) {
 	enum tdm_state state = get_state(tdm);
-	if (!(TDM_CANCELLED == state
-	      || TDM_DONE == state))
+	if (!(TDM_CANCELLED == state || TDM_DONE == state))
 		return -EPERM;
 	/* all tasks are done.
 	 * So, we can sure that in short time, ytaskmanager will be empty
@@ -456,9 +463,9 @@ ytaskdepman_verify(struct ytaskdepman *tdm, struct ytask **roottsk) {
 	case 1:
 		return YTASKDEPMAN_CIRCULAR_DEP;
 	case 0:
-		return n < nr_vertices?
-			YTASKDEPMAN_ISOLATED_TASK:
-		        YTASKDEPMAN_OK;
+		return n < nr_vertices
+			? YTASKDEPMAN_ISOLATED_TASK
+			: YTASKDEPMAN_OK;
 	default:
 		return -r;
 	}
@@ -498,14 +505,14 @@ ytaskdepman_cancel(struct ytaskdepman *tdm) {
 
 	lock_state(tdm);
 	state = get_state_locked(tdm);
-	if (!(TDM_READY == state
-	      || TDM_STARTED == state)) {
+	if (!(TDM_READY == state || TDM_STARTED == state)) {
 		unlock_state(tdm);
 		return -EPERM;
 	}
 
 	if (TDM_READY == state
-	    && !tdm->unhandled_task_cnt) {
+		&& !tdm->unhandled_task_cnt
+	) {
 		set_state_locked(tdm, TDM_CANCELLED);
 		unlock_state(tdm);
 		return 0;

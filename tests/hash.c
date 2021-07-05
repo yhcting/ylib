@@ -83,11 +83,12 @@ test_hasho(void) {
 	/*
 	 * Test normal hash.
 	 */
-	struct yhash *h = yhasho_create(YHASH_PREDEFINED_FREE,
-					YHASH_PREDEFINED_FREE,
-					&strkey_copy,
-					&strkey_cmp,
-					&strkey_hash);
+	struct yhash *h = yhasho_create(
+		YHASH_PREDEFINED_FREE,
+		YHASH_PREDEFINED_FREE,
+		&strkey_copy,
+		&strkey_cmp,
+		&strkey_hash);
 
 	for (i = 0; i < 1024; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);

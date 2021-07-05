@@ -128,9 +128,10 @@ ycrc16(register u16 crc,
 		return crc;
 	}
 
-	yut_unroll16(len,
-		     crc = (crc >> 8)\
-		           ^ _crc16_table[(crc ^ (*data++)) & 0xff];);
+	yut_unroll16(
+		len,
+		crc = (crc >> 8) \
+			^ _crc16_table[(crc ^ (*data++)) & 0xff];);
 	return crc;
 }
 
@@ -230,8 +231,9 @@ ycrc32(register u32 crc,
 		return crc;
 	}
 
-	yut_unroll16(len,
-		     crc = (crc >> 8)\
-		           ^ _crc32_table[(crc ^ (*data++)) & 0xff];);
+	yut_unroll16(
+		len,
+		crc = (crc >> 8) \
+			^ _crc32_table[(crc ^ (*data++)) & 0xff];);
 	return crc;
 }

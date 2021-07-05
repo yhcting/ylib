@@ -172,8 +172,8 @@ minit(const struct ylib_config *cfg) {
 	if (unlikely(0 <= cfg->ylog_errfd))
 		_cfg.errfd = cfg->ylog_errfd;
 	if (unlikely(YLOG_VERBOSE <= cfg->ylog_level
-		     || YLOG_FATAL >= cfg->ylog_level))
-		___yloglv = cfg->ylog_level;
+		|| YLOG_FATAL >= cfg->ylog_level)
+	) { ___yloglv = cfg->ylog_level; }
 	return 0;
 }
 

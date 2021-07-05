@@ -72,18 +72,18 @@ enum ymsg_priority {
 /**
  * Message structure.
  * Message type can be one of followings.
- * data({@link YMSG_TYP_DATA}) or exec({@link YMSG_TYP_EXEC})
+ * data(@ref YMSG_TYP_DATA) or exec(@ref YMSG_TYP_EXEC)
  */
 struct ymsg {
 	uint8_t type; /**< Message type [0-255] */
 	uint8_t pri; /**< Priority [0-255] */
 	uint32_t opt; /**< Option - reserved for future use */
 	void *data; /**< Data or argument of action */
-	void (*dfree)(void *); /**< Function to free {@code data} */
+	void (*dfree)(void *); /**< Function to free @c data */
 	union {
 		/** Message code - int type to use as switch argument. */
 		int code;
-		/** Callback function to execute with argument {@code data} */
+		/** Callback function to execute with argument @c data */
 		void (*run)(void *);
 	};
 };
@@ -105,12 +105,14 @@ struct ymsg {
  * @param dfree function to free data.
  */
 static YYINLINE void
-ymsg_set_common(struct ymsg *m,
-		uint8_t type,
-		uint8_t pri,
-		uint32_t opt,
-		void *data,
-		void (*dfree)(void *)) {
+ymsg_set_common(
+	struct ymsg *m,
+	uint8_t type,
+	uint8_t pri,
+	uint32_t opt,
+	void *data,
+	void (*dfree)(void *)
+) {
 	m->type = type;
 	m->pri = pri;
 	m->opt = opt; /* reserved */
@@ -129,12 +131,14 @@ ymsg_set_common(struct ymsg *m,
  * @param dfree function to free data.
  */
 static YYINLINE void
-ymsg_set_data(struct ymsg *m,
-	      uint8_t pri,
-	      uint32_t opt,
-	      int code,
-	      void *data,
-	      void (*dfree)(void *)) {
+ymsg_set_data(
+	struct ymsg *m,
+	uint8_t pri,
+	uint32_t opt,
+	int code,
+	void *data,
+	void (*dfree)(void *)
+) {
 	ymsg_set_common(m, YMSG_TYP_DATA, pri, opt, data, dfree);
 	m->code = code;
 }
@@ -150,12 +154,14 @@ ymsg_set_data(struct ymsg *m,
  * @param run Function to run
  */
 static YYINLINE void
-ymsg_set_exec(struct ymsg *m,
-	      uint8_t pri,
-	      uint32_t opt,
-	      void *data,
-	      void (*dfree)(void *),
-	      void (*run)(void *)) {
+ymsg_set_exec(
+	struct ymsg *m,
+	uint8_t pri,
+	uint32_t opt,
+	void *data,
+	void (*dfree)(void *),
+	void (*run)(void *)
+) {
 	ymsg_set_common(m, YMSG_TYP_EXEC, pri, opt, data, dfree);
 	m->run = run;
 }
@@ -163,7 +169,7 @@ ymsg_set_exec(struct ymsg *m,
 /**
  * Create message object.
  * DO NOT free returned ymsg object directly!
- * Returned ymsg object SHOULD BE destroied by using {@link ymsg_destroy}
+ * Returned ymsg object SHOULD BE destroied by using @ref ymsg_destroy
  *
  * @return NULL if fails(ex. ENOMEM)
  */
@@ -171,7 +177,7 @@ YYEXPORT struct ymsg *
 ymsg_create(void);
 
 /**
- * Destroy message object created by {@link ymsg_create}.
+ * Destroy message object created by @ref ymsg_create.
  */
 YYEXPORT void
 ymsg_destroy(struct ymsg *);

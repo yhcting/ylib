@@ -67,10 +67,11 @@ data_size(const void *d) {
 static void
 test_lru(void) {
 	int *pi;
-	struct ylru *lru = ylrus_create(sizeof(int) * 3,
-					YLRU_PREDEFINED_FREE,
-					NULL,
-					&data_size);
+	struct ylru *lru = ylrus_create(
+		sizeof(int) * 3,
+		YLRU_PREDEFINED_FREE,
+		NULL,
+		&data_size);
 
 	yassert(1 == ylru_get(lru, (void **)&pi, "key0"));
 	pi = ymalloc(sizeof(*pi));
@@ -120,10 +121,11 @@ test_lru(void) {
 	ylru_reset(lru);
 	ylru_destroy(lru);
 
-	lru = ylrus_create(sizeof(int) * 3,
-			   YLRU_PREDEFINED_FREE,
-			   &data_create,
-			   &data_size);
+	lru = ylrus_create(
+		sizeof(int) * 3,
+		YLRU_PREDEFINED_FREE,
+		&data_create,
+		&data_size);
 	yassert(0 == ylru_get(lru, (void **)&pi, "k000"));
 	yassert(10 == *pi);
 	ylru_put(lru, "k000", pi);

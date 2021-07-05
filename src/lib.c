@@ -71,9 +71,11 @@ free_modules(void) {
 
 
 void
-ylib_register_module(const char *name,
-		     int (*init_)(const struct ylib_config *),
-		     void (*exit_)(void)) {
+ylib_register_module(
+	const char *name,
+	int (*init_)(const struct ylib_config *),
+	void (*exit_)(void)
+) {
 	assert(name);
 	struct module *m = malloc(sizeof(*m));
 	if (!m) {/* Out Of Memory! */

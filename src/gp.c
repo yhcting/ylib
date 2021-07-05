@@ -92,9 +92,7 @@ dec_refcnt(struct ygp *gp) {
  *
  *****************************************************************************/
 int
-ygpinit(struct ygp *gp,
-	 void *container,
-	 void (*container_free)(void *)) {
+ygpinit(struct ygp *gp, void *container, void (*container_free)(void *)) {
 	if (unlikely(!container || !gp))
 		return -EINVAL;
 	gp->container = container;

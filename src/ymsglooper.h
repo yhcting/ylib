@@ -57,7 +57,7 @@ struct ymsglooper;
 enum ymsglooper_state {
 	/**
 	 * Prepared and msglooper is attached to the thread. But not in the
-	 *   msg loop
+	 * msg loop
 	 */
 	YMSGLOOPER_READY,
 	/**
@@ -70,7 +70,7 @@ enum ymsglooper_state {
 	YMSGLOOPER_STOPPING,
 	/**
 	 * It exits from message loop. So, messages in the message Q is NOT
-	 *   handled anymore.
+	 * handled anymore.
 	 */
 	YMSGLOOPER_TERMINATED,
 };
@@ -80,10 +80,10 @@ enum ymsglooper_state {
  * If success, returned looper is assigned to current thread.
  *
  * @param msgq_capacity capacity of message Q.
- *                      '<= 0' means 'unlimited capacity'
+ *	'<= 0' means 'unlimited capacity'
  * @param destroy_on_exit destroy instance on exiting thread
- * @return 0 if success. Otherwise -errno
- *         (ex. -EPERM if there is looper already at current thread.)
+ * @return 0 if success. Otherwise @c -errno
+ *	(ex. -EPERM if there is looper already at current thread.)
  */
 YYEXPORT int
 ymsglooper_create(int msgq_capacity, bool destroy_on_exit);
@@ -92,8 +92,8 @@ ymsglooper_create(int msgq_capacity, bool destroy_on_exit);
  * Destroy looper instance.
  * Looper SHOULD be in TERMINATED state.
  *
- * @return 0 if success otherwise -errno.
- *         (Ex. if looper state is NOT TERMINATED, -EPERM is returned.)
+ * @return 0 if success otherwise @c -errno.
+ *	(Ex. if looper state is NOT TERMINATED, -EPERM is returned.)
  */
 YYEXPORT int
 ymsglooper_destroy(struct ymsglooper *);
@@ -101,8 +101,8 @@ ymsglooper_destroy(struct ymsglooper *);
 /**
  * Start loop of current-thread-looper.
  *
- * @return 0 if success. Otherwise -errno
- *         (ex. -EPERM if there is no looper at current thread.)
+ * @return 0 if success. Otherwise @c -errno
+ *	(ex. -EPERM if there is no looper at current thread.)
  */
 YYEXPORT int
 ymsglooper_loop(void);
@@ -112,7 +112,7 @@ ymsglooper_loop(void);
  * Returned value MUST NOT freed by client. It will be handled internally.
  *
  * @param destroy_on_exit destroy instance on exiting thread
- * @return NULL if fails. Otherwise, struct ymsglooper of newly started thread.
+ * @return NULL if fails. Otherwise, msg looper of newly started thread.
  */
 YYEXPORT struct ymsglooper *
 ymsglooper_start_looper_thread(bool destroy_on_exit);
@@ -154,11 +154,10 @@ ymsglooper_get_state(struct ymsglooper *);
 /**
  * Stop looper. This is async function.
  *
- * @return 0 if success otherwise -errno.
+ * @return 0 if success otherwise @c -errno.
  */
 YYEXPORT int
 ymsglooper_stop(struct ymsglooper *);
-
 
 
 #endif /* __YMSGLOOPEr_h__ */

@@ -68,14 +68,14 @@
 #ifdef __GNUC__
 
 
-#  define __barrier() __asm__ __volatile__("": : :"memory")
-#  define __unused __attribute__((unused))
+#	define __barrier() __asm__ __volatile__("": : :"memory")
+#	define __unused __attribute__((unused))
 
 #else /* __GNUC__ */
 
-#  error barrier() should be defined.
-#  define __barrier()
-#  define __unused
+#	error barrier() should be defined.
+#	define __barrier()
+#	define __unused
 
 #endif /* __GNUC__ */
 

@@ -43,22 +43,27 @@
 #include "msghandler.h"
 
 static void
-default_handle(struct ymsghandler *handler __unused,
-	       const struct ymsg *m) {
+default_handle(
+	struct ymsghandler *handler __unused,
+	const struct ymsg *m
+) {
 	if (unlikely(YMSG_TYP_EXEC != m->type
-		     || !m->run)) {
+		|| !m->run)
+	) {
 		ylogw("Invalid message(default handler): type:%d, %p => ignored\n,",
-		      m->type, m->run);
+			m->type, m->run);
 		return;
 	}
 	(*m->run)(m->data);
 }
 
 struct ymsghandler *
-ymsghandler_create(struct ymsglooper *ml,
-		   void *tag,
-		   void (*tagfree)(void *),
-		   void (*handle)(struct ymsghandler *, const struct ymsg *)) {
+ymsghandler_create(
+	struct ymsglooper *ml,
+	void *tag,
+	void (*tagfree)(void *),
+	void (*handle)(struct ymsghandler *, const struct ymsg *)
+) {
 	struct ymsghandler *mh;
 	if (unlikely(!ml))
 		return NULL;
@@ -93,23 +98,30 @@ ymsghandler_get_looper(struct ymsghandler *mh) {
 }
 
 int
-ymsghandler_post_data(struct ymsghandler *mh,
-		      int code, void *data,
-		      void (*dfree)(void *)) {
-	return ymsghandler_post_data2(mh,
-				      code,
-				      data,
-				      dfree,
-				      YMSG_PRI_NORMAL,
-				      0);
+ymsghandler_post_data(
+	struct ymsghandler *mh,
+	int code,
+	void *data,
+	void (*dfree)(void *)
+) {
+	return ymsghandler_post_data2(
+		mh,
+		code,
+		data,
+		dfree,
+		YMSG_PRI_NORMAL,
+		0);
 }
 
 int
-ymsghandler_post_data2(struct ymsghandler *mh,
-		       int code, void *data,
-		       void (*dfree)(void *),
-		       uint8_t pri, uint32_t opt) {
-
+ymsghandler_post_data2(
+	struct ymsghandler *mh,
+	int code,
+	void *data,
+	void (*dfree)(void *),
+	uint8_t pri,
+	uint32_t opt
+) {
 	struct ymsg *m = ymsg_create();
 	if (unlikely(!m))
 		return -ENOMEM;
@@ -119,22 +131,30 @@ ymsghandler_post_data2(struct ymsghandler *mh,
 }
 
 int
-ymsghandler_post_exec(struct ymsghandler *mh,
-		      void *arg, void (*argfree)(void *),
-		      void (*run)(void *)) {
-	return ymsghandler_post_exec2(mh,
-				      arg,
-				      argfree,
-				      run,
-				      YMSG_PRI_NORMAL,
-				      0);
+ymsghandler_post_exec(
+	struct ymsghandler *mh,
+	void *arg,
+	void (*argfree)(void *),
+	void (*run)(void *)
+) {
+	return ymsghandler_post_exec2(
+		mh,
+		arg,
+		argfree,
+		run,
+		YMSG_PRI_NORMAL,
+		0);
 }
 
 int
-ymsghandler_post_exec2(struct ymsghandler *mh,
-		       void *arg, void (*argfree)(void *),
-		       void (*run)(void *),
-		       uint8_t pri, uint32_t opt) {
+ymsghandler_post_exec2(
+	struct ymsghandler *mh,
+	void *arg,
+	void (*argfree)(void *),
+	void (*run)(void *),
+	uint8_t pri,
+	uint32_t opt
+) {
 	struct ymsg *m = ymsg_create();
 	if (unlikely(!m))
 		return -ENOMEM;
@@ -144,11 +164,15 @@ ymsghandler_post_exec2(struct ymsghandler *mh,
 }
 
 int
-ymsghandler_exec_on(struct ymsghandler *mh,
-		    void *arg, void (*argfree)(void *),
-		    void (*run)(void *)) {
-	if (ymsglooper_get_thread(ymsghandler_get_looper(mh))
-	    == pthread_self()) {
+ymsghandler_exec_on(
+	struct ymsghandler *mh,
+	void *arg,
+	void (*argfree)(void *),
+	void (*run)(void *)
+) {
+	if (ymsglooper_get_thread(
+		ymsghandler_get_looper(mh)) == pthread_self()
+	) {
 		(*run)(arg);
 		if (arg && argfree)
 			(*argfree)(arg);

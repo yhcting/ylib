@@ -227,12 +227,10 @@ remove_key(struct node *n, const u8 *p,
 /*
  * If node exists, it returns node. If not, it creates new one and returns it.
  * @return back node of last character of symbol.
- *         If fails to get, NULL is returned.
+ *	If fails to get, NULL is returned.
  */
 static struct node *
-get_node(struct ytrie *t,
-	 const u8 *key, u32 sz,
-	 int bcreate) {
+get_node(struct ytrie *t, const u8 *key, u32 sz, int bcreate) {
 	register struct node *n = &t->rt;
 	register const u8 *p = key;
 	register const u8 *pend = p+sz;
@@ -258,8 +256,11 @@ get_node(struct ytrie *t,
 }
 
 static bool
-equal_internal(const struct node *n0, const struct node *n1,
-	       int(*cmp)(const void *, const void *)) {
+equal_internal(
+	const struct node *n0,
+	const struct node *n1,
+	int(*cmp)(const void *, const void *)
+) {
 	register int i;
 	if (n0->v && n1->v) {
 		if (0 == cmp(n0->v, n1->v))
@@ -279,9 +280,11 @@ equal_internal(const struct node *n0, const struct node *n1,
 }
 
 static struct node *
-node_clone(const struct node *n,
-	   void *tag,
-	   void *(*clonev)(void *, const void *)) {
+node_clone(
+	const struct node *n,
+	void *tag,
+	void *(*clonev)(void *, const void *)
+) {
 	register int i;
 	struct node *r = alloc_node();
 	if (unlikely(!r))
@@ -298,11 +301,15 @@ node_clone(const struct node *n,
  *
  */
 static int
-iterate_internal(void *tag, struct node *n,
-                 int(cb)(void *, const u8 *, u32, void *),
-                 /* bsz: excluding space for trailing 0 */
-                 u8 *buf, u32 bsz,
-                 u32 bitoffset) {
+iterate_internal(
+	void *tag,
+	struct node *n,
+	int(cb)(void *, const u8 *, u32, void *),
+	/* bsz: excluding space for trailing 0 */
+	u8 *buf,
+	u32 bsz,
+	u32 bitoffset
+) {
 	register u32 i;
 
 	if (n->v) {
@@ -357,27 +364,30 @@ iterate_internal(void *tag, struct node *n,
 }
 
 void **
-ytrie_getref(struct ytrie *t,
-	     const u8 *key, u32 sz) {
+ytrie_getref(struct ytrie *t, const u8 *key, u32 sz) {
 	struct node *n;
 	yassert(key);
 	if (!sz)
 		return NULL; /* 0 length string */
 	n = get_node(t, key, sz, FALSE);
-	return n? &n->v: NULL;
+	return n ? &n->v : NULL;
 }
 
 void *
 ytrie_get(struct ytrie *t, const u8 *key, u32 sz) {
 	void ** pv = ytrie_getref(t, key, sz);
-	return pv? *pv: NULL;
+	return pv ? *pv : NULL;
 }
 
 int
-ytrie_iterate(struct ytrie *t, void *tag,
-              const u8 *key, u32 keysz,
-              /* return 1 for keep going, 0 for stop and don't do anymore */
-              int(cb)(void *, const u8 *, u32, void *)) {
+ytrie_iterate(
+	struct ytrie *t,
+	void *tag,
+	const u8 *key,
+	u32 keysz,
+	/* return 1 for keep going, 0 for stop and don't do anymore */
+	int(cb)(void *, const u8 *, u32, void *)
+) {
 	char buf[YTRIE_MAX_KEY_LEN + 1];
 	struct node *n = get_node(t, key, keysz, FALSE);
 
@@ -394,9 +404,7 @@ ytrie_iterate(struct ytrie *t, void *tag,
 }
 
 int
-ytrie_insert(struct ytrie *t,
-	     const u8 *key,
-	     u32 sz, void *v) {
+ytrie_insert(struct ytrie *t, const u8 *key, u32 sz, void *v) {
 	struct node *n;
 
 	yassert(t && key);
@@ -419,7 +427,7 @@ ytrie_insert(struct ytrie *t,
 }
 
 struct ytrie *
-ytrie_create(void(*vfree)(void *)) {
+ytrie_create(void (*vfree)(void *)) {
 	struct ytrie *t = ycalloc(1, sizeof(*t));
 	if (!t)
 		return NULL;
@@ -461,14 +469,21 @@ ytrie_vfree(const struct ytrie *t))(void *) {
 }
 
 bool
-ytrie_equal(const struct ytrie *t0, const struct ytrie *t1,
-	    int(*cmp)(const void *, const void *)) {
+ytrie_equal(
+	const struct ytrie *t0,
+	const struct ytrie *t1,
+	int (*cmp)(const void *, const void *)
+) {
 	return equal_internal(&t0->rt, &t1->rt, cmp);
 }
 
 int
-ytrie_copy(struct ytrie *dst, const struct ytrie *src, void *tag,
-	   void *(*clonev)(void *,const void *)) {
+ytrie_copy(
+	struct ytrie *dst,
+	const struct ytrie *src,
+	void *tag,
+	void *(*clonev)(void *,const void *)
+) {
 	register int i;
 	ytrie_reset(dst);
 	dst->vfree = src->vfree;
@@ -481,18 +496,24 @@ ytrie_copy(struct ytrie *dst, const struct ytrie *src, void *tag,
 }
 
 struct ytrie *
-ytrie_clone(const struct ytrie *t,
-	    void *tag,
-	    void *(*clonev)(void *, const void *)) {
+ytrie_clone(
+	const struct ytrie *t,
+	void *tag,
+	void *(*clonev)(void *, const void *)
+) {
 	struct ytrie *r = ytrie_create(t->vfree);
 	ytrie_copy(r, t, tag, clonev);
 	return r;
 }
 
 int
-ytrie_auto_complete(struct ytrie *t,
-		    const u8 *start_with, u32 sz,
-		    u8 *buf, u32 bufsz) {
+ytrie_auto_complete(
+	struct ytrie *t,
+	const u8 *keyprefix,
+	u32 keyprefixsz,
+	u8 *buf,
+	u32 bufsz
+) {
 #define YTRIEBranch 0
 #define YTRIELeaf 1
 #define YTRIEFail 2
@@ -503,10 +524,10 @@ ytrie_auto_complete(struct ytrie *t,
 	u32 j, cnt, bi;
 	u8 c;
 
-	yassert(t && start_with && buf);
+	yassert(t && keyprefix && buf);
 
 	/* move to prefix */
-	if (unlikely(!(n = get_node(t, start_with, sz, FALSE))))
+	if (unlikely(!(n = get_node(t, keyprefix, keyprefixsz, FALSE))))
 		goto fail;
 
 	/* find more possbile prefix */

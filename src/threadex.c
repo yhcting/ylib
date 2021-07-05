@@ -137,12 +137,13 @@ declare_simple_getter_setter(void *, result) /* @suppress("Unused static functio
  * Macros
  *
  *****************************************************************************/
-#define post_to_owner(threadex, callback)			\
-	fatali0(ymsghandler_post_exec((threadex)->owner,	\
-				      threadex, NULL,		\
-				      &callback))
+#define post_to_owner(threadex, callback)	\
+	fatali0(ymsghandler_post_exec(		\
+		(threadex)->owner,		\
+		threadex, NULL,			\
+		&callback))
 
-#define post_event_to_owner(threadex, listener_name)	\
+#define post_event_to_owner(threadex, listener_name) \
 	post_to_owner(threadex, on_##listener_name)
 
 
@@ -162,10 +163,10 @@ static void
 on_done(void *arg) {
         struct ythreadex *threadex = (struct ythreadex *)arg;
 	if (likely(threadex->listener.on_done))
-		(*threadex->listener.on_done)
-			(threadex,
-			 ythreadex_get_result(threadex),
-			 ythreadex_get_errcode(threadex));
+		(*threadex->listener.on_done)(
+			threadex,
+			ythreadex_get_result(threadex),
+			ythreadex_get_errcode(threadex));
 	set_state(threadex, YTHREADEX_TERMINATED);
 }
 
@@ -265,12 +266,12 @@ thread_main(void *arg) {
 		 * result and errcode doesn't require 'lock', we can pass it
 		 *   directly to 'run' function here.
 		 */
-		threadex->errcode = (*threadex->run)(threadex,
-						     &threadex->result);
-		break;
+		threadex->errcode = (*threadex->run)(
+			threadex, &threadex->result);
+	break;
 
 	case YTHREADEX_CANCELLING:
-		break;
+	break;
 	default:
 		/* This MUST NOT happend. this thread MUST wait at
 		 * ythreadex_get_state() until thread state is changed
@@ -291,15 +292,17 @@ thread_main(void *arg) {
  *
  *****************************************************************************/
 int
-threadex_init(struct ythreadex *threadex,
-              const char *name,
-              struct ymsghandler *owner,
-              enum ythreadex_priority priority,
-              const struct ythreadex_listener *listener,
-              void *arg,
-              void (*free_arg)(void *),
-              void (*free_result)(void *),
-              int (*run)(struct ythreadex *, void **result)) {
+threadex_init(
+	struct ythreadex *threadex,
+	const char *name,
+	struct ymsghandler *owner,
+	enum ythreadex_priority priority,
+	const struct ythreadex_listener *listener,
+	void *arg,
+	void (*free_arg)(void *),
+	void (*free_result)(void *),
+	int (*run)(struct ythreadex *, void **result)
+) {
 	if (unlikely(!run))
 		return -EINVAL;
 	/* -1 to preserve terminating 0 */
@@ -337,14 +340,16 @@ threadex_clean(struct ythreadex *threadex) {
  *
  *****************************************************************************/
 struct ythreadex *
-ythreadex_create(const char *name,
-		 struct ymsghandler *owner,
-		 enum ythreadex_priority priority,
-		 const struct ythreadex_listener *listener,
-		 void *arg,
-		 void (*free_arg)(void *),
-		 void (*free_result)(void *),
-		 int (*run)(struct ythreadex *, void **result)) {
+ythreadex_create(
+	const char *name,
+	struct ymsghandler *owner,
+	enum ythreadex_priority priority,
+	const struct ythreadex_listener *listener,
+	void *arg,
+	void (*free_arg)(void *),
+	void (*free_result)(void *),
+	int (*run)(struct ythreadex *, void **result)
+) {
 	struct ythreadex *threadex;
 	yassert(name && owner && run);
 	threadex = ycalloc(sizeof(*threadex), 1);
@@ -352,15 +357,17 @@ ythreadex_create(const char *name,
 		ylogf("Out of memory!");
 		return NULL;
 	}
-        if (unlikely(threadex_init(threadex,
-                                   name,
-                                   owner,
-                                   priority,
-                                   listener,
-                                   arg,
-                                   free_arg,
-                                   free_result,
-                                   run))) {
+        if (unlikely(threadex_init(
+		threadex,
+		name,
+		owner,
+                priority,
+                listener,
+                arg,
+                free_arg,
+                free_result,
+                run))
+	) {
                 yfree(threadex);
                 return NULL;
         }
@@ -417,10 +424,12 @@ ythreadex_start(struct ythreadex *threadex) {
 		unlock_state(threadex);
 		return -EPERM;
 	}
-	if (unlikely(r = pthread_create(&threadex->thread,
-					NULL,
-					&thread_main,
-					threadex))) {
+	if (unlikely(r = pthread_create(
+		&threadex->thread,
+		NULL,
+		&thread_main,
+		threadex))
+	) {
 		unlock_state(threadex);
 		return -r;
 	}
@@ -450,8 +459,8 @@ ythreadex_join(struct ythreadex *threadex, void **retval) {
 	yassert(threadex);
 	/* in case of threadex_start_sync, join is impossible. */
 	if (unlikely(YTHREADEX_READY == ythreadex_get_state(threadex)
-		     || !threadex->thread))
-		return -EPERM;
+		|| !threadex->thread)
+	) { return -EPERM; }
 	return pthread_join(threadex->thread, retval);
 }
 
@@ -459,9 +468,7 @@ int
 ythreadex_cancel(struct ythreadex *threadex, bool pthdcancel) {
 	bool started = FALSE;
 	yassert(threadex);
-	struct yo *yo = yocreate2(threadex, NULL,
-				  NULL, NULL,
-				  NULL, NULL);
+	struct yo *yo = yocreate2(threadex, NULL, NULL, NULL, NULL, NULL);
 	if (unlikely(!yo))
 		return -ENOMEM;
 
@@ -480,9 +487,11 @@ ythreadex_cancel(struct ythreadex *threadex, bool pthdcancel) {
 	yo->o1 = (void *)(intptr_t)started;
 	yo->o2 = (void *)(intptr_t)pthdcancel;
 	set_state_locked(threadex, YTHREADEX_CANCELLING);
-	fatali0(ymsghandler_post_exec(threadex->owner,
-				      yo, (void(*)(void *))&yodestroy,
-				      &on_cancelling));
+	fatali0(ymsghandler_post_exec(
+		threadex->owner,
+		yo,
+		(void(*)(void *))&yodestroy,
+		&on_cancelling));
 	unlock_state(threadex);
 	return 0;
 }
@@ -493,13 +502,13 @@ ythreadex_publish_progress_init(struct ythreadex *threadex, long maxprog) {
 	yassert(threadex);
 	if (YTHREADEX_STARTED != ythreadex_get_state(threadex))
 		return -EPERM;
-	yo = yocreate1(threadex, NULL,
-		       (void *)(intptr_t)maxprog, NULL);
+	yo = yocreate1(threadex, NULL, (void *)(intptr_t)maxprog, NULL);
 	if (unlikely(!yo))
 		return -ENOMEM;
-	fatali0(ymsghandler_post_exec(threadex->owner,
-				      yo, (void(*)(void *))&yodestroy,
-				      &on_progress_init));
+	fatali0(ymsghandler_post_exec(
+		threadex->owner,
+		yo, (void(*)(void *))&yodestroy,
+		&on_progress_init));
 	return 0;
 }
 
@@ -509,13 +518,14 @@ ythreadex_publish_progress(struct ythreadex *threadex, long prog) {
 	yassert(threadex);
 	if (YTHREADEX_STARTED != ythreadex_get_state(threadex))
 		return -EPERM;
-	yo = yocreate1(threadex, NULL,
-		       (void *)prog, NULL);
+	yo = yocreate1(threadex, NULL, (void *)prog, NULL);
 	if (unlikely(!yo))
 		return -ENOMEM;
-	fatali0(ymsghandler_post_exec(threadex->owner,
-				      yo, (void(*)(void *))&yodestroy,
-				      &on_progress));
+	fatali0(ymsghandler_post_exec(
+		threadex->owner,
+		yo,
+		(void(*)(void *))&yodestroy,
+		&on_progress));
 	return 0;
 }
 

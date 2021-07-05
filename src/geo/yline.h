@@ -78,9 +78,7 @@ struct yline {
  * @param y1 Y value of point1
  */
 static YYINLINE void
-ygeol_set(struct yline *l,
-	  int x0, int y0,
-	  int x1, int y1) {
+ygeol_set(struct yline *l, int x0, int y0, int x1, int y1) {
 	l->x0 = x0;
 	l->y0 = y0;
 	l->x1 = x1;
@@ -96,8 +94,9 @@ ygeol_set(struct yline *l,
  */
 static YYINLINE void
 ygeol_set2(struct yline *l,
-	   const struct ypoint *p0,
-	   const struct ypoint *p1) {
+	const struct ypoint *p0,
+	const struct ypoint *p1
+) {
 	ygeol_set(l, p0->x, p0->y, p1->x, p1->y);
 }
 

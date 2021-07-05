@@ -268,8 +268,8 @@ expand(struct ymempool *mp) {
 
 	/* initialize fbp & block group */
 	for (i = 0; i < mp->grpsz; i++) {
-		newfbp[mp->nrgrp][i]
-			= (struct blk *)ymalloc(blksz(mp));
+		newfbp[mp->nrgrp][i] =
+			(struct blk *)ymalloc(blksz(mp));
 		if (unlikely(!newfbp[mp->nrgrp][i]))
 			goto nomem_blkgrp;
 		newfbp[mp->nrgrp][i]->i = sz(mp) + i;
@@ -318,8 +318,8 @@ shrink(struct ymempool *mp, int margin) { return 0; }
  */
 static INLINE struct blk *
 blk(struct ymempool *mp, int i) {
-	return (struct blk *)(mp->grp[i / mp->grpsz]
-			      + i % mp->grpsz * blksz(mp));
+	return (struct blk *)(
+		mp->grp[i / mp->grpsz] + i % mp->grpsz * blksz(mp));
 }
 
 static INLINE void
@@ -328,7 +328,7 @@ fbpdump(struct ymempool *mp) {
 	printf("sz : %d, fbi : %d\n", sz(mp), mp->fbi);
 	for (i = 0; i < sz(mp); i++) {
 		printf("fbp[%d] -> %p (i:%d)\n",
-		       i, fbpblk(mp, i), fbpblk(mp, i)->i);
+			i, fbpblk(mp, i), fbpblk(mp, i)->i);
 	}
 }
 
@@ -338,7 +338,7 @@ blkdump(struct ymempool *mp) {
 	printf("sz : %d, fbi : %d\n", sz(mp), mp->fbi);
 	for (i = 0; i < sz(mp); i++) {
 		printf("blk(%d:%p) : i(%d)\n",
-		       i, blk(mp, i), blk(mp, i)->i);
+			i, blk(mp, i), blk(mp, i)->i);
 	}
 }
 
@@ -363,17 +363,15 @@ expand(struct ymempool *mp) {
 	/* allocate new fbp group */
 	newfbp[mp->nrgrp] = ymalloc(sizeof(**newfbp) * mp->grpsz);
 	/* allocate new block group */
-	newgrp[mp->nrgrp] = ymalloc(sizeof(**newgrp)
-				    * mp->grpsz
-				    * bsz);
-	if (unlikely(!newfbp[mp->nrgrp]
-		     || !newgrp[mp->nrgrp]))
+	newgrp[mp->nrgrp] = ymalloc(
+		sizeof(**newgrp) * mp->grpsz * bsz);
+	if (unlikely(!newfbp[mp->nrgrp]	|| !newgrp[mp->nrgrp]))
 		goto nomem_newgrp;
 
 	/* initialize fbp & block group */
 	for (i = 0; i < mp->grpsz; i++) {
-		newfbp[mp->nrgrp][i]
-			= (struct blk *)(newgrp[mp->nrgrp] + i * bsz);
+		newfbp[mp->nrgrp][i] =
+			(struct blk *)(newgrp[mp->nrgrp] + i * bsz);
 		newfbp[mp->nrgrp][i]->i = sz(mp) + i;
 	}
 
@@ -511,8 +509,7 @@ ymempool_put(struct ymempool *mp, void *block) {
 
 	b = containerof(block, struct blk, d);
 	lock(mp);
-	yassert(mp->fbi > 0
-		&& b->i < mp->fbi);
+	yassert(mp->fbi > 0 && b->i < mp->fbi);
 
 	mp->fbi--;
 	ub = fbpblk(mp, mp->fbi);

@@ -97,8 +97,7 @@ ygraph_remove_vertex(struct ygraph *g __unused, struct yvertex *v) {
 	}
 
 	/* check "vertex is isolated" from other vertices */
-	yassert(v->ie.next == v->ie.prev
-		&& v->oe.next == v->oe.prev);
+	yassert(v->ie.next == v->ie.prev && v->oe.next == v->oe.prev);
 
 	ylistl_remove(&v->lk);
 	return 0;
@@ -205,9 +204,11 @@ ygraph_has_cycle(const struct ygraph *g __unused,
 }
 
 struct yedge *
-ygraph_find_edge(const struct ygraph *g __unused,
-		 const struct yvertex *from,
-		 const struct yvertex *to) {
+ygraph_find_edge(
+	const struct ygraph *g __unused,
+	const struct yvertex *from,
+	const struct yvertex *to
+) {
 	yassert(g && from && to);
 	struct yedge *e;
 	ygraph_foreach_oedge(from, e) {
@@ -220,10 +221,12 @@ ygraph_find_edge(const struct ygraph *g __unused,
 }
 
 int
-ygraph_add_edge(struct ygraph *g,
-		struct yedge **oe,
-		struct yvertex *from,
-		struct yvertex *to) {
+ygraph_add_edge(
+	struct ygraph *g,
+	struct yedge **oe,
+	struct yvertex *from,
+	struct yvertex *to
+) {
 	struct yedge *e;
 	yassert(g && from && to);
 	if (ygraph_has_edge(g, from, to))
@@ -238,9 +241,11 @@ ygraph_add_edge(struct ygraph *g,
 }
 
 int
-ygraph_remove_edge(struct ygraph *g,
-		   struct yvertex *from,
-		   struct yvertex *to) {
+ygraph_remove_edge(
+	struct ygraph *g,
+	struct yvertex *from,
+	struct yvertex *to
+) {
 	struct	yedge *e;
 	yassert(g && from && to);
 	if (unlikely(!(e = ygraph_find_edge(g, from, to))))

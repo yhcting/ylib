@@ -51,15 +51,15 @@
 /* For debugging */
 #ifdef CONFIG_DEBUG
 
-#  include <malloc.h>
-#  include <assert.h>
-#  include <stdio.h>
+#	include <malloc.h>
+#	include <assert.h>
+#	include <stdio.h>
 
-#  define ymalloc(sz) dmalloc(sz, __FILE__, __LINE__)
-#  define yrealloc(p, sz) drealloc(p, sz, __FILE__, __LINE__)
-#  define ycalloc(n, sz) dcalloc(n, sz, __FILE__, __LINE__)
-#  define yfree dfree
-#  define yassert(x) assert(x)
+#	define ymalloc(sz) dmalloc(sz, __FILE__, __LINE__)
+#	define yrealloc(p, sz) drealloc(p, sz, __FILE__, __LINE__)
+#	define ycalloc(n, sz) dcalloc(n, sz, __FILE__, __LINE__)
+#	define yfree dfree
+#	define yassert(x) assert(x)
 
 EXPORT void *dmalloc(size_t, const char *, int);
 EXPORT void *drealloc(void *, size_t, const char *, int);
@@ -68,13 +68,13 @@ EXPORT void dfree(void *);
 
 #else /* CONFIG_DEBUG */
 
-#  include <malloc.h>
+#	include <malloc.h>
 
-#  define ymalloc malloc
-#  define yrealloc realloc
-#  define ycalloc calloc
-#  define yfree free
-#  define yassert(x) do { } while (0)
+#	define ymalloc malloc
+#	define yrealloc realloc
+#	define ycalloc calloc
+#	define yfree free
+#	define yassert(x) do { } while (0)
 
 #endif /* CONFIG_DEBUG */
 
@@ -87,21 +87,21 @@ EXPORT void dfree(void *);
 #ifdef YDPRINT
 
 /* Debug PRint */
-#  define dpr(a, b...) printf(a, ##b);
+#	define dpr(a, b...) printf(a, ##b);
 /* Debug Function PRint */
-#  define dfpr(a, b...) printf("%s: " a "\n", __func__, ##b);
+#	define dfpr(a, b...) printf("%s: " a "\n", __func__, ##b);
 /* Debug POSition PRint */
-#  define dpospr(a, b...) \
+#	define dpospr(a, b...) \
 	printf("%s: %d: " a "\n", __FILE__, __LINE__, ##b);
 /* Debug CHecK PoinT */
-#  define dchkpt() printf("%s: %d\n", __FILE__, __LINE__);
+#	define dchkpt() printf("%s: %d\n", __FILE__, __LINE__);
 
 #else /* YDPRINT */
 
-#  define dpr(a, b...) do { } while (0)
-#  define dfpr(a, b...) do { } while (0)
-#  define dpospr(a, b...) do { } while (0)
-#  define dchkpt() do { } while (0)
+#	define dpr(a, b...) do { } while (0)
+#	define dfpr(a, b...) do { } while (0)
+#	define dpospr(a, b...) do { } while (0)
+#	define dchkpt() do { } while (0)
 
 #endif /* YDPRINT */
 
@@ -116,21 +116,21 @@ EXPORT void dfree(void *);
 #define declare_lock(lOCKtYPE, cONTAINERtYPE, nAME, iNIToPT)		\
 	static inline void						\
 	init_##nAME##_lock(cONTAINERtYPE *o) {				\
-		fatali0(pthread_##lOCKtYPE##_init(&o->nAME##_lock,	\
-						  iNIToPT));		\
+		fatali0(pthread_##lOCKtYPE##_init(			\
+			&o->nAME##_lock, iNIToPT));			\
 	}								\
-        static inline void                                              \
+        static inline void						\
         lock_##nAME(cONTAINERtYPE *o) {					\
                 fatali0(pthread_##lOCKtYPE##_lock(&o->nAME##_lock));	\
-        }                                                               \
-        static inline void                                              \
+        }								\
+        static inline void						\
         unlock_##nAME(cONTAINERtYPE *o) {				\
                 fatali0(pthread_##lOCKtYPE##_unlock(&o->nAME##_lock));	\
         }								\
 	static inline void						\
 	destroy_##nAME##_lock(cONTAINERtYPE *o) {			\
 		fatali0(pthread_##lOCKtYPE##_destroy(&o->nAME##_lock)); \
-	}								\
+	}
 
 
 
@@ -142,35 +142,35 @@ EXPORT void dfree(void *);
 /**
  * Die(exit process with exit code 1).
  */
-#define die()					\
-        do {					\
-		yassert(FALSE);			\
-		exit(1);			\
+#define die()			\
+        do {			\
+		yassert(FALSE);	\
+		exit(1);	\
         } while (FALSE)
 
 /**
  * Die(exit process with exit code 1 with fatal log message.)
  */
-#define die2(fmt, args...)			\
-        do {					\
-		ylogf(fmt"\n", ##args);		\
-		die();				\
+#define die2(fmt, args...)		\
+        do {				\
+		ylogf(fmt"\n", ##args);	\
+		die();			\
         } while (FALSE)
 
 /**
- * Die if {@code cond} is NOT TRUE.
+ * Die if cond is NOT TRUE.
  */
-#define fatal(cond)				\
-	if (unlikely(!(cond))) {		\
-		die();				\
+#define fatal(cond)			\
+	if (unlikely(!(cond))) {	\
+		die();			\
 	}
 
 /**
- * Die if {@code cond} is NOT TRUE with given message.
+ * Die if cond is NOT TRUE with given message.
  */
-#define fatal2(cond, fmt, args...)		\
-	if (unlikely(!(cond))) {		\
-		die2(fmt, ##args);		\
+#define fatal2(cond, fmt, args...)	\
+	if (unlikely(!(cond))) {	\
+		die2(fmt, ##args);	\
 	}
 
 /**
@@ -181,8 +181,8 @@ EXPORT void dfree(void *);
         do {							\
                 int ___Rr___  = int0_return_func_call_stmt;	\
 		fatal2(0 == ___Rr___,				\
-		       "Failure at MUST-SUCCESS-Function!: %d",	\
-		       ___Rr___);				\
+			"Failure at MUST-SUCCESS-Function!: %d",\
+			___Rr___);				\
         } while (FALSE)
 
 #endif /* __COMMOn_h__ */

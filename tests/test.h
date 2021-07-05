@@ -46,20 +46,23 @@ void dregister_clearfn(void (*fn)(void), const char *mod);
 void dunregister_clearfn(void (*fn)(void), const char *mod);
 
 
-#define TESTFN(name)							\
-	static void __tst_register_test_##name(void) __attribute__ ((constructor)); \
-	static void __tst_register_test_##name(void) {			\
-		dregister_tstfn(&test_##name, #name);			\
-	}								\
-	static void __tst_unregister_test_##name(void) __attribute__ ((destructor)); \
-	static void __tst_unregister_test_##name(void) {		\
-		dunregister_tstfn(&test_##name, #name);			\
+#define TESTFN(name)					\
+	static void __tst_register_test_##name(void)	\
+		__attribute__ ((constructor)); 		\
+	static void __tst_register_test_##name(void) {	\
+		dregister_tstfn(&test_##name, #name);	\
+	}						\
+	static void __tst_unregister_test_##name(void)	\
+		 __attribute__ ((destructor));		\
+	static void __tst_unregister_test_##name(void) {\
+		dunregister_tstfn(&test_##name, #name);	\
 	}
 
-#define CLEARFN(name)							\
-	static void __tst_register_clear_##name(void) __attribute__ ((constructor)); \
-	static void __tst_register_clear_##name(void) {			\
-		dregister_clearfn(&clear_##name, #name);		\
+#define CLEARFN(name)					\
+	static void __tst_register_clear_##name(void)	\
+		__attribute__ ((constructor));		\
+	static void __tst_register_clear_##name(void) {	\
+		dregister_clearfn(&clear_##name, #name);\
 	}
 
 #endif /* __TESt_h__ */

@@ -144,9 +144,11 @@ swape(struct yheap *h, u32 i0, u32 i1) {
  *
  *****************************************************************************/
 struct yheap *
-yheap_create(u32 capacity,
-	     void (*vfree)(void *),
-	     int (*cmp)(const void *, const void *)) {
+yheap_create(
+	u32 capacity,
+	void (*vfree)(void *),
+	int (*cmp)(const void *, const void *)
+) {
 	struct yheap *h;
 	if (unlikely(!cmp))
 		return NULL; /* invalid argument. */
@@ -268,9 +270,11 @@ yheap_pop(struct yheap *h) {
 }
 
 int
-yheap_iterates(struct yheap *h,
-	       void *tag,
-	       int (*cb)(void *e, void *tag)) {
+yheap_iterates(
+	struct yheap *h,
+	void *tag,
+	int (*cb)(void *e, void *tag)
+) {
 	u32 i;
 	u32 heapsz = yheap_sz(h);
 	for (i = 0; i <= heapsz; i++) {

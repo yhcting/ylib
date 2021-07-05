@@ -63,10 +63,12 @@ fillrect(char plain[COORD_LIMIT][COORD_LIMIT],
 }
 
 static void
-fillrect_on(char plain[COORD_LIMIT][COORD_LIMIT],
-	    const struct yrect *r,
-	    char existv,
-	    char newv) {
+fillrect_on(
+	char plain[COORD_LIMIT][COORD_LIMIT],
+	const struct yrect *r,
+	char existv,
+	char newv
+) {
 	int x, y;
 	for (y = r->t; y < r->b; y++)
 		for (x = r->l; x < r->r; x++)
@@ -223,8 +225,7 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 	{
 		/* op with empty rect and rgn */
 		{ NULL_R },
-		{ yrect_struct_init(10, 20, 200, 200),
-		  NULL_R },
+		{ yrect_struct_init(10, 20, 200, 200), NULL_R },
 		{ NULL_R },
 		{ NULL_R },
 		{ NULL_R },
@@ -232,8 +233,7 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 	},
 	{
 		/* op with empty rect and rgn*/
-		{ yrect_struct_init(10, 10, 100, 200),
-		  NULL_R },
+		{ yrect_struct_init(10, 10, 100, 200), NULL_R },
 		{ NULL_R },
 		{ NULL_R },
 		{ NULL_R },
@@ -242,10 +242,8 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 	},
 	{
 		/* op with empty rect - 0 */
-		{ yrect_struct_init(10, 10, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 200, 200),
-		  NULL_R },
+		{ yrect_struct_init(10, 10, 100, 200), NULL_R },
+		{ yrect_struct_init(10, 20, 200, 200), NULL_R },
 		{ NULL_R },
 		{ NULL_R },
 		{ NULL_R },
@@ -253,28 +251,20 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 	},
 	{
 		/* op with empty rect - 1 */
-		{ yrect_struct_init(10, 10, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 100, 200),
-		  NULL_R },
+		{ yrect_struct_init(10, 10, 100, 200), NULL_R },
+		{ yrect_struct_init(10, 20, 100, 200), NULL_R },
+		{ yrect_struct_init(10, 20, 100, 200), NULL_R },
 		{ NULL_R },
 		{ NULL_R },
-		{ yrect_struct_init(10, 20, 100, 200),
-		  NULL_R },
+		{ yrect_struct_init(10, 20, 100, 200), NULL_R },
 	},
 	{ /* DATA: 05 */
 		/* op with empty rect - 2 */
-		{ yrect_struct_init(10, 20, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 200, 200),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 100, 200),
-		  NULL_R },
+		{ yrect_struct_init(10, 20, 100, 200), NULL_R },
+		{ yrect_struct_init(10, 20, 200, 200), NULL_R },
+		{ yrect_struct_init(10, 20, 100, 200), NULL_R },
 		{ NULL_R },
-		{ yrect_struct_init(10, 20, 100, 200),
-		  NULL_R },
+		{ yrect_struct_init(10, 20, 100, 200), NULL_R },
 		{ NULL_R },
 	},
 	{
@@ -285,19 +275,15 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 * |+--+ |
 		 * +-----+
 		 */
-		{ yrect_struct_init(10, 40, 100, 400),
-		  NULL_R },
-		{ yrect_struct_init(20, 30, 200, 300),
-		  NULL_R },
-		{ yrect_struct_init(10, 40, 100, 400),
-		  NULL_R },
-		{ yrect_struct_init(20, 30, 200, 300),
-		  NULL_R },
+		{ yrect_struct_init(10, 40, 100, 400), NULL_R },
+		{ yrect_struct_init(20, 30, 200, 300), NULL_R },
+		{ yrect_struct_init(10, 40, 100, 400), NULL_R },
+		{ yrect_struct_init(20, 30, 200, 300), NULL_R },
 		{ yrect_struct_init(10, 20, 100, 400),
-		  yrect_struct_init(20, 30, 100, 200),
-		  yrect_struct_init(20, 30, 300, 400),
-		  yrect_struct_init(30, 40, 100, 400),
-		  NULL_R },
+			yrect_struct_init(20, 30, 100, 200),
+			yrect_struct_init(20, 30, 300, 400),
+			yrect_struct_init(30, 40, 100, 400),
+			NULL_R },
 		{ NULL_R },
 	},
 	{
@@ -306,18 +292,14 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 * |  | |  |
 		 * +--+ +--+
 		 */
+		{ yrect_struct_init(10, 20, 100, 200), NULL_R },
+		{ yrect_struct_init(10, 20, 300, 400), NULL_R },
 		{ yrect_struct_init(10, 20, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 300, 400),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 100, 200),
-		  yrect_struct_init(10, 20, 300, 400),
-		  NULL_R },
+			yrect_struct_init(10, 20, 300, 400),
+			NULL_R },
 		{ NULL_R },
-		{ yrect_struct_init(10, 20, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 300, 400),
-		  NULL_R },
+		{ yrect_struct_init(10, 20, 100, 200), NULL_R },
+		{ yrect_struct_init(10, 20, 300, 400), NULL_R },
 	},
 	{
 		/* separate - same x-band
@@ -328,18 +310,14 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 * |  |
 		 * +--+
 		 */
+		{ yrect_struct_init(10, 20, 100, 200), NULL_R },
+		{ yrect_struct_init(30, 40, 100, 200), NULL_R },
 		{ yrect_struct_init(10, 20, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(30, 40, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 100, 200),
-		  yrect_struct_init(30, 40, 100, 200),
-		  NULL_R },
+			yrect_struct_init(30, 40, 100, 200),
+			NULL_R },
 		{ NULL_R },
-		{ yrect_struct_init(10, 20, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(30, 40, 100, 200),
-		  NULL_R },
+		{ yrect_struct_init(10, 20, 100, 200), NULL_R },
+		{ yrect_struct_init(30, 40, 100, 200), NULL_R },
 	},
 	{
 		/* separate - x-band overlap
@@ -350,13 +328,11 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 *    |    |
 		 *    +----+
 		 */
+		{ yrect_struct_init(10, 20, 100, 300), NULL_R },
+		{ yrect_struct_init(30, 40, 200, 400), NULL_R },
 		{ yrect_struct_init(10, 20, 100, 300),
-		  NULL_R },
-		{ yrect_struct_init(30, 40, 200, 400),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 100, 300),
-		  yrect_struct_init(30, 40, 200, 400),
-		  NULL_R },
+			yrect_struct_init(30, 40, 200, 400),
+			NULL_R },
 		{ NULL_R },
 		{ yrect_struct_init(10, 20, 100, 300),
 		  NULL_R },
@@ -371,18 +347,14 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 *    |    |
 		 *    +----+
 		 */
+		{ yrect_struct_init(10, 20, 100, 300), NULL_R },
+		{ yrect_struct_init(20, 30, 200, 400), NULL_R },
 		{ yrect_struct_init(10, 20, 100, 300),
-		  NULL_R },
-		{ yrect_struct_init(20, 30, 200, 400),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 100, 300),
-		  yrect_struct_init(20, 30, 200, 400),
-		  NULL_R },
+			yrect_struct_init(20, 30, 200, 400),
+			NULL_R },
 		{ NULL_R },
-		{ yrect_struct_init(10, 20, 100, 300),
-		  NULL_R },
-		{ yrect_struct_init(20, 30, 200, 400),
-		  NULL_R },
+		{ yrect_struct_init(10, 20, 100, 300), NULL_R },
+		{ yrect_struct_init(20, 30, 200, 400), NULL_R },
 	},
 	{
 		/* separate - no-overlappped-band
@@ -393,18 +365,14 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 *      |  |
 		 *      +--+
 		 */
+		{ yrect_struct_init(10, 20, 100, 200), NULL_R },
+		{ yrect_struct_init(30, 40, 300, 400), NULL_R },
 		{ yrect_struct_init(10, 20, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(30, 40, 300, 400),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 100, 200),
-		  yrect_struct_init(30, 40, 300, 400),
-		  NULL_R },
+			yrect_struct_init(30, 40, 300, 400),
+			NULL_R },
 		{ NULL_R },
-		{ yrect_struct_init(10, 20, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(30, 40, 300, 400),
-		  NULL_R },
+		{ yrect_struct_init(10, 20, 100, 200), NULL_R },
+		{ yrect_struct_init(30, 40, 300, 400), NULL_R },
 	},
 	{
 		/* overlap - same y-band
@@ -412,18 +380,12 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 * |//|X|\\|
 		 * +--+-+--+
 		 */
-		{ yrect_struct_init(10, 20, 100, 300),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 200, 400),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 100, 400),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 200, 300),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 300, 400),
-		  NULL_R },
+		{ yrect_struct_init(10, 20, 100, 300), NULL_R },
+		{ yrect_struct_init(10, 20, 200, 400), NULL_R },
+		{ yrect_struct_init(10, 20, 100, 400), NULL_R },
+		{ yrect_struct_init(10, 20, 200, 300), NULL_R },
+		{ yrect_struct_init(10, 20, 100, 200), NULL_R },
+		{ yrect_struct_init(10, 20, 300, 400), NULL_R },
 	},
 	{
 		/* overlap - same x-band
@@ -435,18 +397,12 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 * |\\|
 		 * +--+
 		 */
-		{ yrect_struct_init(10, 30, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(20, 40, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(10, 40, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(20, 30, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(30, 40, 100, 200),
-		  NULL_R },
+		{ yrect_struct_init(10, 30, 100, 200), NULL_R },
+		{ yrect_struct_init(20, 40, 100, 200), NULL_R },
+		{ yrect_struct_init(10, 40, 100, 200), NULL_R },
+		{ yrect_struct_init(20, 30, 100, 200), NULL_R },
+		{ yrect_struct_init(10, 20, 100, 200), NULL_R },
+		{ yrect_struct_init(30, 40, 100, 200), NULL_R },
 	},
 	{
 		/* overlap - in the middle of y - 0
@@ -458,22 +414,18 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 * |/////|
 		 * +-----+
 		 */
-		{ yrect_struct_init(10, 40, 100, 300),
-		  NULL_R },
-		{ yrect_struct_init(20, 30, 200, 400),
-		  NULL_R },
+		{ yrect_struct_init(10, 40, 100, 300), NULL_R },
+		{ yrect_struct_init(20, 30, 200, 400), NULL_R },
 		{ yrect_struct_init(10, 20, 100, 300),
-		  yrect_struct_init(20, 30, 100, 400),
-		  yrect_struct_init(30, 40, 100, 300),
-		  NULL_R },
-		{ yrect_struct_init(20, 30, 200, 300),
-		  NULL_R },
+			yrect_struct_init(20, 30, 100, 400),
+			yrect_struct_init(30, 40, 100, 300),
+			NULL_R },
+		{ yrect_struct_init(20, 30, 200, 300), NULL_R },
 		{ yrect_struct_init(10, 20, 100, 300),
-		  yrect_struct_init(20, 30, 100, 200),
-		  yrect_struct_init(30, 40, 100, 300),
-		  NULL_R },
-		{ yrect_struct_init(20, 30, 300, 400),
-		  NULL_R },
+			yrect_struct_init(20, 30, 100, 200),
+			yrect_struct_init(30, 40, 100, 300),
+			NULL_R },
+		{ yrect_struct_init(20, 30, 300, 400), NULL_R },
 	},
 	{ /* DATA: 15 */
 		/* overlap - in the middle of y - 1
@@ -485,20 +437,16 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 * |/////|
 		 * +-----+
 		 */
-		{ yrect_struct_init(10, 40, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(20, 30, 300, 400),
-		  NULL_R },
+		{ yrect_struct_init(10, 40, 100, 200), NULL_R },
+		{ yrect_struct_init(20, 30, 300, 400), NULL_R },
 		{ yrect_struct_init(10, 20, 100, 200),
-		  yrect_struct_init(20, 30, 100, 200),
-		  yrect_struct_init(20, 30, 300, 400),
-		  yrect_struct_init(30, 40, 100, 200),
-		  NULL_R },
+			yrect_struct_init(20, 30, 100, 200),
+			yrect_struct_init(20, 30, 300, 400),
+			yrect_struct_init(30, 40, 100, 200),
+			NULL_R },
 		{ NULL_R },
-		{ yrect_struct_init(10, 40, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(20, 30, 300, 400),
-		  NULL_R },
+		{ yrect_struct_init(10, 40, 100, 200), NULL_R },
+		{ yrect_struct_init(20, 30, 300, 400), NULL_R },
 	},
 	{
 		/* overlap - in the middle of x
@@ -510,21 +458,17 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 *  |\\\\\\\\\\\\|
 		 *  +------------+
 		 */
-		{ yrect_struct_init(10, 30, 200, 300),
-		  NULL_R },
-		{ yrect_struct_init(20, 40, 100, 400),
-		  NULL_R },
+		{ yrect_struct_init(10, 30, 200, 300), NULL_R },
+		{ yrect_struct_init(20, 40, 100, 400), NULL_R },
 		{ yrect_struct_init(10, 20, 200, 300),
-		  yrect_struct_init(20, 40, 100, 400),
-		  NULL_R },
-		{ yrect_struct_init(20, 30, 200, 300),
-		  NULL_R },
-		{ yrect_struct_init(10, 20, 200, 300),
-		  NULL_R },
+			yrect_struct_init(20, 40, 100, 400),
+			NULL_R },
+		{ yrect_struct_init(20, 30, 200, 300), NULL_R },
+		{ yrect_struct_init(10, 20, 200, 300), NULL_R },
 		{ yrect_struct_init(20, 30, 100, 200),
-		  yrect_struct_init(20, 30, 300, 400),
-		  yrect_struct_init(30, 40, 100, 400),
-		  NULL_R },
+			yrect_struct_init(20, 30, 300, 400),
+			yrect_struct_init(30, 40, 100, 400),
+			NULL_R },
 	},
 	{
 		/* overlap - y - 0
@@ -533,20 +477,16 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 * +--+  |  |
 		 *       +--+
 		 */
-		{ yrect_struct_init(10, 30, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(20, 40, 300, 400),
-		  NULL_R },
+		{ yrect_struct_init(10, 30, 100, 200), NULL_R },
+		{ yrect_struct_init(20, 40, 300, 400), NULL_R },
 		{ yrect_struct_init(10, 20, 100, 200),
-		  yrect_struct_init(20, 30, 100, 200),
-		  yrect_struct_init(20, 30, 300, 400),
-		  yrect_struct_init(30, 40, 300, 400),
-		  NULL_R },
+			yrect_struct_init(20, 30, 100, 200),
+			yrect_struct_init(20, 30, 300, 400),
+			yrect_struct_init(30, 40, 300, 400),
+			NULL_R },
 		{ NULL_R },
-		{ yrect_struct_init(10, 30, 100, 200),
-		  NULL_R },
-		{ yrect_struct_init(20, 40, 300, 400),
-		  NULL_R },
+		{ yrect_struct_init(10, 30, 100, 200), NULL_R },
+		{ yrect_struct_init(20, 40, 300, 400), NULL_R },
 	},
 	{
 		/* overlap - y - 1
@@ -557,22 +497,19 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 * +--|    |
 		 *    +----+
 		 */
-		{ yrect_struct_init(10, 30, 100, 300),
-		  NULL_R },
-		{ yrect_struct_init(20, 40, 200, 400),
-		  NULL_R },
+		{ yrect_struct_init(10, 30, 100, 300), NULL_R },
+		{ yrect_struct_init(20, 40, 200, 400), NULL_R },
 		{ yrect_struct_init(10, 20, 100, 300),
-		  yrect_struct_init(20, 30, 100, 400),
-		  yrect_struct_init(30, 40, 200, 400),
-		  NULL_R },
-		{ yrect_struct_init(20, 30, 200, 300),
-		  NULL_R },
+			yrect_struct_init(20, 30, 100, 400),
+			yrect_struct_init(30, 40, 200, 400),
+			NULL_R },
+		{ yrect_struct_init(20, 30, 200, 300), NULL_R },
 		{ yrect_struct_init(10, 20, 100, 300),
-		  yrect_struct_init(20, 30, 100, 200),
-		  NULL_R },
+			yrect_struct_init(20, 30, 100, 200),
+			NULL_R },
 		{ yrect_struct_init(20, 30, 300, 400),
-		  yrect_struct_init(30, 40, 200, 400),
-		  NULL_R },
+			yrect_struct_init(30, 40, 200, 400),
+			NULL_R },
 	},
 	{
 		/* overlap - cross
@@ -584,22 +521,19 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 *      |/////|
 		 *      +-----+
 		 */
-		{ yrect_struct_init(10, 40, 200, 300),
-		  NULL_R },
-		{ yrect_struct_init(20, 30, 100, 400),
-		  NULL_R },
+		{ yrect_struct_init(10, 40, 200, 300), NULL_R },
+		{ yrect_struct_init(20, 30, 100, 400), NULL_R },
 		{ yrect_struct_init(10, 20, 200, 300),
-		  yrect_struct_init(20, 30, 100, 400),
-		  yrect_struct_init(30, 40, 200, 300),
-		  NULL_R },
-		{ yrect_struct_init(20, 30, 200, 300),
-		  NULL_R },
+			yrect_struct_init(20, 30, 100, 400),
+			yrect_struct_init(30, 40, 200, 300),
+			NULL_R },
+		{ yrect_struct_init(20, 30, 200, 300), NULL_R },
 		{ yrect_struct_init(10, 20, 200, 300),
-		  yrect_struct_init(30, 40, 200, 300),
-		  NULL_R },
+			yrect_struct_init(30, 40, 200, 300),
+			NULL_R },
 		{ yrect_struct_init(20, 30, 100, 200),
-		  yrect_struct_init(20, 30, 300, 400),
-		  NULL_R },
+			yrect_struct_init(20, 30, 300, 400),
+			NULL_R },
 	},
 	{ /* DATA: 20 */
 		/* +--+              <1
@@ -611,28 +545,26 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 *      +--+         <6
 		 */
 		{ yrect_struct_init(10, 40, 100, 200),
-		  yrect_struct_init(20, 50, 500, 600),
-		  NULL_R },
-		{ yrect_struct_init(30, 60, 300, 400),
-		  NULL_R },
+			yrect_struct_init(20, 50, 500, 600),
+			NULL_R },
+		{ yrect_struct_init(30, 60, 300, 400), NULL_R },
 		{ yrect_struct_init(10, 20, 100, 200),
-		  yrect_struct_init(20, 30, 100, 200),
-		  yrect_struct_init(20, 30, 500, 600),
-		  yrect_struct_init(30, 40, 100, 200),
-		  yrect_struct_init(30, 40, 300, 400),
-		  yrect_struct_init(30, 40, 500, 600),
-		  yrect_struct_init(40, 50, 300, 400),
-		  yrect_struct_init(40, 50, 500, 600),
-		  yrect_struct_init(50, 60, 300, 400),
-		  NULL_R },
+			yrect_struct_init(20, 30, 100, 200),
+			yrect_struct_init(20, 30, 500, 600),
+			yrect_struct_init(30, 40, 100, 200),
+			yrect_struct_init(30, 40, 300, 400),
+			yrect_struct_init(30, 40, 500, 600),
+			yrect_struct_init(40, 50, 300, 400),
+			yrect_struct_init(40, 50, 500, 600),
+			yrect_struct_init(50, 60, 300, 400),
+			NULL_R },
 		{ NULL_R },
 		{ yrect_struct_init(10, 20, 100, 200),
-		  yrect_struct_init(20, 40, 100, 200),
-		  yrect_struct_init(20, 40, 500, 600),
-		  yrect_struct_init(40, 50, 500, 600),
-		  NULL_R },
-		{ yrect_struct_init(30, 60, 300, 400),
-		  NULL_R },
+			yrect_struct_init(20, 40, 100, 200),
+			yrect_struct_init(20, 40, 500, 600),
+			yrect_struct_init(40, 50, 500, 600),
+			NULL_R },
+		{ yrect_struct_init(30, 60, 300, 400), NULL_R },
 	},
 	{
 		/* +---+  +---+
@@ -643,23 +575,23 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 * +---+  +---+
 		 */
 		{ yrect_struct_init(10, 20, 100, 200),
-		  yrect_struct_init(10, 20, 300, 400),
-		  NULL_R },
+			yrect_struct_init(10, 20, 300, 400),
+			NULL_R },
 		{ yrect_struct_init(30, 40, 100, 200),
-		  yrect_struct_init(30, 40, 300, 400),
-		  NULL_R },
+			yrect_struct_init(30, 40, 300, 400),
+			NULL_R },
 		{ yrect_struct_init(10, 20, 100, 200),
-		  yrect_struct_init(10, 20, 300, 400),
-		  yrect_struct_init(30, 40, 100, 200),
-		  yrect_struct_init(30, 40, 300, 400),
-		  NULL_R },
+			yrect_struct_init(10, 20, 300, 400),
+			yrect_struct_init(30, 40, 100, 200),
+			yrect_struct_init(30, 40, 300, 400),
+			NULL_R },
 		{ NULL_R },
 		{ yrect_struct_init(10, 20, 100, 200),
-		  yrect_struct_init(10, 20, 300, 400),
-		  NULL_R },
+			yrect_struct_init(10, 20, 300, 400),
+			NULL_R },
 		{ yrect_struct_init(30, 40, 100, 200),
-		  yrect_struct_init(30, 40, 300, 400),
-		  NULL_R },
+			yrect_struct_init(30, 40, 300, 400),
+			NULL_R },
 	},
 	{
 		/* +------+                <1
@@ -680,40 +612,40 @@ static const struct tdst tdat[] = { /* One-Rect TEST */
 		 * 1  2  34 5 6   7   8
 		 */
 		{ yrect_struct_init(10, 40, 100, 400),
-		  yrect_struct_init(30, 80, 500, 700),
-		  NULL_R },
+			yrect_struct_init(30, 80, 500, 700),
+			NULL_R },
 		{ yrect_struct_init(20, 60, 200, 600),
-		  yrect_struct_init(50, 70, 300, 800),
-		  NULL_R },
+			yrect_struct_init(50, 70, 300, 800),
+			NULL_R },
 		{ yrect_struct_init(10, 20, 100, 400),
-		  yrect_struct_init(20, 30, 100, 600),
-		  yrect_struct_init(30, 40, 100, 700),
-		  yrect_struct_init(40, 50, 200, 700),
-		  yrect_struct_init(50, 60, 200, 800),
-		  yrect_struct_init(60, 70, 300, 800),
-		  yrect_struct_init(70, 80, 500, 700),
-		  NULL_R },
+			yrect_struct_init(20, 30, 100, 600),
+			yrect_struct_init(30, 40, 100, 700),
+			yrect_struct_init(40, 50, 200, 700),
+			yrect_struct_init(50, 60, 200, 800),
+			yrect_struct_init(60, 70, 300, 800),
+			yrect_struct_init(70, 80, 500, 700),
+			NULL_R },
 		{ yrect_struct_init(20, 30, 200, 400),
-		  yrect_struct_init(30, 40, 200, 400),
-		  yrect_struct_init(30, 40, 500, 600),
-		  yrect_struct_init(40, 50, 500, 600),
-		  yrect_struct_init(50, 70, 500, 700),
-		  NULL_R },
+			yrect_struct_init(30, 40, 200, 400),
+			yrect_struct_init(30, 40, 500, 600),
+			yrect_struct_init(40, 50, 500, 600),
+			yrect_struct_init(50, 70, 500, 700),
+			NULL_R },
 		{ yrect_struct_init(10, 20, 100, 400),
-		  yrect_struct_init(20, 30, 100, 200),
-		  yrect_struct_init(30, 40, 100, 200),
-		  yrect_struct_init(30, 40, 600, 700),
-		  yrect_struct_init(40, 50, 600, 700),
-		  yrect_struct_init(70, 80, 500, 700),
-		  NULL_R },
+			yrect_struct_init(20, 30, 100, 200),
+			yrect_struct_init(30, 40, 100, 200),
+			yrect_struct_init(30, 40, 600, 700),
+			yrect_struct_init(40, 50, 600, 700),
+			yrect_struct_init(70, 80, 500, 700),
+			NULL_R },
 		{ yrect_struct_init(20, 30, 400, 600),
-		  yrect_struct_init(30, 40, 400, 500),
-		  yrect_struct_init(40, 50, 200, 500),
-		  yrect_struct_init(50, 60, 200, 500),
-		  yrect_struct_init(50, 60, 700, 800),
-		  yrect_struct_init(60, 70, 300, 500),
-		  yrect_struct_init(60, 70, 700, 800),
-		  NULL_R },
+			yrect_struct_init(30, 40, 400, 500),
+			yrect_struct_init(40, 50, 200, 500),
+			yrect_struct_init(50, 60, 200, 500),
+			yrect_struct_init(50, 60, 700, 800),
+			yrect_struct_init(60, 70, 300, 500),
+			yrect_struct_init(60, 70, 700, 800),
+			NULL_R },
 	},
 };
 
@@ -733,9 +665,9 @@ test_fixed(const struct tdst *tp, int tdsz) { /* Input Rect SZ */
 	int cnt = 0;
 	while (cnt < tdsz) {
 		dpr("\n=============================================\n"
-		    "            TEST: Fixed. TC %2d\n"
-		    "=============================================\n",
-		    cnt);
+			"            TEST: Fixed. TC %2d\n"
+			"=============================================\n",
+			cnt);
 		g0 = g = ygeog_create_empty();
 		pr = tp->r0;
 		while (!is_null_r(pr)) {
@@ -759,9 +691,8 @@ test_fixed(const struct tdst *tp, int tdsz) { /* Input Rect SZ */
 		g = ygeog_union(g0, g1);
 		ygeog_foreach_rect_begin(g, r) {
 			dpr("V: union0:(%d, %d)(%d, %d) / (%d, %d)(%d, %d)\n",
-			    r.t, r.b, r.l, r.r, pr->t, pr->b, pr->l, pr->r);
-			yassert(!ygeor_is_empty(pr)
-				&& ygeor_eq(&r, pr++));
+				r.t, r.b, r.l, r.r, pr->t, pr->b, pr->l, pr->r);
+			yassert(!ygeor_is_empty(pr) && ygeor_eq(&r, pr++));
 		} ygeog_foreach_rect_end();
 		ygeog_destroy(g);
 
@@ -769,9 +700,8 @@ test_fixed(const struct tdst *tp, int tdsz) { /* Input Rect SZ */
 		g = ygeog_union(g1, g0); /* check commutative */
 		ygeog_foreach_rect_begin(g, r) {
 			dpr("V: union1:(%d, %d)(%d, %d) / (%d, %d)(%d, %d)\n",
-			    r.t, r.b, r.l, r.r, pr->t, pr->b, pr->l, pr->r);
-			yassert(!ygeor_is_empty(pr)
-				&& ygeor_eq(&r, pr++));
+				r.t, r.b, r.l, r.r, pr->t, pr->b, pr->l, pr->r);
+			yassert(!ygeor_is_empty(pr) && ygeor_eq(&r, pr++));
 		} ygeog_foreach_rect_end();
 		ygeog_destroy(g);
 
@@ -781,8 +711,7 @@ test_fixed(const struct tdst *tp, int tdsz) { /* Input Rect SZ */
 		ygeog_foreach_rect_begin(g, r) {
 			dpr("V: inter0:(%d, %d)(%d, %d) / (%d, %d)(%d, %d)\n",
 			    r.t, r.b, r.l, r.r, pr->t, pr->b, pr->l, pr->r);
-			yassert(!ygeor_is_empty(pr)
-				&& ygeor_eq(&r, pr++));
+			yassert(!ygeor_is_empty(pr) && ygeor_eq(&r, pr++));
 		} ygeog_foreach_rect_end();
 		ygeog_destroy(g);
 
@@ -790,9 +719,8 @@ test_fixed(const struct tdst *tp, int tdsz) { /* Input Rect SZ */
 		g = ygeog_intersect(g0, g1); /* check commutative */
 		ygeog_foreach_rect_begin(g, r) {
 			dpr("V: inter1:(%d, %d)(%d, %d) / (%d, %d)(%d, %d)\n",
-			    r.t, r.b, r.l, r.r, pr->t, pr->b, pr->l, pr->r);
-			yassert(!ygeor_is_empty(pr)
-				&& ygeor_eq(&r, pr++));
+				r.t, r.b, r.l, r.r, pr->t, pr->b, pr->l, pr->r);
+			yassert(!ygeor_is_empty(pr) && ygeor_eq(&r, pr++));
 		} ygeog_foreach_rect_end();
 		ygeog_destroy(g);
 
@@ -801,9 +729,8 @@ test_fixed(const struct tdst *tp, int tdsz) { /* Input Rect SZ */
 		g = ygeog_diff(g0, g1);
 		ygeog_foreach_rect_begin(g, r) {
 			dpr("V: diff0:(%d, %d)(%d, %d) / (%d, %d)(%d, %d)\n",
-			    r.t, r.b, r.l, r.r, pr->t, pr->b, pr->l, pr->r);
-			yassert(!ygeor_is_empty(pr)
-				&& ygeor_eq(&r, pr++));
+				r.t, r.b, r.l, r.r, pr->t, pr->b, pr->l, pr->r);
+			yassert(!ygeor_is_empty(pr) && ygeor_eq(&r, pr++));
 		} ygeog_foreach_rect_end();
 		ygeog_destroy(g);
 
@@ -811,9 +738,8 @@ test_fixed(const struct tdst *tp, int tdsz) { /* Input Rect SZ */
 		g = ygeog_diff(g1, g0);
 		ygeog_foreach_rect_begin(g, r) {
 			dpr("V: diff1:(%d, %d)(%d, %d) / (%d, %d)(%d, %d)\n",
-			    r.t, r.b, r.l, r.r, pr->t, pr->b, pr->l, pr->r);
-			yassert(!ygeor_is_empty(pr)
-				&& ygeor_eq(&r, pr++));
+				r.t, r.b, r.l, r.r, pr->t, pr->b, pr->l, pr->r);
+			yassert(!ygeor_is_empty(pr) && ygeor_eq(&r, pr++));
 		} ygeog_foreach_rect_end();
 		ygeog_destroy(g);
 
@@ -837,7 +763,7 @@ test_geo_rgn(void)  {
 "                        TEST: Fixed\n"
 "\n"
 "**************************************************************************\n"
-	    );
+	);
 	test_fixed(tdat, yut_arrsz(tdat));
 	dpr(
 "**************************************************************************\n"
@@ -845,7 +771,7 @@ test_geo_rgn(void)  {
 "                        TEST: Random\n"
 "\n"
 "**************************************************************************\n"
-	    );
+	);
 	while (cnt--)
 		test_rand();
 }

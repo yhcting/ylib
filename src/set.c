@@ -47,9 +47,9 @@ yset_intersect(const yset_t s0, const yset_t s1) {
 	const void **ebuf = NULL;
 	yset_t s = NULL;
 	if (unlikely(!s0
-		     || !s1
-		     || !yhash_is_sametype(s0, s1)))
-		return NULL;
+		|| !s1
+		|| !yhash_is_sametype(s0, s1))
+	) { return NULL; }
 	if (unlikely(!(s = yset_create(s0))))
 		return NULL; /* ENOMEM */
 	sz0 = yset_sz(s0);

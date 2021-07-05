@@ -36,9 +36,9 @@
 
 /**
  * @file ytreel.h
- * @brief \b [DRAFT] Header to use low-level interface of tree data structure.
+ * @brief @b [DRAFT] Header to use low-level interface of tree data structure.
  *
- * Note that this is still DRAFT version!\n
+ * Note that this is still DRAFT version!@n
  * This module defines primitive operation of tree.
  * So, before using this, user should understand algorithm of this module.
  */
@@ -60,10 +60,10 @@
  */
 struct ytreel_link {
 	/* @cond */
-	struct ytreel_link *parent; /* parent link */
-	/* head of children list - see ylistl for details */
+	struct ytreel_link *parent; /**< parent link */
+	/** head of children list - see ylistl.h for details */
 	struct ylistl_link child;
-	struct ylistl_link sibling; /* list link for siblings */
+	struct ylistl_link sibling; /**< list link for siblings */
 	/* @endcond */
 };
 
@@ -113,7 +113,7 @@ ytreel_has_child(const struct ytreel_link *lk) {
 }
 
 /**
- * Add new link as next sibling of {@code lk}.
+ * Add new link as next sibling of @p lk.
  *
  * @param lk Base tree link
  * @param lnew New tree link
@@ -125,7 +125,7 @@ ytreel_add_next(struct ytreel_link *lk, struct ytreel_link *lnew) {
 }
 
 /**
- * Add new link as next sibling of {@code lk}.
+ * Add new link as next sibling of @p lk.
  *
  * @param lk Base tree link
  * @param lnew New tree link
@@ -137,7 +137,7 @@ ytreel_add_prev(struct ytreel_link *lk, struct ytreel_link *lnew) {
 }
 
 /**
- * Add new link as the first child of {@code lk}.
+ * Add new link as the first child of @p lk.
  *
  * @param lk Base tree link
  * @param lnew New tree link
@@ -149,7 +149,7 @@ ytreel_add_first_child(struct ytreel_link *lk, struct ytreel_link *lnew) {
 }
 
 /**
- * Add new link as the last child of {@code lk}.
+ * Add new link as the last child of @p lk.
  *
  * @param lk Base tree link
  * @param lnew New tree link
@@ -162,7 +162,7 @@ ytreel_add_last_child(struct ytreel_link *lk, struct ytreel_link *lnew) {
 
 /**
  * Remove link and all its subtree from current tree link.
- * {@code lk} becomes new root of subtree.
+ * @p lk becomes new root of subtree.
  *
  * @param lk Tree link
  */
@@ -174,7 +174,7 @@ ytreel_remove(struct ytreel_link *lk) {
 
 /**
  * Replace tree link with new one (includes all sub tree).
- * {@code lold} is removed from the tree.
+ * @p lold is removed from the tree.
  *
  * @param lold Existing tree link
  * @param lnew New tree link
@@ -198,7 +198,7 @@ ytreel_next(const struct ytreel_link *lk) {
 
 /**
  * Get previous tree link.
- * Prerequisite : {@code lk} has parent.
+ * Prerequisite: @p lk has parent.
  *
  * @param lk Tree link
  * @return Previous tree link
@@ -210,7 +210,7 @@ ytreel_prev(const struct ytreel_link *lk) {
 
 /**
  * Does it have next sibling?
- * Prerequisite : {@code lk} has parent.
+ * Prerequisite: @p lk has parent.
  *
  * @param lk Tree link
  * @return TRUE or FALSE
@@ -223,7 +223,7 @@ ytreel_has_next(const struct ytreel_link *lk) {
 
 /**
  * Does it have previous sibling?
- * Prerequisite : {@code lk} has parent.
+ * Prerequisite: @p lk has parent.
  *
  * @param lk Tree link
  * @return TRUE or FALSE
@@ -236,7 +236,7 @@ ytreel_has_prev(const struct ytreel_link *lk) {
 
 /**
  * Get the first child.
- * Prerequisite : {@code lk} has child.
+ * Prerequisite: @p lk has child.
  *
  * @param lk Tree link
  * @return First child.
@@ -248,7 +248,7 @@ ytreel_first_child(const struct ytreel_link *lk) {
 
 /**
  * Get the last child.
- * Prerequisite : {@code lk} has child.
+ * Prerequisite: @p lk has child.
  *
  * @param lk Tree link
  * @return First child.
@@ -278,9 +278,9 @@ ytreel_child_size(const struct ytreel_link *lk) {
  */
 static YYINLINE uint32_t
 ytreel_sibling_size(const struct ytreel_link *lk) {
-	return ytreel_has_parent(lk)?
-		ytreel_child_size(ytreel_parent(lk)):
-		1;
+	return ytreel_has_parent(lk)
+		? ytreel_child_size(ytreel_parent(lk))
+		: 1;
 }
 
 
@@ -293,31 +293,29 @@ struct ytreeli;
 
 /** Type of OT : Order Traversal */
 enum ytreeli_ot_type {
-	/**< pre-order traversal - depth first search(DFS) */
+	/** pre-order traversal - depth first search(DFS) */
 	YTREELI_PRE_OT = 0,
-	/**< right to left pre-order traversal */
+	/** right to left pre-order traversal */
 	YTREELI_R2L_PRE_OT,
-	/**< level-order traversal - bread first search(BFS) */
+	/** level-order traversal - bread first search(BFS) */
 	YTREELI_LEVEL_OT,
-	/**< post-order traversal */
+	/** post-order traversal */
 	YTREELI_POST_OT,
-	/**< right to left post-order traversal */
+	/** right to left post-order traversal */
 	YTREELI_R2L_POST_OT,
-	/**< Number of tree order-traversal */
+	/** Number of tree order-traversal */
 	YTREELI_OT_TYPE_COUNT,
 };
 
 /**
- * Create iterator object for tree link.
- * This is removal-safe iterator.
+ * Create iterator object for tree link. This is removal-safe iterator.
  *
  * @param toplk Root link of iteration
  * @param type Iteration type
  * @return Iterator object
  */
 YYEXPORT struct ytreeli *
-ytreeli_create(const struct ytreel_link *toplk,
-	       enum ytreeli_ot_type type);
+ytreeli_create(const struct ytreel_link *toplk, enum ytreeli_ot_type type);
 
 /**
  * Destroy iterator object.
@@ -326,13 +324,12 @@ YYEXPORT void
 ytreeli_destroy(struct ytreeli *);
 
 /**
- * Move current link of the iterator to the next;
- * Return code:\n
+ * Move current link of the iterator to the next. It may return
  * - -ENOENT: Iterator reaches to the end.
  * - -ENOMEM: Not enough memory.
  * - -EINVAL: Something wrong.
  *
- * @return 0 if success. Otherwise -errno.
+ * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
 ytreeli_next(struct ytreeli *);

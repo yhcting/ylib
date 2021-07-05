@@ -107,11 +107,13 @@ lnode_free(struct lnode *n) {
 }
 
 struct ylru *
-lru_create(struct yhash *h, /* hash used in lru cache */
-	   u32 maxsz,
-	   void (*datafree)(void *),
-	   void *(*datacreate)(const void *key),
-	   u32 (*datasize)(const void *)) {
+lru_create(
+	struct yhash *h, /* hash used in lru cache */
+	u32 maxsz,
+	void (*datafree)(void *),
+	void *(*datacreate)(const void *key),
+	u32 (*datasize)(const void *)
+) {
 	struct ylru *lru = ymalloc(sizeof(*lru));
 	if (unlikely(!lru))
 		return NULL;
@@ -140,69 +142,67 @@ lru_create(struct yhash *h, /* hash used in lru cache */
  *
  ****************************************************************************/
 struct ylru *
-ylrui_create(u32 maxsz,
-	     void (*datafree)(void *),
-	     void *(*datacreate)(const void *key),
-	     u32 (*datasize)(const void *)) {
+ylrui_create(
+	u32 maxsz,
+	void (*datafree)(void *),
+	void *(*datacreate)(const void *key),
+	u32 (*datasize)(const void *)
+) {
 	struct ylru *l;
 	struct yhash *h = yhashi_create((void(*)(void *))&lnode_free);
 	if (unlikely(!h))
 		return NULL;
-	if (unlikely(!(l = lru_create(h,
-				      maxsz,
-				      datafree,
-				      datacreate,
-				      datasize))))
-		yhash_destroy(h);
+	if (unlikely(!(l = lru_create(
+		h, maxsz, datafree, datacreate, datasize)))
+	) { yhash_destroy(h); }
 	return l;
 }
 
 struct ylru *
-ylrus_create(u32 maxsz,
-	     void (*datafree)(void *),
-	     void *(*datacreate)(const void *key),
-	     u32 (*datasize)(const void *)) {
+ylrus_create(
+	u32 maxsz,
+	void (*datafree)(void *),
+	void *(*datacreate)(const void *key),
+	u32 (*datasize)(const void *)
+) {
 	struct ylru *l;
 	struct yhash *h = yhashs_create((void(*)(void *))&lnode_free, TRUE);
 	if (unlikely(!h))
 		return NULL;
-	if (unlikely(!(l = lru_create(h,
-				      maxsz,
-				      datafree,
-				      datacreate,
-				      datasize))))
-		yhash_destroy(h);
+	if (unlikely(!(l = lru_create(
+		h, maxsz, datafree, datacreate, datasize)))
+	) { yhash_destroy(h); }
 	return l;
 }
 
 struct ylru *
-ylruo_create(u32 maxsz,
-	     void (*datafree)(void *),
-	     void *(*datacreate)(const void *key),
-	     u32 (*datasize)(const void *),
-	     void(*keyfree)(void *),
-	     int (*keycopy)(void **newkey, const void *),
-	     int (*keycmp)(const void *, const void *),
-	     u32 (*hfunc)(const void *key)) {
+ylruo_create(
+	u32 maxsz,
+	void (*datafree)(void *),
+	void *(*datacreate)(const void *key),
+	u32 (*datasize)(const void *),
+	void(*keyfree)(void *),
+	int (*keycopy)(void **newkey, const void *),
+	int (*keycmp)(const void *, const void *),
+	u32 (*hfunc)(const void *key)
+) {
 	struct ylru *l;
 	struct yhash *h;
 
 	if (YLRU_PREDEFINED_FREE == keyfree)
 		keyfree = YHASH_PREDEFINED_FREE;
 
-	h = yhasho_create((void(*)(void *))&lnode_free,
-			  keyfree,
-			  keycopy,
-			  keycmp,
-			  hfunc);
+	h = yhasho_create(
+		(void(*)(void *))&lnode_free,
+		keyfree,
+		keycopy,
+		keycmp,
+		hfunc);
 	if (unlikely(!h))
 		return NULL;
-	if (unlikely(!(l = lru_create(h,
-				      maxsz,
-				      datafree,
-				      datacreate,
-				      datasize))))
-		yhash_destroy(h);
+	if (unlikely(!(l = lru_create(
+		h, maxsz, datafree, datacreate, datasize)))
+	) { yhash_destroy(h); }
 	return l;
 }
 
@@ -215,12 +215,9 @@ ylru_create(const struct ylru *lru) {
 	h = yhash_create(lru->h);
 	if (unlikely(!h))
 		return NULL;
-	if (unlikely(!(l = lru_create(h,
-				      lru->maxsz,
-				      lru->dfree,
-				      lru->dcreate,
-				      lru->dsize))))
-		yhash_destroy(h);
+	if (unlikely(!(l = lru_create(
+		h, lru->maxsz, lru->dfree, lru->dcreate, lru->dsize)))
+	) { yhash_destroy(h); }
 	return l;
 }
 
@@ -258,11 +255,9 @@ ylru_put(struct ylru *lru, const void *key, void *data) {
 	 * shrink cache if cache becomes too large
 	 * the 'last' in the list is the 'oldest'.
 	 */
-	ylistl_foreach_item_removal_safe_backward(n,
-						  tmp,
-						  &lru->head,
-						  struct lnode,
-						  lk) {
+	ylistl_foreach_item_removal_safe_backward(
+		n, tmp, &lru->head, struct lnode, lk
+	) {
 		if (unlikely(lru->sz + dsz > lru->maxsz)) {
 			ylistl_remove(&n->lk);
 			lru->sz -= data_size(lru, n->data);

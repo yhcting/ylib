@@ -65,7 +65,7 @@ struct ylib_config {
 	int ygp_pool_capacity;
 	/**
 	 * File descriptor where standard log - all except for ERR and FATAL -
-	 *  is written to. If it is invalid, default fd is used.
+	 * is written to. If it is invalid, default fd is used.
 	 */
 	int ylog_stdfd;
 	/**
@@ -84,9 +84,9 @@ struct ylib_config {
  * Before calling this, ylib may not be available.
  *
  * @param c Config struct. Once it is used, ylib doesn't refer it anymore.
- *          (This is, client can free memory.)
- *          Set to NULL to use default configuration.
- * @return 0 if success. Otherwise -errno.
+ *	(This is, client can free memory.)
+ *	Set to NULL to use default configuration.
+ * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
 ylib_init(const struct ylib_config *c);
@@ -95,7 +95,7 @@ ylib_init(const struct ylib_config *c);
  * Cleanup internal-reasources used by ylib.
  * After calling this, ylib may become unavailable.
  *
- * @return 0 if success. Otherwise -errno.
+ * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
 ylib_exit(void);

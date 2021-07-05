@@ -42,7 +42,7 @@
  * In case of graph, relation between vertex and vertex data is very strong.
  * That is, data of vertex isn't useful out of the graph.
  * So, this is reason why data of each vertex and edge is contained in graph
- * structure as {@code char d[0]} not {@code void *d}.
+ * structure as `char d[0]` not `void *d`.
  * This is biggest difference from list or tree structure.
  */
 
@@ -68,7 +68,7 @@ struct yvertex {
 
 /**
  * Edge object.
- * This object should be created only by {@link ygraph_add_edge}
+ * This object should be created only by @ref ygraph_add_edge
  * DO NOT create this object directly.
  */
 struct yedge {
@@ -95,97 +95,97 @@ struct ygraph {
  *
  *****************************************************************************/
 /**
- * Iterates outgoing edges of vertex {@code v}.
+ * Iterates outgoing edges of vertex @p v.
  *
- * @param v ({@link struct yvertex} *) vertex
- * @param e ({@link struct yedge} *) variable used as iteration cursor
+ * @param v (struct @ref yvertex *) vertex
+ * @param e (struct @ref yedge *) variable used as iteration cursor
  */
-#define ygraph_foreach_oedge(v, e)				\
+#define ygraph_foreach_oedge(v, e) \
 	ylistl_foreach_item(e, &(v)->oe, struct yedge, olk)
 
 /**
- * Iterates outgoing edges of vertex {@code v}, with removal-safe.
+ * Iterates outgoing edges of vertex @p v, with removal-safe.
  *
- * @param v ({@link struct yvertex} *) vertex
- * @param e ({@link struct yedge} *) variable used as iteration cursor
- * @param etmp ({@link struct yedge} *) used as temporary storage.
+ * @param v (struct @ref yvertex *) vertex
+ * @param e (struct @ref yedge *) variable used as iteration cursor
+ * @param etmp (struct @ref yedge *) used as temporary storage.
  */
-#define ygraph_foreach_oedge_removal_safe(v, e, etmp)			\
+#define ygraph_foreach_oedge_removal_safe(v, e, etmp) \
 	ylistl_foreach_item_removal_safe(e, etmp, &(v)->oe, struct yedge, olk)
 
 /**
- * Iterates incoming edges of vertex {@code v}.
+ * Iterates incoming edges of vertex @p v.
  *
- * @param v ({@link struct yvertex} *) vertex
- * @param e ({@link struct yedge} *) variable used as iteration cursor
+ * @param v (struct @ref yvertex *) vertex
+ * @param e (struct @ref yedge *) variable used as iteration cursor
  */
-#define ygraph_foreach_iedge(v, e)				\
+#define ygraph_foreach_iedge(v, e) \
 	ylistl_foreach_item(e, &(v)->ie, struct yedge, ilk)
 
 /**
- * Iterates incoming edges of vertex {@code v}, with removal-safe.
+ * Iterates incoming edges of vertex @p v, with removal-safe.
  *
- * @param v ({@link struct yvertex} *) vertex
- * @param e ({@link struct yedge} *) variable used as iteration cursor
- * @param etmp ({@link struct yedge} *) used as temporary storage.
+ * @param v (struct @ref yvertex *) vertex
+ * @param e (struct @ref yedge *) variable used as iteration cursor
+ * @param etmp (struct @ref yedge *) used as temporary storage.
  */
-#define ygraph_foreach_iedge_removal_safe(v, e, etmp)			\
+#define ygraph_foreach_iedge_removal_safe(v, e, etmp) \
 	ylistl_foreach_item_removal_safe(e, etmp, &(v)->ie, struct yedge, ilk)
 
 
 /**
- * Iterates vertices in graph {@code g}.
+ * Iterates vertices in graph @p g.
  *
- * @param g ({@link struct ygraph} *) graph.
- * @param v ({@link struct yvertex} *) variable used as iteration cursor
+ * @param g (struct @ref ygraph *) graph.
+ * @param v (struct @ref yvertex *) variable used as iteration cursor
  */
-#define ygraph_foreach_vertex(g, v)				\
+#define ygraph_foreach_vertex(g, v) \
 	ylistl_foreach_item(v, &(g)->vl, struct yvertex, lk)
 
 /**
- * Iterates vertices in graph {@code g}, with removal-safe.
+ * Iterates vertices in graph @p g, with removal-safe.
  *
- * @param g ({@link struct ygraph} *) graph.
- * @param v ({@link struct yvertex} *) variable used as iteration cursor
- * @param vtmp ({@link struct yvertex} *) used as temporary storage.
+ * @param g (struct @ref ygraph *) graph.
+ * @param v (struct @ref yvertex *) variable used as iteration cursor
+ * @param vtmp (struct @ref yvertex *) used as temporary storage.
  */
-#define ygraph_foreach_vertex_removal_safe(g, v, vtmp)			\
+#define ygraph_foreach_vertex_removal_safe(g, v, vtmp) \
 	ylistl_foreach_item_removal_safe(v, vtmp, &(g)->vl, struct yvertex, lk)
 
 
 /**
- * Iterates vertices in graph {@code g}, with removal-safe.
- * {@code ygraph}_foreach_edge_end should be followed at the end of iteration
- *   body.
+ * Iterates vertices in graph @p g, with removal-safe.
+ * @ref ygraph_foreach_edge_end should be followed at the end of iteration
+ * body.
  *
- * @param g ({@link struct ygraph} *) graph.
- * @param v ({@link struct yvertex} *) variable used as iteration cursor
- * @param e ({@link struct yedge} *) variable used as iteration cursor
+ * @param g (struct @ref ygraph *) graph.
+ * @param v (struct @ref yvertex *) variable used as iteration cursor
+ * @param e (struct @ref yedge *) variable used as iteration cursor
   */
 #define ygraph_foreach_edge_begin(g, v, e)	\
 	ygraph_foreach_vertex(g, v) {		\
 		ygraph_foreach_oedge(v, e)
 
 /**
- * Closing {@link ygraph_foreach_edge_begin} iteration body.
+ * Closing @ref ygraph_foreach_edge_begin iteration body.
  */
 #define ygraph_foreach_edge_end() }
 
 /**
- * Iterates vertices in graph {@code g}, with removal-safe.
- * See {@link ygraph_foreach_edge_begin}.
+ * Iterates vertices in graph @p g, with removal-safe.
+ * See @ref ygraph_foreach_edge_begin.
  *
- * @param g (struct ygraph *) graph.
- * @param v (struct yvertex *) variable used as iteration cursor
- * @param e (struct yedge *) variable used as iteration cursor
- * @param etmp (struct yedge *) used as temporary storage.
+ * @param g (struct @ref ygraph *) graph.
+ * @param v (struct @ref yvertex *) variable used as iteration cursor
+ * @param e (struct @ref yedge *) variable used as iteration cursor
+ * @param etmp (struct @ref yedge *) used as temporary storage.
  */
 #define ygraph_foreach_edge_removal_safe_begin(g, v, e, etmp)	\
 	ygraph_foreach_vertex(g, v) {				\
 		ygraph_foreach_oedge_removal_safe(v, e, etmp)
 
 /**
- * See {@link ygraph_foreach_edge_end}.
+ * See @ref ygraph_foreach_edge_end.
  */
 #define ygraph_foreach_edge_removal_safe_end() }
 
@@ -208,7 +208,7 @@ ygraph_init_vertex(struct yvertex *v) {
 }
 
 /**
- * Add vertex {@code v} to the graph {@code g}.
+ * Add vertex @p v to the graph @p g.
  * Vertex can't be added to more than on Graph.
  *
  * @param g Graph
@@ -222,7 +222,7 @@ ygraph_add_vertex(struct ygraph *g, struct yvertex *v) {
 /**
  * Deatch vertex from a graph where this vertex is attached.
  *
- * @return 0 if success. Otherwise -errno. (ex. vertex isn't in the graph)
+ * @return 0 if success. Otherwise @c -errno. (ex. vertex isn't in the graph)
  */
 YYEXPORT int
 ygraph_remove_vertex(struct ygraph *, struct yvertex *);
@@ -250,14 +250,17 @@ ygraph_has_vertex(const struct ygraph *, const struct yvertex *);
  * Check the vertex is in cycle
  *
  * @param n_visited Number of vertices visited during cyclic check.
- *                  This can be NULL.
- * @return  1 : cyclic link exists
- *          0 : cyclic link DOESN'T exists
- *         <0 : -errno
+ *	This can be NULL.
+ * @return
+ * 	- 1 : cyclic link exists
+ *	- 0 : cyclic link DOESN'T exists
+ *	- <0: @c -errno
  */
 YYEXPORT int
-ygraph_has_cycle(const struct ygraph *, const struct yvertex *,
-		 int *n_visited);
+ygraph_has_cycle(
+	const struct ygraph *,
+	const struct yvertex *,
+	int *n_visited);
 
 /**
  * Get number of incoming edges of the vertex.
@@ -267,8 +270,7 @@ ygraph_has_cycle(const struct ygraph *, const struct yvertex *,
  * @return Number of incoming edges
  */
 static YYINLINE int
-ygraph_iedge_size(struct ygraph *g,
-		  struct yvertex *v) {
+ygraph_iedge_size(struct ygraph *g, struct yvertex *v) {
 	return ylistl_size(&v->ie);
 }
 
@@ -280,8 +282,7 @@ ygraph_iedge_size(struct ygraph *g,
  * @return Number of outgoing edges
  */
 static YYINLINE int
-ygraph_oedge_size(struct ygraph *g,
-		  struct yvertex *v) {
+ygraph_oedge_size(struct ygraph *g, struct yvertex *v) {
 	return ylistl_size(&v->oe);
 }
 
@@ -292,16 +293,17 @@ ygraph_oedge_size(struct ygraph *g,
  *
  *****************************************************************************/
 /**
- * Find edge whose destination is {@code to} at {@code from}.
+ * Find edge whose destination is @p to at @p from.
  *
  * @param from Source vertex
  * @param to Destination vertex
  * @return NULL if fail to find.
  */
 YYEXPORT struct yedge *
-ygraph_find_edge(const struct ygraph *,
-		 const struct yvertex *from,
-		 const struct yvertex *to);
+ygraph_find_edge(
+	const struct ygraph *,
+	const struct yvertex *from,
+	const struct yvertex *to);
 
 
 /**
@@ -312,41 +314,45 @@ ygraph_find_edge(const struct ygraph *,
  * @param to Destination vertex
  */
 static YYINLINE bool
-ygraph_has_edge(const struct ygraph *g,
-		const struct yvertex *from,
-		const struct yvertex *to) {
+ygraph_has_edge(
+	const struct ygraph *g,
+	const struct yvertex *from,
+	const struct yvertex *to
+) {
 	return !!ygraph_find_edge(g, from, to);
 }
 
 
 /**
- * Add edge to the graph {@code g}.
+ * Add edge to the graph @p g.
  * Function may be fails if
- * - one of vertex isn't in the graph {@code g}.
+ * - one of vertex isn't in the graph @p g.
  * - edge already exists.
  *
  * @param e Newly added edge object. if NULL, this is ignored.
  * @param from Source vertex of edge
  * @param to Destination vertex of edge
- * @return 0 if success. Otherwise -errno.
+ * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
-ygraph_add_edge(struct ygraph *,
-		struct yedge **e,
-		struct yvertex *from,
-		struct yvertex *to);
+ygraph_add_edge(
+	struct ygraph *,
+	struct yedge **e,
+	struct yvertex *from,
+	struct yvertex *to);
 
 /**
  * Remove edge.
  *
  * @param from source vertex of edge
  * @param to destination vertex of edge
- * @return 0 if success. Otherwise -errno.
+ * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
-ygraph_remove_edge(struct ygraph *,
-		   struct yvertex *from,
-		   struct yvertex *to);
+ygraph_remove_edge(
+	struct ygraph *,
+	struct yvertex *from,
+	struct yvertex *to);
 
 
 /******************************************************************************

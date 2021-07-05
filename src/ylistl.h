@@ -53,7 +53,7 @@
  *
  ****************************************************************************/
 /**
- * Declare initialized struct {@link ylistl_link} variable.
+ * Declare initialized struct @ref ylistl_link variable.
  *
  * @param hd Variable name to be declared and initialized.
  */
@@ -91,50 +91,55 @@ ylistl_is_empty(const struct ylistl_link *head) {
 }
 
 /**
- * Does {@code link} has next link in the list whose head is {@code head}.
+ * Does @c link has next link in the list whose head is @c head.
  *
  * @param head Head link of the list
  * @param link Link
  * @return TRUE or FALSE
  */
 static YYINLINE bool
-ylistl_has_next(const struct ylistl_link *head,
-		const struct ylistl_link *link) {
+ylistl_has_next(
+	const struct ylistl_link *head,
+	const struct ylistl_link *link
+) {
 	return link->next != head;
 }
 
 /**
- * Does {@code link} has next link in the list whose head is {@code head}.
+ * Does @c link has next link in the list whose head is @c head.
  *
  * @param head Head link of the list
  * @param link Link
  * @return TRUE or FALSE
  */
 static YYINLINE bool
-ylistl_has_prev(const struct ylistl_link *head,
-		const struct ylistl_link *link) {
+ylistl_has_prev(
+	const struct ylistl_link *head,
+	const struct ylistl_link *link
+) {
 	return link->prev != head;
 }
 
 /**
- * Add new link between {@code prev} and {@code next}.
- * Existing link of {@code prev} and {@code next} are replaced with
- *   {@code anew}.
+ * Add new link between @p prev and @p next.
+ * Existing link of @p prev and @p next are replaced with @p anew.
  *
  * @param prev Previous node
  * @param next Next node
  * @param anew Node to add
  */
 static YYINLINE void
-ylistl_add(struct ylistl_link *prev,
-	   struct ylistl_link *next,
-	   struct ylistl_link *anew) {
+ylistl_add(
+	struct ylistl_link *prev,
+	struct ylistl_link *next,
+	struct ylistl_link *anew
+) {
 	next->prev = prev->next = anew;
 	anew->next = next; anew->prev = prev;
 }
 
 /**
- * Add new link at next to {@code link}.
+ * Add new link at next to @p link}.
  *
  * @param link Base link
  * @param anew Node to add
@@ -144,7 +149,7 @@ ylistl_add_next(struct ylistl_link *link, struct ylistl_link *anew) {
 	ylistl_add(link, link->next, anew);
 }
 
-/** See {@link ylistl_add_next} */
+/** @see ylistl_add_next */
 static YYINLINE void
 ylistl_add_prev(struct ylistl_link *link, struct ylistl_link *anew) {
 	ylistl_add(link->prev, link, anew);
@@ -161,7 +166,7 @@ ylistl_add_first(struct ylistl_link *head, struct ylistl_link *anew) {
 	ylistl_add_next(head, anew);
 }
 
-/** See {@link ylistl_add_first} */
+/** @see ylistl_add_first */
 static YYINLINE void
 ylistl_add_last(struct ylistl_link *head, struct ylistl_link *anew) {
 	ylistl_add_prev(head, anew);
@@ -206,10 +211,10 @@ ylistl_remove_last(struct ylistl_link *head) {
 
 
 /**
- * Replace {@code old} node with {@code anew} node
+ * Replace @p old node with @p anew node
  *
  * @param old Node to be replaced with.
- * @param anew Node replacing {@code old}
+ * @param anew Node replacing @p old
  */
 static YYINLINE void
 ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
@@ -227,27 +232,27 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
 /**
  * Iterates link-node of the list.
  *
- * @param pos (struct ylistl_link *) Iteration cursor
- * @param head (struct ylistl_link *) Head of list
+ * @param pos (struct @ref ylistl_link *) Iteration cursor
+ * @param head (struct @ref ylistl_link *) Head of list
  */
-#define ylistl_foreach(pos, head)					\
+#define ylistl_foreach(pos, head) \
         for ((pos) = (head)->next; (pos) != (head); (pos) = (pos)->next)
 
 /**
- * Same with {@link ylistl_foreach}. But direction is opposite.
+ * Same with @ref ylistl_foreach. But direction is opposite.
  *
- * @param pos See {@link ylistl_foreach}
- * @param head See {@link ylistl_foreach}
+ * @param pos See @ref ylistl_foreach
+ * @param head See @ref ylistl_foreach
  */
-#define ylistl_foreach_backward(pos, head)				\
+#define ylistl_foreach_backward(pos, head) \
         for ((pos) = (head)->prev; (pos) != (head); (pos) = (pos)->prev)
 
 /**
- * Same with {@link ylistl_foreach}. And it is safe from remove operation.
+ * Same with @ref ylistl_foreach. And it is safe from remove operation.
  *
- * @param pos See {@link ylistl_foreach}
- * @param n (struct ylistl_link *) Temporary storage
- * @param head See {@link ylistl_foreach}
+ * @param pos See @ref ylistl_foreach
+ * @param n (struct @ref ylistl_link *) Temporary storage
+ * @param head See @ref ylistl_foreach
  */
 #define ylistl_foreach_removal_safe(pos, n, head)	\
         for ((pos) = (head), (n) = (pos)->next;		\
@@ -255,11 +260,11 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
 	     (pos) = (n), (n) = (pos)->next)
 
 /**
- * Same with {@link ylistl_foreach_removal_safe}. But direction is opposite.
+ * Same with @ref ylistl_foreach_removal_safe. But direction is opposite.
  *
- * @param pos See {@link ylistl_foreach_removal_safe}
- * @param n See {@link ylistl_foreach_removal_safe}
- * @param head See See {@link ylistl_foreach_removal_safe}
+ * @param pos See @ref ylistl_foreach_removal_safe
+ * @param n See @ref ylistl_foreach_removal_safe
+ * @param head See See @ref ylistl_foreach_removal_safe
  */
 #define ylistl_foreach_removal_safe_backward(pos, n, head)	\
         for ((pos) = (head), (n) = (pos)->prev;			\
@@ -269,60 +274,60 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
 /**
  * Iterates item of the list.
  *
- * @param pos ({@code type} *) iteration cursor
- * @param head ({@link struct ylistl_link} *) the head for list
- * @param type Type of list item iterated by {@code pos}.
- * @param member Name of the {@link ylistl_link} within item-struct
+ * @param pos (@p type *) iteration cursor
+ * @param head (struct @ref ylistl_link *) the head for list
+ * @param type Type of list item iterated by @p pos.
+ * @param member Name of the @ref ylistl_link within item-struct
  */
 #define ylistl_foreach_item(pos, head, type, member)			\
         for ((pos) = YYcontainerof((head)->next, type, member);		\
-	     &(pos)->member != (head);					\
-	     (pos) = YYcontainerof((pos)->member.next, type, member))
+		&(pos)->member != (head);				\
+		(pos) = YYcontainerof((pos)->member.next, type, member))
 
 /**
- * Same with {@link ylistl_foreach_item}. But direction is opposite.
+ * Same with @ref ylistl_foreach_item. But direction is opposite.
  *
- * @param pos See {@link ylistl_foreach_item}
- * @param head See {@link ylistl_foreach_item}
- * @param type See {@link ylistl_foreach_item}
- * @param member See {@link ylistl_foreach_item}
+ * @param pos See @ref ylistl_foreach_item
+ * @param head See @ref ylistl_foreach_item
+ * @param type See @ref ylistl_foreach_item
+ * @param member See @ref ylistl_foreach_item
  */
 #define ylistl_foreach_item_backward(pos, head, type, member)		\
         for ((pos) = YYcontainerof((head)->prev, type, member);		\
-	     &(pos)->member != (head);					\
-	     (pos) = YYcontainerof((pos)->member.prev, type, member))
+		&(pos)->member != (head);				\
+		(pos) = YYcontainerof((pos)->member.prev, type, member))
 
 /**
- * Same with {@link ylistl_foreach_item}. And it is safe from remove operation.
+ * Same with @ref ylistl_foreach_item. And it is safe from remove operation.
  *
- * @param pos See {@link ylistl_foreach_item}
- * @param n ({@code type} *) Temporary storage
- * @param head See {@link ylistl_foreach_item}
- * @param type See {@link ylistl_foreach_item}
- * @param member See {@link ylistl_foreach_item}
+ * @param pos See @ref ylistl_foreach_item
+ * @param n (@p type *) Temporary storage
+ * @param head See @ref ylistl_foreach_item
+ * @param type See @ref ylistl_foreach_item
+ * @param member See @ref ylistl_foreach_item
  */
 #define ylistl_foreach_item_removal_safe(pos, n, head, type, member)    \
         for ((pos) = YYcontainerof((head)->next, type, member),		\
-		     (n) = YYcontainerof((pos)->member.next, type, member); \
-	     &(pos)->member != (head);					\
-	     (pos) = (n),						\
-		     (n) = YYcontainerof((pos)->member.next, type, member))
+			(n) = YYcontainerof((pos)->member.next, type, member); \
+		&(pos)->member != (head);				\
+		(pos) = (n),						\
+			(n) = YYcontainerof((pos)->member.next, type, member))
 
 /**
- * See {@link ylistl_foreach_item_removal_safe}. But direction is opposite.
+ * See @ref ylistl_foreach_item_removal_safe. But direction is opposite.
  *
- * @param pos See {@link ylistl_foreach_item_removal_safe}
- * @param n See {@link ylistl_foreach_item_removal_safe}
- * @param head See {@link ylistl_foreach_item_removal_safe}
- * @param type See {@link ylistl_foreach_item_removal_safe}
- * @param member See {@link ylistl_foreach_item_removal_safe}
+ * @param pos See @ref ylistl_foreach_item_removal_safe
+ * @param n See @ref ylistl_foreach_item_removal_safe
+ * @param head See @ref ylistl_foreach_item_removal_safe
+ * @param type See @ref ylistl_foreach_item_removal_safe
+ * @param member See @ref ylistl_foreach_item_removal_safe
  */
 #define ylistl_foreach_item_removal_safe_backward(pos, n, head, type, member) \
         for ((pos) = YYcontainerof((head)->prev, type, member),		\
-		     (n) = YYcontainerof((pos)->member.prev, type, member); \
-	     &(pos)->member != (head);					\
-	     (pos) = (n),						\
-		     (n) = YYcontainerof((pos)->member.prev, type, member))
+			(n) = YYcontainerof((pos)->member.prev, type, member); \
+		&(pos)->member != (head);				\
+		(pos) = (n),						\
+			(n) = YYcontainerof((pos)->member.prev, type, member))
 
 /****************************************************************************
  *
@@ -345,15 +350,17 @@ ylistl_size(const struct ylistl_link *head) {
 }
 
 /**
- * Check {@code node} is in the list({@code head}).
+ * Check @p node is in the list(@p head).
  *
  * @param head Head node of the list.
  * @param node Node to check.
  * @return bool TRUE or FALSE
  */
 static YYINLINE bool
-ylistl_contains(const struct ylistl_link *head,
-		const struct ylistl_link *node) {
+ylistl_contains(
+	const struct ylistl_link *head,
+	const struct ylistl_link *node
+) {
 	const struct ylistl_link *pos;
 	ylistl_foreach(pos, head) {
 		if (pos == node)
@@ -364,8 +371,7 @@ ylistl_contains(const struct ylistl_link *head,
 
 /**
  * Delete link.
- * If {@code node} is NOT in the list headed by {@code head}, FALSE is
- *   returned.
+ * If @p node is NOT in the list headed by {@code head}, FALSE is returned.
  *
  * @param head Head of list.
  * @param node Node link.
@@ -373,8 +379,7 @@ ylistl_contains(const struct ylistl_link *head,
  *
  */
 static YYINLINE bool
-ylistl_remove2(struct ylistl_link *head,
-	       struct ylistl_link *node) {
+ylistl_remove2(struct ylistl_link *head, struct ylistl_link *node) {
 	if (!ylistl_contains(head, node))
 		return FALSE;
 	ylistl_remove(node);

@@ -39,7 +39,7 @@
  * @brief Easy-to-use list module compared with 'ylistl'.
  *
  * In performance point of view, this is slower.
- * Interface of {@code ylist} may return not-essential-value for easy-to-use;
+ * Interface of @c ylist may return not-essential-value for easy-to-use;
  * For example, parameter value itself.
  *
  * Operation to the empty list is not defined. It's user's responsibility!
@@ -94,7 +94,7 @@ struct ylisti {
  *
  ****************************************************************************/
 /**
- * Free {@code item}.
+ * Free @p item.
  *
  * @param l List object.
  * @param item List item to free.
@@ -114,8 +114,7 @@ ylist_free_item(struct ylist *l, void *item) {
  * @return NULL if fails. Otherwise new list object.
  */
 YYEXPORT struct ylist *
-ylist_create(uint32_t max,
-	     void (*ifree)(void *));
+ylist_create(uint32_t max, void (*ifree)(void *));
 
 /**
  * Destroy list object.
@@ -162,7 +161,7 @@ ylist_size(const struct ylist *l) {
 }
 
 /**
- * Is {@code item} in the list?
+ * Is @p item in the list?
  *
  * @param item Item to check
  * @return TRUE or FALSE
@@ -174,7 +173,7 @@ ylist_has(const struct ylist *, void *item);
  * Add item to the end of list.
  *
  * @param item new item too add
- * @return 0 if success. Otherwise -errno. (ex. -ENOMEM)
+ * @return 0 if success. Otherwise @c -errno. (ex. -ENOMEM)
  */
 YYEXPORT int
 ylist_add_last(struct ylist *, void *item);
@@ -183,7 +182,7 @@ ylist_add_last(struct ylist *, void *item);
  * Add item at front of list.
  *
  * @param item new item too add
- * @return 0 if success. Otherwise -errno (ex. -ENOMEM)
+ * @return 0 if success. Otherwise @c -errno (ex. -ENOMEM)
  */
 YYEXPORT int
 ylist_add_first(struct ylist *, void *item);
@@ -208,22 +207,22 @@ ylist_peek_first(const struct ylist *);
  * Remove last item from list.
  *
  * @param free TRUE to free item after removing it from list.
- *             FALSE to remove item from list and preserve it.
+ *	FALSE to remove item from list and preserve it.
  * @return
- *     NULL if fails(ex. list is empty) Otherwise pointer to requested item.
- *     In case that free == TRUE, returned pointer is invalid one.
+ *	NULL if fails(ex. list is empty) Otherwise pointer to requested item.
+ *	In case that free == TRUE, returned pointer is invalid one.
  */
 YYEXPORT void *
 ylist_remove_last(struct ylist *, int free);
 
-/** See {@link ylist_remove_last} */
+/** @see ylist_remove_last */
 YYEXPORT void *
 ylist_remove_first(struct ylist *, int free);
 
 /**
  * @param itr Iterator
- * @param free See {@link ylist_remove_last}
- * @return See {@link ylist_remove_last}
+ * @param free See @ref ylist_remove_last
+ * @return See @ref ylist_remove_last
  */
 YYEXPORT void *
 ylist_remove_current(struct ylist *, struct ylisti *itr, int free);
@@ -233,25 +232,25 @@ ylist_remove_current(struct ylist *, struct ylisti *itr, int free);
  * Alias
  *
  ****************************************************************************/
-/** Alias to {@link ylist_add_last} */
+/** Alias to @ref ylist_add_last */
 static YYINLINE int
 ylist_push(struct ylist *l, void *item) {
 	return ylist_add_last(l, item);
 }
 
-/** Alias to {@link ylist_remove_last} with free == FALSE */
+/** Alias to @ref ylist_remove_last with free == FALSE */
 static YYINLINE void *
 ylist_pop(struct ylist *l) {
 	return ylist_remove_last(l, FALSE);
 }
 
-/** Alias to {@link ylist_add_last} */
+/** Alias to @ref ylist_add_last */
 static YYINLINE int
 ylist_enq(struct ylist *l, void *item) {
 	return ylist_add_last(l, item);
 }
 
-/** Alias to {@link ylist_remove_first} with free == FALSE */
+/** Alias to @ref ylist_remove_first with free == FALSE */
 static YYINLINE void *
 ylist_deq(struct ylist *l) {
 	return ylist_remove_first(l, FALSE);
@@ -280,7 +279,7 @@ ylisti_has_next(const struct ylisti *itr) {
 /**
  * Create iterater object.
  *
- * @param type iterator type. {@link YLISTI_FORWARD} or {@link YLISTI_BACKWARD}
+ * @param type iterator type. @ref YLISTI_FORWARD or @ref YLISTI_BACKWARD
  * @return NULL if fails. Otherwise iterator object.
  */
 YYEXPORT struct ylisti *

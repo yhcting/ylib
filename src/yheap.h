@@ -53,16 +53,17 @@ struct yheap;
  * Create heap object.
  *
  * @param capacity Inital heap capacity. Capacity means space available without
- *                 additional memory allocation.
+ *	additional memory allocation.
  * @param vfree Function to free item.
  * @param cmp Function to compare two heap items.
- *            Return value follows rule of strcmp function.
+ *	Return value follows rule of strcmp function.
  * @return NULL if fails (ex. ENOMEM)
  */
 YYEXPORT struct yheap *
-yheap_create(uint32_t capacity,
-	     void (*vfree)(void *),
-	     int (*cmp)(const void *, const void *));
+yheap_create(
+	uint32_t capacity,
+	void (*vfree)(void *),
+	int (*cmp)(const void *, const void *));
 
 /**
  * Clean heap.
@@ -80,7 +81,7 @@ yheap_destroy(struct yheap *);
 /**
  * Add item to heap.
  *
- * @return 0 if success. Otherwise -errno.
+ * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
 yheap_add(struct yheap *, void *);
@@ -114,18 +115,19 @@ yheap_sz(const struct yheap *);
  *
  * @param tag Tag during iteration.
  * @param cb
- *     callback called whenever visiting element.
- *     If callback returns TRUE, iteration keeps going.
- *     But if callback returns FALSE, iteration stops and function is returned.
- * @return -1 if fails (ex. internal error.)
- *         0 if iteration to all heap nodes are done.
- *         1 if iteration is stopped in the middle because {@code cb} returns
- *           FALSE.
+ *	callback called whenever visiting element.
+ *	If callback returns TRUE, iteration keeps going.
+ *	But if callback returns FALSE, iteration stops and function is returned.
+ * @return
+ * 	-1 if fails (ex. internal error.)
+ *	0 if iteration to all heap nodes are done.
+ *	1 if iteration is stopped in the middle because @p cb returns FALSE.
  */
 YYEXPORT int
-yheap_iterates(struct yheap *,
-	       void *tag,
-	       int (*cb)(void *e, void *tag));
+yheap_iterates(
+	struct yheap *,
+	void *tag,
+	int (*cb)(void *e, void *tag));
 
 
 #endif /* __YHEAp_h__ */

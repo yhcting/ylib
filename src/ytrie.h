@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2021
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -57,19 +57,18 @@ struct ytrie;
  *
  * @param key Key of trie
  * @param keysz Key size
- * @return NULL if fails (ex. {@code key} isn't in the trie.)
- *         Otherwise pointer of trie value.
+ * @return NULL if fails (ex. @p key isn't in the trie.)
+ * 	Otherwise pointer of trie value.
  */
 YYEXPORT void **
-ytrie_getref(struct ytrie *,
-	     const uint8_t *key, uint32_t keysz);
+ytrie_getref(struct ytrie *, const uint8_t *key, uint32_t keysz);
 
 /**
  * Get value.
  *
  * @param key Key of trie
  * @param keysz Key size
- * @return NULL if fail. Otherwise trie value.
+ * @return NULL if fails. Otherwise trie value.
  */
 YYEXPORT void *
 ytrie_get(struct ytrie *, const uint8_t *key, uint32_t keysz);
@@ -80,40 +79,42 @@ ytrie_get(struct ytrie *, const uint8_t *key, uint32_t keysz);
  *
  * @param tag Tag during iteration.
  * @param key Key of node where tree iteration starts at.
- * @param keysz Size of {@code fromkey}
+ * @param keysz Size of @p key
  * @param cb
- *     Callback called whenever visiting trie value.
- *     If callback returns 1, iteration keeps going.
- *     But if callback returns 0, iteration stops and 'ytrie_iterate' is done.
+ *	Callback called whenever visiting trie value.
+ *	If callback returns 1, iteration keeps going.
+ *	But if callback returns 0, iteration stops and this function finishes.
  * @return
- *     - 0 : Iteration stops in the middle of iteration due to callback
- *           returns 0.
- *     - 1 : Interation is completely done.
- *     - <0 : Error. -errno.
+ *	-  0: Iteration stops in the middle of iteration due to callback
+ *		returns 0.
+ *	-  1: Interation is completely done.
+ *	- <0: Error. @c -errno.
  */
 YYEXPORT int
-ytrie_iterate(struct ytrie *,
-              void *tag,
-              const uint8_t *key,
-              uint32_t keysz,
-              int (*cb)(void *, const uint8_t *, uint32_t, void *));
+ytrie_iterate(
+	struct ytrie *,
+	void *tag,
+	const uint8_t *key,
+	uint32_t keysz,
+	int (*cb)(void *, const uint8_t *, uint32_t, void *));
 
 /**
  * Insert value to the trie
  *
  * @param key Key of node where tree iteration starts at.
- * @param keysz Size of {@code fromkey}
+ * @param keysz Size of @p key
  * @param v Value to add.
  * @return
- *     - 1: value is overwritten
- *     - 0: newly added
- *     - <0: -errno.
+ *	-  1: value is overwritten
+ *	-  0: newly added
+ *	- <0: @c -errno.
  */
 YYEXPORT int
-ytrie_insert(struct ytrie *,
-	     const uint8_t *key,
-	     uint32_t keysz,
-	     void *v);
+ytrie_insert(
+	struct ytrie *,
+	const uint8_t *key,
+	uint32_t keysz,
+	void *v);
 
 /**
  * Create trie object.
@@ -122,7 +123,7 @@ ytrie_insert(struct ytrie *,
  * @return NULL if fails.
  */
 YYEXPORT struct ytrie *
-ytrie_create(void(*vfree)(void *));
+ytrie_create(void (*vfree)(void *));
 
 /**
  * Reset contents of trie. Trie becomes empty.
@@ -140,9 +141,9 @@ ytrie_destroy(struct ytrie *);
  * Remove trie value.
  *
  * @param key Key of node where tree iteration starts at.
- * @param keysz Size of {@code fromkey}
+ * @param keysz Size of @p key
  * @return Number of deleted values (0 means nothing deleted).
- *         -errno if fails.
+ *	@c -errno if fails.
  */
 YYEXPORT int
 ytrie_remove(struct ytrie *, const uint8_t *key, uint32_t keysz);
@@ -159,7 +160,7 @@ ytrie_vfree(const struct ytrie *))(void *);
  * Is two tries are equal?
  *
  * @param cmp Callback to compare element.
- *	      Return value of callback function should be same with 'strcmp'.
+ *	Return value of callback function should be same with @c strcmp.
  * @return TRUE or FALSE
  */
 YYEXPORT bool
@@ -167,48 +168,56 @@ ytrie_equal(const struct ytrie *, const struct ytrie *,
 	    int(*cmp)(const void *, const void *));
 
 /**
- * Copy trie. Key is deep-copied. And value is copied by using {@code clonev}
+ * Copy trie. Key is deep-copied. And value is copied by using @p clonev.
  *
  * @param dst Destination trie object where value is copied to.
- *            All existing values will be removed and filled with new values.
+ *	All existing values will be removed and filled with new values.
  * @param src Source trie object where value is copied from.
- * @param tag Tag object passed to {@code clonev}
+ * @param tag Tag object passed to @p clonev.
  * @param clonev Function used to copy trie value.
- *               It should returns NULL if fails.
- * @return 0 if success. Otherwise -errno.
+ *	It should returns NULL if fails.
+ * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
-ytrie_copy(struct ytrie *dst, const struct ytrie *src, void *tag,
-	   void *(*clonev)(void *tag,const void *));
+ytrie_copy(
+	struct ytrie *dst,
+	const struct ytrie *src,
+	void *tag,
+	void *(*clonev)(void *tag, const void *));
 
 /**
  * Clone trie object.
  *
- * @param tag Tag object passed to {@code clonev}
+ * @param tag Tag object passed to @p clonev.
  * @param clonev Callback function cloning element.
- *               It should returns NULL if fails.
+ *	It should returns NULL if fails.
  */
 YYEXPORT struct ytrie *
-ytrie_clone(const struct ytrie *,
-	    void *tag, void *(*clonev)(void *tag, const void *v));
+ytrie_clone(
+	const struct ytrie *,
+	void *tag,
+	void *(*clonev)(void *tag, const void *v));
 
 /**
- * Find unique key that starts with {@code start_with}.
+ * Find unique key that starts with @p keyprefix.
  *
- * @param start_with Prefix value of key to find
- * @param sz Size of {@code start_with} key
- * @param buf (out)
+ * @param keyprefix Prefix value of key to find
+ * @param keyprefixsz Size of @p keyprefix key
+ * @param[out] buf
  * @param bufsz
  * @return
- *     - 0: There are more than one candidates that starts with
- *            {@code start_with}.
- *     - 1: There is only one candidate.
- *     - 2: There is no matching candidate key.
- *     - <0: -errno. Ex. size of {@code buf} is not large enough.
+ *	-  0: There are more than one candidates that starts with
+ *		@p keyprefix.
+ *	-  1: There is only one candidate.
+ *	-  2: There is no matching candidate key.
+ *	- <0: @c -errno. Ex. size of @p buf is not large enough.
  */
 YYEXPORT int
-ytrie_auto_complete(struct ytrie *,
-		    const uint8_t *start_with, uint32_t sz,
-		    uint8_t *buf, uint32_t bufsz);
+ytrie_auto_complete(
+	struct ytrie *,
+	const uint8_t *keyprefix,
+	uint32_t keyprefixsz,
+	uint8_t *buf,
+	uint32_t bufsz);
 
 #endif /* __YTRIe_h__ */

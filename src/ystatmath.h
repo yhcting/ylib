@@ -126,14 +126,15 @@ ysm_imean_n(const struct ysm_imean *im) {
 
 /**
  * Combine two samples(incremental mean).
- * Destination {@code out} SHOULD NOT be used as source.
+ * Destination @p out SHOULD NOT be used as source.
  *
- * @param out (out) Object in where combined value is set.
+ * @param[out] out Object in where combined value is set.
  */
 YYEXPORT void
-ysm_imean_combine(struct ysm_imean *out,
-		  const struct ysm_imean *,
-		  const struct ysm_imean *);
+ysm_imean_combine(
+	struct ysm_imean *out,
+	const struct ysm_imean *,
+	const struct ysm_imean *);
 
 /******************************************************************************
  *
@@ -145,11 +146,11 @@ ysm_imean_combine(struct ysm_imean *out,
  * Structure to calculate incremental variance.
  */
 struct ysm_ivar {
-	/* \cond */
+	/* @cond */
 	uint32_t n; /* # of elements accumulated */
 	double s; /* S(n) */
 	double u; /* mean */
-	/* \endcond */
+	/* @endcond */
 };
 
 /**
@@ -222,7 +223,7 @@ ysm_ivar(const struct ysm_ivar *iv) {
  * Get number of elements participated.
  *
  * @param iv Incremental-variance object
- * @return number of participated elements
+ * @return Number of participated elements
  */
 static YYINLINE uint32_t
 ysm_ivar_n(const struct ysm_ivar *iv) {
@@ -230,23 +231,24 @@ ysm_ivar_n(const struct ysm_ivar *iv) {
 }
 
 /**
- * Combine two samples and save result to {@code out}.
- * Destination {@code out} SHOULD NOT be used as source.
+ * Combine two samples and save result to @p out.
+ * Destination @p out SHOULD NOT be used as source.
  *
- * @param out (out) Object in where combined value is set.
+ * @param[out] out Object in where combined value is set.
  */
 YYEXPORT void
-ysm_ivar_combine(struct ysm_ivar *out,
-		 const struct ysm_ivar *,
-		 const struct ysm_ivar *);
+ysm_ivar_combine(
+	struct ysm_ivar *out,
+	const struct ysm_ivar *,
+	const struct ysm_ivar *);
 
 /**
  * Get 95% confidence interval.
  * 'min' and 'max' are set as NAN for empty sample.
  *
  * @param iv Incremental-variance object
- * @param min (out) min. value of the interval
- * @param max (out) max. value of the interval
+ * @param[out] min Min. value of the interval
+ * @param[out] max Max. value of the interval
  */
 YYEXPORT void
 ysm_ivar_ci95(const struct ysm_ivar *iv, double *min, double *max);

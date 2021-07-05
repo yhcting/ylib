@@ -73,7 +73,7 @@ free_msgB(void *v) {
 static void
 run(void *a) {
 	struct msgB *m = (struct msgB *)a;
-	//printf("Hello Run\n");
+	/* printf("Hello Run\n"); */
 	yassert('A' == m->s[0]
 		&& 'B' == m->s[1]
 		&& 'C' == m->s[2]);
@@ -87,7 +87,7 @@ handle0(struct ymsghandler *handler __unused,
 	if (YMSG_TYP_DATA == m->type) {
 		struct msgA *ma = (struct msgA *)m->data;
 		yassert(m->code == ma->a && ma->a == ma->b);
-		//printf("Hello data...\n");
+		/* printf("Hello data...\n"); */
 	}
 }
 
@@ -120,8 +120,8 @@ test_msghandler(void) {
 	ymsghandler_destroy(mh1);
 
 	while (!(ymsglooper_get_state(ml0) == YMSGLOOPER_TERMINATED
-		 && ymsglooper_get_state(ml1) == YMSGLOOPER_TERMINATED))
-		usleep(1000 * 50);
+		&& ymsglooper_get_state(ml1) == YMSGLOOPER_TERMINATED)
+	) { usleep(1000 * 50); }
 	ymsglooper_destroy(ml0);
 	ymsglooper_destroy(ml1);
 }

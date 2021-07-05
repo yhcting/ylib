@@ -21,6 +21,7 @@ doxy/
 
 # configuration files
 !.gitignore
+!.editorconfig
 !.emacs-ede.el
 
 # auto-generated files

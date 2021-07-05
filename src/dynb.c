@@ -106,8 +106,7 @@ ydynb_expand(struct ydynb *b) {
 int
 ydynb_shrink(struct ydynb *b, u32 sz_to) {
 	void *tmp;
-	if (unlikely(b->limit <= sz_to
-		     || b->sz > sz_to))
+	if (unlikely(b->limit <= sz_to || b->sz > sz_to))
 		return -EINVAL;
 	tmp = yrealloc(b->b, sz_to * b->eszex);
 	if (unlikely(!tmp))

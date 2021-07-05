@@ -43,7 +43,7 @@
 #define __YPROc_h__
 
 #ifndef __linux__
-#   error yproc is linux specific module!
+#	error yproc is linux specific module!
 #endif
 
 #include "ydef.h"
@@ -56,7 +56,7 @@
  */
 struct yproc_pid_stat {
 	int pid; /**< Process id */
-	// +1 for terminating 0
+	/* +1 for terminating 0 */
 	char tcomm[YPROC_TCOMM_LEN + 1]; /**< TASK COMM string */
 	char state; /**< Process state (ex. R, S ...) */
 	int ppid; /**< Parent process id */
@@ -71,8 +71,8 @@ struct yproc_pid_stat {
  *
  * @param fd File descriptor
  * @param buf Buffer in where file path is stored.
- * @param bufsz Bytes of {@code buf} buffer.
- * @return 0 for success. Otherwise -errno.
+ * @param bufsz Bytes of @p buf buffer.
+ * @return 0 for success. Otherwise @c -errno.
  */
 YYEXPORT int
 yproc_self_fd_path(int fd, char *buf, unsigned bufsz);
@@ -83,8 +83,8 @@ yproc_self_fd_path(int fd, char *buf, unsigned bufsz);
  *
  * @param pid Process id
  * @param buf Buffer in where command-line is stored.
- * @param bufsz Bytes of {@code buf} buffer.
- * @return 0 for success. Otherwise -errno.
+ * @param bufsz Bytes of @p buf buffer.
+ * @return 0 for success. Otherwise @c -errno.
  */
 YYEXPORT int
 yproc_pid_cmdline(int pid, char *buf, unsigned bufsz);
@@ -94,7 +94,7 @@ yproc_pid_cmdline(int pid, char *buf, unsigned bufsz);
  *
  * @param stat output data struct.
  * @param pid Process id
- * @return -errno if error, otherwise 0.
+ * @return @c -errno if error, otherwise 0.
  */
 YYEXPORT int
 yproc_pid_stat(struct yproc_pid_stat *stat, int pid);

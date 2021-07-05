@@ -160,14 +160,16 @@ ygeob_eq(const struct yband *b0, const struct yband *b1) {
  * @param obb (Out) Non-overlapping sub-band at big-value-side.
  * @param bs Band whose {@code s} value is smaller than {@code bb}.
  * @param bb Band whose {@code s} value is bigger than {@code bs}.
- * @return Band position. See. {@link ybandpos}
+ * @return Band position. See. @ref ybandpos
  */
 static YYINLINE enum ybandpos
-ygeob_analyze_layout(struct yband *obs, /* Out Band Small-side */
-		     struct yband *obo, /* Out Band Overlapping */
-		     struct yband *obb, /* Out Band Big-side */
-		     const struct yband *bs, /* Band 's' value is smaller */
-		     const struct yband *bb /* Band 's' value is bigger */) {
+ygeob_analyze_layout(
+	struct yband *obs, /* Out Band Small-side */
+	struct yband *obo, /* Out Band Overlapping */
+	struct yband *obb, /* Out Band Big-side */
+	const struct yband *bs, /* Band 's' value is smaller */
+	const struct yband *bb /* Band 's' value is bigger */
+) {
 	YYassert(bs->s <= bb->s);
 	if (bs->b <= bb->s) {
 		*obs = *bs;

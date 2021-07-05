@@ -119,8 +119,8 @@ test_operation(void) {
 	 *               C   E  H
 	 */
 	{ /* Just scope */
-		static const char __vseq[]
-			= { 'F', 'B', 'G', 'A', 'D', 'I', 'C', 'E', 'H' };
+		static const char __vseq[] = {
+			'F', 'B', 'G', 'A', 'D', 'I', 'C', 'E', 'H' };
 		test_iterator(LK(F), YTREELI_LEVEL_OT, __vseq);
 	}
 
@@ -137,8 +137,8 @@ test_operation(void) {
 	 *               C   E
 	 */
 	{ /* Just scope */
-		static const char __vseq[]
-			= { 'F', 'B', 'G', 'I', 'A', 'D', 'H', 'C', 'E' };
+		static const char __vseq[] = {
+			'F', 'B', 'G', 'I', 'A', 'D', 'H', 'C', 'E' };
 		test_iterator(LK(F), YTREELI_LEVEL_OT, __vseq);
 	}
 }
@@ -167,20 +167,20 @@ static void
 test_treel(void) {
 	struct ytreel_link *lk;
 	/* pre-order traversal*/
-	static const char preot[]
-		= {'F', 'B', 'A', 'D', 'C', 'E', 'G', 'I', 'H'};
+	static const char preot[] = {
+		'F', 'B', 'A', 'D', 'C', 'E', 'G', 'I', 'H'};
 	/* level-order traversal */
-	static const char levelot[]
-		= {'F', 'B', 'G', 'A', 'D', 'I', 'C', 'E', 'H'};
+	static const char levelot[] = {
+		'F', 'B', 'G', 'A', 'D', 'I', 'C', 'E', 'H'};
 	/* post-order traversal */
-	static const char postot[]
-		= {'A', 'C', 'E', 'D', 'B', 'H', 'I', 'G', 'F'};
+	static const char postot[] = {
+		'A', 'C', 'E', 'D', 'B', 'H', 'I', 'G', 'F'};
 	/* reverse pre-order traversal - traverse right to left */
-	static const char r2lpreot[]
-		= {'F', 'G', 'I', 'H', 'B', 'D', 'E', 'C', 'A'};
+	static const char r2lpreot[] = {
+		'F', 'G', 'I', 'H', 'B', 'D', 'E', 'C', 'A'};
 	/* reverse post-order traversal - traverse right to left */
-	static const char r2lpostot[]
-		= {'H', 'I', 'G', 'E', 'C', 'D', 'A', 'B', 'F'};
+	static const char r2lpostot[] = {
+		'H', 'I', 'G', 'E', 'C', 'D', 'A', 'B', 'F'};
 
 	lk = build_test_treel();
 	verify_test_treel();

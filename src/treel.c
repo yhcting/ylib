@@ -149,7 +149,7 @@ preot_next(struct ytreeli *itr, bool l2r) {
 	else {
 		struct ytreel_link *lk =
 			(struct ytreel_link *)ylist_pop(itr->l);
-		itr->nerr = unlikely(!lk)? -EINVAL: 0;
+		itr->nerr = unlikely(!lk) ? -EINVAL : 0;
 		itr->ln = lk;
 	}
 
@@ -194,7 +194,7 @@ levelot_next(struct ytreeli *itr) {
 	else {
 		struct ytreel_link *lk =
 			(struct ytreel_link *)ylist_deq(itr->l);
-		itr->nerr = unlikely(!lk)? -EINVAL: 0;
+		itr->nerr = unlikely(!lk) ? -EINVAL : 0;
 		itr->ln = lk;
 	}
 
@@ -240,7 +240,7 @@ postot_next(struct ytreeli *itr, bool l2r) {
 		}
 	} else
 		itr->nerr = -ENOENT;
-	itr->ln = (unlikely(itr->nerr))? NULL: lk;
+	itr->ln = (unlikely(itr->nerr)) ? NULL : lk;
 	return 0;
 }
 
@@ -278,8 +278,7 @@ struct otinterface {
 };
 
 struct ytreeli *
-ytreeli_create(const struct ytreel_link *toplk,
-	       enum ytreeli_ot_type type) {
+ytreeli_create(const struct ytreel_link *toplk, enum ytreeli_ot_type type) {
 	struct ytreeli *itr;
 	struct otinterface *oti;
 	itr = (struct ytreeli *)ymalloc(sizeof(*itr));

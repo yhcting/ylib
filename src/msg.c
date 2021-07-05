@@ -64,9 +64,9 @@ minit_to_zero(struct ymsg_ *m) {
 static INLINE void
 mfree_data(struct ymsg_ *m) {
 	if (likely(YMSG_TYP_INVALID != m->m.type
-		   && m->m.dfree
-		   && m->m.data))
-		(*m->m.dfree)(m->m.data);
+		&& m->m.dfree
+		&& m->m.data)
+	) { (*m->m.dfree)(m->m.data); }
 	/* to avoid freeing multiple times. */
 	m->m.dfree = NULL;
 	m->m.data = NULL;
@@ -157,9 +157,9 @@ msg_clear(void) {
 
 static int
 minit(const struct ylib_config *cfg) {
-	int capacity = cfg && (cfg->ymsg_pool_capacity > 0)?
-		cfg->ymsg_pool_capacity:
-		DEFAULT_MSG_POOL_SIZE;
+	int capacity = cfg && (cfg->ymsg_pool_capacity > 0)
+		? cfg->ymsg_pool_capacity
+		: DEFAULT_MSG_POOL_SIZE;
         _pool = ypool_create(capacity);
         return _pool? 0: -ENOMEM;
 }

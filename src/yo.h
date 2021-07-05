@@ -56,67 +56,76 @@ struct yo {
 };
 
 /**
- * Extended version of {@link yocreate3}
+ * Extended version of @ref yocreate3
  */
 YYEXPORT struct yo *
-yocreate4(void *o0, void (*ofree0)(void *),
-	  void *o1, void (*ofree1)(void *),
-	  void *o2, void (*ofree2)(void *),
-	  void *o3, void (*ofree3)(void *),
-	  void *o4, void (*ofree4)(void *));
+yocreate4(
+	void *o0, void (*ofree0)(void *),
+	void *o1, void (*ofree1)(void *),
+	void *o2, void (*ofree2)(void *),
+	void *o3, void (*ofree3)(void *),
+	void *o4, void (*ofree4)(void *));
 
 /**
- * Extended version of {@link yocreate2}
+ * Extended version of @ref yocreate2
  */
 static YYINLINE struct yo *
-yocreate3(void *o0, void (*ofree0)(void *),
-	  void *o1, void (*ofree1)(void *),
-	  void *o2, void (*ofree2)(void *),
-	  void *o3, void (*ofree3)(void *)) {
-	return yocreate4(o0, ofree0,
-			 o1, ofree1,
-			 o2, ofree2,
-			 o3, ofree3,
-			 NULL, NULL);
+yocreate3(
+	void *o0, void (*ofree0)(void *),
+	void *o1, void (*ofree1)(void *),
+	void *o2, void (*ofree2)(void *),
+	void *o3, void (*ofree3)(void *)
+) {
+	return yocreate4(
+		o0, ofree0,
+		o1, ofree1,
+		o2, ofree2,
+		o3, ofree3,
+		NULL, NULL);
 }
 
 /**
- * Extended version of {@link yocreate1}
+ * Extended version of @ref yocreate1
  */
 static YYINLINE struct yo *
-yocreate2(void *o0, void (*ofree0)(void *),
-	  void *o1, void (*ofree1)(void *),
-	  void *o2, void (*ofree2)(void *)) {
-	return yocreate3(o0, ofree0,
-			 o1, ofree1,
-			 o2, ofree2,
-			 NULL, NULL);
+yocreate2(
+	void *o0, void (*ofree0)(void *),
+	void *o1, void (*ofree1)(void *),
+	void *o2, void (*ofree2)(void *)
+) {
+	return yocreate3(
+		o0, ofree0,
+		o1, ofree1,
+		o2, ofree2,
+		NULL, NULL);
 }
 
 /**
- * Extended version of {@link yocreate0}
+ * Extended version of @ref yocreate0
  */
 static YYINLINE struct yo *
-yocreate1(void *o0, void (*ofree0)(void *),
-	  void *o1, void (*ofree1)(void *)) {
-	return yocreate2(o0, ofree0,
-			 o1, ofree1,
-			 NULL, NULL);
+yocreate1(
+	void *o0, void (*ofree0)(void *),
+	void *o1, void (*ofree1)(void *)
+) {
+	return yocreate2(
+		o0, ofree0,
+		o1, ofree1,
+		NULL, NULL);
 }
 
 /**
- * @param o0 user object that can be freed by {@code ofree0}
- * @param ofree0 Function being used to free {@code o} at {@link yodestroy}
+ * @param o0 user object that can be freed by @p ofree0
+ * @param ofree0 Function being used to free @p o0 at @ref yodestroy
  * @return yo instance. NULL if fails.
  */
 static YYINLINE struct yo *
 yocreate0(void *o0, void (*ofree0)(void *)) {
-	return yocreate1(o0, ofree0,
-			 NULL, NULL);
+	return yocreate1(o0, ofree0, NULL, NULL);
 }
 
 /**
- * Object is destroied by using {@code ofree} obtained at {@link yocreate0}
+ * Object is destroied by using @c ofree obtained at @ref yocreate0
  */
 YYEXPORT void
 yodestroy(struct yo *);

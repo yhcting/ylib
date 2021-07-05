@@ -190,7 +190,7 @@ looper_thread(void *arg) {
 	if (unlikely(r))
 	    return NULL;
 
-	cleanup = ts->destroy_on_exit? &destroy_msglooper: &dummy_do_nothing;
+	cleanup = ts->destroy_on_exit ? &destroy_msglooper : &dummy_do_nothing;
 	pthread_cleanup_push(cleanup, ts->ml);
 	ymsglooper_loop();
 	pthread_cleanup_pop(1); /* execute cleanup */
@@ -284,10 +284,11 @@ ymsglooper_start_looper_thread(bool destroy_on_exit) {
 	if (unlikely(r))
 		goto free_cond;
 	ts.destroy_on_exit = destroy_on_exit;
-	r = pthread_create(&thread,
-			   NULL,
-			   &looper_thread,
-			   &ts);
+	r = pthread_create(
+		&thread,
+		NULL,
+		&looper_thread,
+		&ts);
 	if (unlikely(r)) {
 		yassert(0);
 		ylogf("Fail to create thread: %s\n", yerrno_str(r));

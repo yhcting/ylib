@@ -113,7 +113,7 @@ msg_set_handler(struct ymsg_ *m, struct ymsghandler *h) {
 
 static INLINE struct ymsg_ *
 msg_mutate(struct ymsg *ym) {
-	struct ymsg_ *m = ym? containerof(ym, struct ymsg_, m): NULL;
+	struct ymsg_ *m = ym ? containerof(ym, struct ymsg_, m) : NULL;
 	_msg_magic_verify(m);
 	return m;
 }

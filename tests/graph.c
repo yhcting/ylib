@@ -84,15 +84,15 @@ make_test_graph(struct ygraph *g) {
 	struct mynode *v000, *v001, *v002, *v003, *v012, *v022, *v032;
 	struct mynode *v112;
 
-#define __add_v(g, N, NAMe)						\
-	do {								\
-		N = ymalloc(sizeof(*N));				\
-		N->name = NAMe;						\
-		ygraph_init_vertex(&N->v);				\
-		ygraph_add_vertex(g, &N->v);				\
+#define __add_v(g, N, NAMe)			\
+	do {					\
+		N = ymalloc(sizeof(*N));	\
+		N->name = NAMe;			\
+		ygraph_init_vertex(&N->v);	\
+		ygraph_add_vertex(g, &N->v);	\
 	} while (0)
 
-#define __add_edge(g, oe, mn0, mn1)			\
+#define __add_edge(g, oe, mn0, mn1) \
 	ygraph_add_edge(g, oe, &mn0->v, &mn1->v);
 
 	__add_v(g, v000, "v000");

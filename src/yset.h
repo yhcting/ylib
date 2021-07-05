@@ -47,7 +47,7 @@
 /* yset structure is dummy wrapper of struct yash * */
 /**
  * Set object
- * Object SHOULD NOT be handled as 'struct yhash' directly.
+ * Object SHOULD NOT be handled as `struct yhash` directly.
  */
 typedef struct yhash * yset_t;
 
@@ -74,15 +74,17 @@ ysets_create(void) {
 
 /**
  * Create set whose key-type is general-object.
- * See, {@code yhasho}_create in {@link yhash.h} for details
+ * @see yhasho_create
  *
  * @return NULL if fails.
  */
 static YYINLINE yset_t
-yseto_create(void (*elemfree)(void *),
-             int (*elemcopy)(void **newelem, const void *),
-             int (*elemcmp)(const void *, const void *),
-             uint32_t (*hfunc)(const void *elem)) {
+yseto_create(
+	void (*elemfree)(void *),
+	int (*elemcopy)(void **newelem, const void *),
+	int (*elemcmp)(const void *, const void *),
+	uint32_t (*hfunc)(const void *elem)
+) {
 	return yhasho_create(NULL, elemfree, elemcopy, elemcmp, hfunc);
 }
 
@@ -122,32 +124,33 @@ yset_sz(const yset_t s) {
  * Get elements in the set.
  *
  * @param s Set
- * @param elemsbuf
- *     in/out value.
- *     Buffer to contain pointer of element.
- *     'shallow copy' of elements are stored at buffer.
- *     So, DO NOT free/modify element's value pointed
- * @param bufsz sizeof {@code elemsbuf}
- * @return number keys assigned to {@code elemsbuf}
- *         'return value == {@code bufsz}' may mean that {@code elemsbuf} is
- *         not large enough to contains all elements in the set.
+ * @param[in,out] elemsbuf
+ *	Buffer to contain pointer of element.
+ *	'shallow copy' of elements are stored at buffer.
+ *	So, DO NOT free/modify element's value pointed.
+ * @param bufsz sizeof @p elemsbuf
+ * @return number keys assigned to @p elemsbuf
+ *	`return value == bufsz` may mean that @p elemsbuf is
+ *	not large enough to contains all elements in the set.
  */
 static YYINLINE uint32_t
-yset_elements(const yset_t s,
-	      const void **elemsbuf, /* in/out */
-	      uint32_t bufsz) {
+yset_elements(
+	const yset_t s,
+	const void **elemsbuf, /* in/out */
+	uint32_t bufsz
+) {
 	return yhash_keys(s, elemsbuf, bufsz);
 }
 
 /**
  * Add to the set.
- * {@code elem} is used as key by shallow or deep copy. It is decided when set
- *   is created(ysetX_create).
+ * @p elem is used as key by shallow or deep copy. It is decided when set
+ * is created @c ysetX_create.
  *
  * @param s Set
  * @param elem data value(item)
- * @return -errno if fails.
- *         Otherwise # of newly added item (0 means overwritten).
+ * @return @c -errno if fails.
+ *	Otherwise # of newly added item (0 means overwritten).
  */
 static YYINLINE int
 yset_add(yset_t s, void *elem) {
@@ -160,7 +163,8 @@ yset_add(yset_t s, void *elem) {
  *
  * @param s Set
  * @param elem data value(item)
- * @return -errno if fails. Otherwise # of deleted (0 means nothing to delete).
+ * @return @c -errno if fails.
+ * 	Otherwise # of deleted (0 means nothing to delete).
  */
 static YYINLINE int
 yset_remove(yset_t s, const void *elem) {
@@ -168,7 +172,7 @@ yset_remove(yset_t s, const void *elem) {
 }
 
 /**
- * Is set contains {@code elem}?
+ * Is set contains @p elem?
  *
  * @param s Set
  * @param elem Element
@@ -194,7 +198,7 @@ yset_clone(const yset_t s) {
  * Create new set which is insection of two sets.
  * Elements are copied from source set.
  *
- * @return newly created 'yset' for success, otherwise NULL.
+ * @return newly created @c yset for success, otherwise NULL.
  */
 YYEXPORT yset_t
 yset_intersect(const yset_t, const yset_t);
@@ -202,19 +206,18 @@ yset_intersect(const yset_t, const yset_t);
 /**
  * Create new set which is union of two sets.
  * (NOT IMPLEMENTED YET)
- * See {@link yset_intersect}
+ * @see yset_intersect
  */
 YYEXPORT yset_t
 yset_union(const yset_t, const yset_t);
 
 /**
- * Create new set which is diff {@code s0} - {@code s1}
+ * Create new set which is diff of two sets.
  * (NOT IMPLEMENTED YET)
- * See {@link yset_intersect}
+ * @see yset_intersect
  */
 YYEXPORT yset_t
 yset_diff(const yset_t, const yset_t);
-
 
 
 #endif /* __YSEt_h__ */

@@ -90,9 +90,9 @@ YYEXPORT struct yrgn *
 ygeog_intersect(const struct yrgn *, const struct yrgn *);
 
 /**
- * See {@link ygeog_intersect}
+ * See @ref ygeog_intersect
  *
- * @return See {@link ygeog_intersect}
+ * @return See @ref ygeog_intersect
  */
 YYEXPORT struct yrgn *
 ygeog_intersect2(const struct yrgn *, const struct yrect *);
@@ -106,17 +106,17 @@ YYEXPORT struct yrgn *
 ygeog_diff(const struct yrgn *, const struct yrgn *);
 
 /**
- * See {@link ygeog_diff}
+ * See @ref ygeog_diff
  *
- * @return See {@link ygeog_diff}
+ * @return See @ref ygeog_diff
  */
 YYEXPORT struct yrgn *
 ygeog_diff2(const struct yrgn *, const struct yrect *);
 
 /**
- * See {@link ygeog_diff}
+ * See @ref ygeog_diff
  *
- * @return See {@link ygeog_diff}
+ * @return See @ref ygeog_diff
  */
 YYEXPORT struct yrgn *
 ygeog_diff3(const struct yrect *, const struct yrect *);
@@ -130,17 +130,17 @@ YYEXPORT struct yrgn *
 ygeog_union(const struct yrgn *, const struct yrgn *);
 
 /**
- * See {@link ygeog_union}
+ * See @ref ygeog_union
  *
- * @return See {@link ygeog_union}
+ * @return See @ref ygeog_union
  */
 YYEXPORT struct yrgn *
 ygeog_union2(const struct yrgn *, const struct yrect *);
 
 /**
- * See {@link ygeog_union}
+ * See @ref ygeog_union
  *
- * @return See {@link ygeog_union}
+ * @return See @ref ygeog_union
  */
 YYEXPORT struct yrgn *
 ygeog_union3(const struct yrect *, const struct yrect *);
@@ -167,7 +167,7 @@ ygeog_union3(const struct yrect *, const struct yrect *);
 				(r).xb = *b_____Z++;
 
 /**
- * Pair with {@link ygeog_foreach_rect_begin}.
+ * Pair with @ref ygeog_foreach_rect_begin.
  */
 #define ygeog_foreach_rect_end()		   		\
 			} /* end of x-band loop */ 		\

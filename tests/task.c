@@ -270,15 +270,16 @@ tc1(struct ymsghandler *mh0,
 	ta = ycalloc(1, sizeof(*ta));
 	ta->s = ymalloc(16);
 	strcpy(ta->s, "T0:arg");
-	t = ytask_create3("T0",
-			  mh0,
-			  YTHREADEX_NORMAL,
-			  &_tlis,
-			  ta,
-			  &free_arg,
-			  &free_result,
-			  &runnable0,
-			  TRUE);
+	t = ytask_create3(
+		"T0",
+		mh0,
+		YTHREADEX_NORMAL,
+		&_tlis,
+		ta,
+		&free_arg,
+		&free_result,
+		&runnable0,
+		TRUE);
 	yassert(ytask_destroy(t));
 	ytask_add_event_listener2(t, mh0, &_telis, TRUE);
 	yassert(!ytask_start_sync(t));
@@ -286,12 +287,12 @@ tc1(struct ymsghandler *mh0,
 	tr = ytask_get_result(t);
 	/* STARTED, DONE. And PROGRESS_INIT */
 	ylogv("%d, %d, %d, %d, %d, %c\n",
-	      ta->sti,
-	      ta->st[0],
-	      ta->st[1],
-	      ta->progcnt,
-	      tr->r,
-	      tr->s[0]);
+		ta->sti,
+		ta->st[0],
+		ta->st[1],
+		ta->progcnt,
+		tr->r,
+		tr->s[0]);
 	yassert(!ytask_destroy(t));
 
 }
@@ -311,15 +312,16 @@ tc2(struct ymsghandler *mh0,
 	ta->sleep_cnt = 2;
 	ta->sleep_interval = 200; /* 200 ms */
 	strcpy(ta->s, "T1:arg");
-	t = ytask_create3("T0",
-			  mh0,
-			  YTHREADEX_NORMAL,
-			  &_tlis,
-			  ta,
-			  &free_arg,
-			  &free_result,
-			  &runnable0,
-			  TRUE);
+	t = ytask_create3(
+		"T0",
+		mh0,
+		YTHREADEX_NORMAL,
+		&_tlis,
+		ta,
+		&free_arg,
+		&free_result,
+		&runnable0,
+		TRUE);
 	yassert(ytask_destroy(t));
 	ytask_add_event_listener2(t, mh0, &_telis, TRUE);
 	yassert(!ytask_start_sync(t));
@@ -345,15 +347,16 @@ tc3(struct ymsghandler *mh0,
 	ta->sleep_cnt = 2;
 	ta->sleep_interval = 200; /* 200 ms */
 	strcpy(ta->s, "T1:arg");
-	t = ytask_create3("T0",
-			  mh0,
-			  YTHREADEX_NORMAL,
-			  &_tlis,
-			  ta,
-			  &free_arg,
-			  &free_result,
-			  &runnable0,
-			  TRUE);
+	t = ytask_create3(
+		"T0",
+		mh0,
+		YTHREADEX_NORMAL,
+		&_tlis,
+		ta,
+		&free_arg,
+		&free_result,
+		&runnable0,
+		TRUE);
 	yassert(ytask_destroy(t));
 	ytask_add_event_listener2(t, mh1, &_telis, TRUE);
 	yassert(!ytask_start(t));
@@ -388,8 +391,8 @@ test_task(void) {
 	ymsglooper_stop(ml0);
 	ymsglooper_stop(ml1);
 	while (YMSGLOOPER_TERMINATED != ymsglooper_get_state(ml0)
-	       || YMSGLOOPER_TERMINATED != ymsglooper_get_state(ml1))
-		usleep(10 * 1000);
+		|| YMSGLOOPER_TERMINATED != ymsglooper_get_state(ml1)
+	) { usleep(10 * 1000); }
 	ymsglooper_destroy(ml0);
 	ymsglooper_destroy(ml1);
 	return;

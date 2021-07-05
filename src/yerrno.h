@@ -52,8 +52,8 @@
  *
  * Note that errno MUST NOT be overlapped with standard or glibc errno.
  * And, it SHOULD NOT be too large not to be considered as valid memory address
- *   value, because sometimes, errno may be used as return value of function
- *   having pointer as it's return type.
+ * value, because sometimes, errno may be used as return value of function
+ * having pointer as it's return type.
  */
 enum {
 	YERRNO_BASE = 0x7ff,
@@ -66,7 +66,7 @@ enum {
 
 /**
  * Return string describing errno.
- * In case of {@code ec} is standard errno, this works same as {@code strerror}
+ * In case of @c ec is standard errno, this works same as @c strerror
  */
 YYEXPORT const char *
 yerrno_str(int ec);

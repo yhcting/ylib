@@ -58,7 +58,7 @@ yut_starts_with(const char *str, const char *substr) {
 
 uint64_t
 yut_current_time_millis(void) {
-    struct timespec ts;
-    fatali0(clock_gettime(CLOCK_MONOTONIC, &ts));
-    return ts.tv_sec * 1000000LL + ts.tv_nsec / 1000000LL;
+	struct timespec ts;
+	fatali0(clock_gettime(CLOCK_MONOTONIC, &ts));
+	return ts.tv_sec * 1000000LL + ts.tv_nsec / 1000000LL;
 }

@@ -65,30 +65,30 @@ enum ytaskdepman_errcode {
 
 
 /**
- * {@code on_done} passes issued task(tasks your are interested in.)
+ * @c on_done passes issued task(tasks your are interested in.)
  * In case of success, it gives target task having no-error.
  * Otherwise, this gives the first task failed to run(having error code).`
  * That is, "No error at issued task" means "success".
  * And you can use it's result.
- * It case of 'cancelled' or error at {@code ytaskdepman} itself,
- *   {@code on_done} gives NULL as issued task.
+ * It case of 'cancelled' or error at @c ytaskdepman itself, @c on_done
+ * gives NULL as issued task.
  * To tell cancelled or error, refer error code returned by
- *   {@link ytaskdepman_get_errcode}.
+ * @ref ytaskdepman_get_errcode.
  *
  * @param slots Number of concurrent jobs run.
  * @param on_done callback executed after tasks are all done.
  * @return NULL if fails.
  */
 YYEXPORT struct ytaskdepman *
-ytaskdepman_create(struct ymsghandler *,
-		   void (*on_done)(struct ytaskdepman *,
-				   struct ytask *),
-		   int slots);
+ytaskdepman_create(
+	struct ymsghandler *,
+	void (*on_done)(struct ytaskdepman *, struct ytask *),
+	int slots);
 
 /**
  * -EPERM if it is under progress.
  *
- * @return 0 if success. Otherwise -errno.
+ * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
 ytaskdepman_destroy(struct ytaskdepman *);
@@ -100,47 +100,48 @@ YYEXPORT int
 ytaskdepman_get_errcode(struct ytaskdepman *);
 
 /**
- * @return 0 if success. Otherwise -errno.
+ * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
 ytaskdepman_add_task(struct ytaskdepman *, struct ytask *);
 
 /**
- * The function fails is ytaskdepman already started or task is
- *   not in the ytaskdepman.
+ * The function fails is ytaskdepman already started or task is not in the
+ * @c ytaskdepman.
  *
- * @return 0 if success. Otherwise -errno.
+ * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
 ytaskdepman_remove_task(struct ytaskdepman *, struct ytask *);
 
 /**
- * Add dependency between two tasks.
- * {@code target} task run after {@code prereq} task.
+ * Add dependency between two tasks. @p target task run after @p prereq task.
  * -EPERM is returned if newly added dependency makes circular dependency.
  *
  * @param target Target task.
  * @param prereq Prerequisite task.
- * @return 0 if success. Otherwise -errno.
+ * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
-ytaskdepman_add_dependency(struct ytaskdepman *,
-			   struct ytask *target,
-			   struct ytask *prereq);
+ytaskdepman_add_dependency(
+	struct ytaskdepman *,
+	struct ytask *target,
+	struct ytask *prereq);
 
 /**
  * Remove dependency between two tasks.
- * See {@link ytaskdepman_add_dependency} for details of each parameters.
+ * See @ref ytaskdepman_add_dependency for details of each parameters.
  */
 YYEXPORT int
-ytaskdepman_remove_dependency(struct ytaskdepman *,
-			      struct ytask *target,
-			      struct ytask *prereq);
+ytaskdepman_remove_dependency(
+	struct ytaskdepman *,
+	struct ytask *target,
+	struct ytask *prereq);
 
 /**
  * @param roottsk root(target) task. NULL is allowed.
- * @return enum {@link ytaskdepman_errcode} value if success.
- *         Otherwise -errno.
+ * @return enum @ref ytaskdepman_errcode value if success.
+ * 	Otherwise @c -errno.
  */
 YYEXPORT int
 ytaskdepman_verify(struct ytaskdepman *, struct ytask **roottsk);
@@ -148,7 +149,7 @@ ytaskdepman_verify(struct ytaskdepman *, struct ytask **roottsk);
 /**
  * Start tasks based on their dependencies.
  * If prerequisite condition is NOT satisfied, error code is returned.
- * For detail error information, use {@link ytaskdepman_verify}
+ * For detail error information, use @ref ytaskdepman_verify
  */
 YYEXPORT int
 ytaskdepman_start(struct ytaskdepman *);

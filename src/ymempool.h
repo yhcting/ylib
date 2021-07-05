@@ -65,7 +65,7 @@ struct ymempool;
  *
  * @param grpsz Elem group size size in pool (number of element)
  * @param elemsz Element size (in bytes)
- * @param opt Option. See {@link YMEMPOOL_mt_safe}
+ * @param opt Option. See @ref YMEMPOOL_mt_safe
  * @return NULL if fails.
  */
 YYEXPORT struct ymempool *
@@ -86,7 +86,7 @@ YYEXPORT void *
 ymempool_get(struct ymempool *);
 
 /**
- * Return memory block got from {@link ymempool_get}, to pool.
+ * Return memory block got from @ref ymempool_get, to pool.
  */
 YYEXPORT void
 ymempool_put(struct ymempool *, void *block);

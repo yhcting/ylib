@@ -175,26 +175,27 @@ tc1(struct ymsghandler *mh) {
 	memset(ta, 0, sizeof(*ta));
 	ta->s = ymalloc(16);
 	strcpy(ta->s, "ok:arg");
-	yt = ythreadex_create("ok",
-			      mh,
-			      YTHREADEX_NORMAL,
-			      &_lis,
-			      ta,
-			      &free_arg,
-			      &free_result,
-			      &thread_run);
+	yt = ythreadex_create(
+		"ok",
+		mh,
+		YTHREADEX_NORMAL,
+		&_lis,
+		ta,
+		&free_arg,
+		&free_result,
+		&thread_run);
 	yassert(ythreadex_destroy(yt));
 	yassert(!ythreadex_start_sync(yt));
 	usleep(300 * 1000); /* wait 300 ms until callbacks are handled */
 	tr = ythreadex_get_result(yt);
 	/* STARTED, DONE. And PROGRESS_INIT */
 	ylogv("%d, %d, %d, %d, %d, %c\n",
-	      ta->sti,
-	      ta->st[0],
-	      ta->st[1],
-	      ta->progcnt,
-	      tr->r,
-	      tr->s[0]);
+		ta->sti,
+		ta->st[0],
+		ta->st[1],
+		ta->progcnt,
+		tr->r,
+		tr->s[0]);
 	yassert(2 == ta->sti
 		&& YTHREADEX_STARTED == ta->st[0]
 		&& YTHREADEX_DONE == ta->st[1]
@@ -215,26 +216,27 @@ tc2(struct ymsghandler *mh) {
 	memset(ta, 0, sizeof(*ta));
 	ta->s = ymalloc(16);
 	strcpy(ta->s, "ok:arg");
-	yt = ythreadex_create("ok",
-			      mh,
-			      YTHREADEX_NORMAL,
-			      &_lis,
-			      ta,
-			      &free_arg,
-			      &free_result,
-			      &thread_run);
+	yt = ythreadex_create(
+		"ok",
+		mh,
+		YTHREADEX_NORMAL,
+		&_lis,
+		ta,
+		&free_arg,
+		&free_result,
+		&thread_run);
 	yassert(ythreadex_destroy(yt));
 	yassert(!ythreadex_start(yt));
 	ythreadex_join(yt, &retval);
 	tr = ythreadex_get_result(yt);
 	/* STARTED, DONE. And PROGRESS_INIT */
 	ylogv("%d, %d, %d, %d, %d, %c\n",
-	      ta->sti,
-	      ta->st[0],
-	      ta->st[1],
-	      ta->progcnt,
-	      tr->r,
-	      tr->s[0]);
+		ta->sti,
+		ta->st[0],
+		ta->st[1],
+		ta->progcnt,
+		tr->r,
+		tr->s[0]);
 	yassert(2 == ta->sti
 		&& YTHREADEX_STARTED == ta->st[0]
 		&& YTHREADEX_DONE == ta->st[1]
@@ -257,14 +259,15 @@ tc3(struct ymsghandler *mh) {
 	ta->sleep_cnt = 10 + rand() % 20;
 	ta->sleep_interval = 10;
 	strcpy(ta->s, "ok:arg");
-	yt = ythreadex_create("ok",
-			      mh,
-			      YTHREADEX_NORMAL,
-			      &_lis,
-			      ta,
-			      &free_arg,
-			      &free_result,
-			      &thread_run);
+	yt = ythreadex_create(
+		"ok",
+		mh,
+		YTHREADEX_NORMAL,
+		&_lis,
+		ta,
+		&free_arg,
+		&free_result,
+		&thread_run);
 	yassert(ythreadex_destroy(yt));
 	yassert(!ythreadex_start(yt));
 	yassert(!ythreadex_cancel(yt, FALSE));
@@ -293,14 +296,15 @@ tc4(struct ymsghandler *mh) {
 		ta->sleep_interval = 10;
 		ta->s = ymalloc(16);
 		strcpy(ta->s, "ok:arg");
-		yt[i] = ythreadex_create("ok",
-		                         mh,
-		                         YTHREADEX_NORMAL,
-		                         &_lis,
-		                         ta,
-		                         &free_arg,
-		                         &free_result,
-		                         &thread_run);
+		yt[i] = ythreadex_create(
+			"ok",
+		        mh,
+		        YTHREADEX_NORMAL,
+		        &_lis,
+		        ta,
+		        &free_arg,
+		        &free_result,
+		        &thread_run);
 	}
 
 	for (i = 0; i < NR_THREADS; i++)
@@ -324,12 +328,12 @@ tc4(struct ymsghandler *mh) {
 			ta = ythreadex_get_arg(yt[i]);
 			/* STARTED, DONE. And PROGRESS_INIT */
 			ylogv("%d, %d, %d, %d, %d, %c\n",
-			      ta->sti,
-			      ta->st[0],
-			      ta->st[1],
-			      ta->progcnt,
-			      tr->r,
-			      tr->s[0]);
+				ta->sti,
+				ta->st[0],
+				ta->st[1],
+				ta->progcnt,
+				tr->r,
+				tr->s[0]);
 			yassert(2 == ta->sti
 				&& YTHREADEX_STARTED == ta->st[0]
 				&& YTHREADEX_DONE == ta->st[1]

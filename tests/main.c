@@ -101,8 +101,7 @@ rm_mem_locked(struct memblk *m) {
 static void
 clear_mem(void) {
 	struct memblk *pos, *n;
-	ylistl_foreach_item_removal_safe(pos, n, &_memhd,
-					 struct memblk, lk) {
+	ylistl_foreach_item_removal_safe(pos, n, &_memhd, struct memblk, lk) {
 		ylistl_remove(&pos->lk);
 		free(pos);
 	}
@@ -139,8 +138,7 @@ void
 dunregister_tstfn(void (*fn)(void), const char *mod) {
 	struct tstfn *p, *n;
 	ylistl_foreach_item_removal_safe(p, n, &_tstfnl, struct tstfn, lk) {
-		if (p->fn == fn
-		    && !strcmp(p->modname, mod)) {
+		if (p->fn == fn && !strcmp(p->modname, mod)) {
 			ylistl_remove(&p->lk);
 			free(p);
 		}

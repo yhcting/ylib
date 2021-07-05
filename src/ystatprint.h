@@ -65,23 +65,24 @@
  * @param vsz Size of value array
  * @param height Height of longest bar
  * @param idxs Index array to add comment at.
- *             This SHOULD be incrementally sorted array.
+ *	This SHOULD be incrementally sorted array.
  * @param cmts Array of comment string.
- * @param isz Array size of {@code idxs} and {@code cmts}
+ * @param isz Array size of @p idxs and @p cmts
  * @param isp Inter-space. # of spaces between bar.
  * @param barc Ascii character to represent bar.
- * @return 0 for success otherwise -(error number).
+ * @return 0 for success otherwise @c -errno
  */
 YYEXPORT int
-ystpr_bargraph(int fd,
-	       const double *vs,
-	       uint32_t vsz,
-	       uint32_t height,
-	       const uint32_t *idxs,
-	       const char * const *cmts,
-	       uint32_t isz,
-	       uint32_t isp,
-	       char barc);
+ystpr_bargraph(
+	int fd,
+	const double *vs,
+	uint32_t vsz,
+	uint32_t height,
+	const uint32_t *idxs,
+	const char * const *cmts,
+	uint32_t isz,
+	uint32_t isp,
+	char barc);
 
 
 
@@ -114,15 +115,16 @@ ystpr_bargraph(int fd,
  * @param h Graph height
  * @param isp Inter-space. # of spaces between bar.
  * @param barc Ascii character to represent bar.
- * @return 0 for success otherwise -(error number).
+ * @return 0 for success otherwise @c -errno
  */
 YYEXPORT int
-ystpr_distgraph(int fd,
-		const double *vs,
-		uint32_t vsz,
-		uint32_t w,
-		uint32_t h,
-		uint32_t isp,
-		char barc);
+ystpr_distgraph(
+	int fd,
+	const double *vs,
+	uint32_t vsz,
+	uint32_t w,
+	uint32_t h,
+	uint32_t isp,
+	char barc);
 
 #endif /* __YSTATPRINt_h__ */

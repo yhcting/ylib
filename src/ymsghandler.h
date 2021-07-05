@@ -55,17 +55,18 @@ struct ymsglooper;
  *
  * @param ml message looper in which this handler works, in terms of 'context'.
  * @param tag Custom tag.
- * @param tagfree Function to free {@code tag}
+ * @param tagfree Function to free @p tag
  * @param handle message handle function.
- *        'handle' MUST NOT change value or destroy(free) msg object!
- *        To use default handler, set to NULL.
+ *	'handle' MUST NOT change value or destroy(free) msg object!
+ *	To use default handler, set to NULL.
  * @return NULL if fails.
  */
 YYEXPORT struct ymsghandler *
-ymsghandler_create(struct ymsglooper *ml,
-		   void *tag,
-		   void (*tagfree)(void *),
-		   void (*handle)(struct ymsghandler *, const struct ymsg *));
+ymsghandler_create(
+	struct ymsglooper *ml,
+	void *tag,
+	void (*tagfree)(void *),
+	void (*handle)(struct ymsghandler *, const struct ymsg *));
 
 /**
  * Destroy handler.
@@ -74,7 +75,7 @@ YYEXPORT void
 ymsghandler_destroy(struct ymsghandler *);
 
 /**
- * Get tag set at {@link ymsghandler_create}.
+ * Get tag set at @ref ymsghandler_create.
  */
 YYEXPORT void *
 ymsghandler_get_tag(struct ymsghandler *);
@@ -89,46 +90,57 @@ ymsghandler_get_looper(struct ymsghandler *);
  * Post data msg to this handler.
  */
 YYEXPORT int
-ymsghandler_post_data(struct ymsghandler *,
-		      int code, void *data,
-		      void (*dfree)(void *));
+ymsghandler_post_data(
+	struct ymsghandler *,
+	int code,
+	void *data,
+	void (*dfree)(void *));
 
 /**
  * Post data msg to this handler.
  */
 YYEXPORT int
-ymsghandler_post_data2(struct ymsghandler *,
-		       int code, void *data,
-		       void (*dfree)(void *),
-		       uint8_t pri, uint32_t opt);
+ymsghandler_post_data2(
+	struct ymsghandler *,
+	int code,
+	void *data,
+	void (*dfree)(void *),
+	uint8_t pri,
+	uint32_t opt);
 
 /**
  * Post exec.(callback) msg to this handler.
  */
 YYEXPORT int
-ymsghandler_post_exec(struct ymsghandler *,
-		      void *arg, void (*argfree)(void *),
-		      void (*run)(void *));
+ymsghandler_post_exec(
+	struct ymsghandler *,
+	void *arg,
+	void (*argfree)(void *),
+	void (*run)(void *));
 
 /**
  * Post exec.(callback) msg to this handler.
  */
 YYEXPORT int
-ymsghandler_post_exec2(struct ymsghandler *,
-		       void *arg, void (*argfree)(void *),
-		       void (*run)(void *),
-		       uint8_t pri, uint32_t opt);
+ymsghandler_post_exec2(
+	struct ymsghandler *,
+	void *arg,
+	void (*argfree)(void *),
+	void (*run)(void *),
+	uint8_t pri,
+	uint32_t opt);
 
 /**
- * If msghandler is run on current context, {@code run} is executed
- *   immediately.
+ * If msghandler is run on current context, @p run is executed immediately.
  * Otherwise, this function works exactly same with
- *   {@link ymsghandler_post_exec}
+ * @ref ymsghandler_post_exec
  */
 YYEXPORT int
-ymsghandler_exec_on(struct ymsghandler *mh,
-		    void *arg, void (*argfree)(void *),
-		    void (*run)(void *));
+ymsghandler_exec_on(
+	struct ymsghandler *mh,
+	void *arg,
+	void (*argfree)(void *),
+	void (*run)(void *));
 
 
 #endif /* __YMSGHANDLEr_h__ */

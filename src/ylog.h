@@ -73,15 +73,13 @@ ylog_loglv(void) {
 }
 
 /**
- * This is only for internal use. Client SHOULD NOT use this function
- *   DIRECTLY.
+ * This is only for internal use. Client SHOULD NOT use this function DIRECTLY.
  */
 YYEXPORT void
 ___ylog_write(enum yloglv, const char *file, int lineno, const char *fmt, ...);
 
 /**
- * This is only for internal use. Client SHOULD NOT use this function
- *   DIRECTLY.
+ * This is only for internal use. Client SHOULD NOT use this function DIRECTLY.
  */
 #define _ylog(lv, fmt, args...)						\
 	if (YYunlikely((lv) >= ylog_loglv())) {				\

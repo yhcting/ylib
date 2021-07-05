@@ -93,8 +93,8 @@ hfree_default(void *v) {
                 yfree(v);
 }
 
-static void
-(*hfree_get_func(void (*free_func)(void *)))(void *) {
+static void (*
+hfree_get_func(void (*free_func)(void *))) (void *) {
 	if (YHASH_PREDEFINED_FREE == free_func)
 		return &hfree_default;
 	else
@@ -246,11 +246,9 @@ hmodify(struct yhash *h, u32 bits) {
 		ylistl_init_link(&h->map[i]);
 	/* re assign hash nodes */
 	for (i = 0; i < oldmapsz; i++) {
-		ylistl_foreach_item_removal_safe(n,
-						 tmp,
-						 &oldmap[i],
-						 struct hn,
-						 lk) {
+		ylistl_foreach_item_removal_safe(
+			n, tmp, &oldmap[i], struct hn, lk
+		) {
 			ylistl_remove(&n->lk);
 			ylistl_add_last(&h->map[hv(h, n)], &n->lk);
 		}
@@ -265,8 +263,7 @@ hfind(const struct yhash *h, const void *key) {
 	u32 hv32 = (*h->hfunc)(key);
 	struct ylistl_link *hd = &h->map[hv_(h, hv32)];
 	ylistl_foreach_item(n, hd, struct hn, lk) {
-		if (n->hv32 == hv32
-		    && !nkey_cmp(h, key, n->key))
+		if (n->hv32 == hv32 && !nkey_cmp(h, key, n->key))
 			break;
 	}
 	return (&n->lk == hd)? NULL: n;
@@ -282,9 +279,7 @@ vdestroy(const struct yhash *h, void *v) {
  * return NULL for failure (usually, Out Of Memory.
  */
 static struct hn *
-ncreate(struct yhash *h,
-	const void *key,
-	void *v) {
+ncreate(struct yhash *h, const void *key, void *v) {
 	struct hn *n = ymalloc(sizeof(*n));
 	if (unlikely(!n))
 		return NULL;
@@ -311,11 +306,9 @@ hdestroy_nodes(struct yhash *h) {
 	u32 i;
 	struct hn *n, *tmp;
 	for (i = 0; i < hmapsz(h); i++) {
-		ylistl_foreach_item_removal_safe(n,
-						 tmp,
-						 &h->map[i],
-						 struct hn,
-						 lk) {
+		ylistl_foreach_item_removal_safe(
+			n, tmp, &h->map[i], struct hn, lk
+		) {
 			ylistl_remove(&n->lk);
 			ndestroy(h, n, TRUE);
 		}
@@ -328,13 +321,15 @@ hdestroy_nodes(struct yhash *h) {
  *
  ****************************************************************************/
 static int
-hash_init(struct yhash *h,
-          int mode,
-          void (*vfree)(void *),
-          void (*kfree)(void *),
-          int (*kcp)(void **, const void *),
-          int (*kcmp)(const void *, const void *),
-	  u32 (*hfunc)(const void *)) {
+hash_init(
+	struct yhash *h,
+	int mode,
+	void (*vfree)(void *),
+	void (*kfree)(void *),
+	int (*kcp)(void **, const void *),
+	int (*kcmp)(const void *, const void *),
+	u32 (*hfunc)(const void *)
+) {
 	u32 i;
         h->mode = mode;
 	h->sz = 0;
@@ -353,12 +348,14 @@ hash_init(struct yhash *h,
 }
 
 static struct yhash *
-hash_create_internal(int mode,
-                     void (*vfree)(void *),
-                     void (*kfree)(void *),
-                     int (*kcp)(void **, const void *),
-                     int (*kcmp)(const void *, const void *),
-                     u32 (*hfunc)(const void *)) {
+hash_create_internal(
+	int mode,
+	void (*vfree)(void *),
+	void (*kfree)(void *),
+	int (*kcp)(void **, const void *),
+	int (*kcmp)(const void *, const void *),
+	u32 (*hfunc)(const void *)
+) {
 	if (unlikely(!hfunc))
 		return NULL;
 
@@ -366,13 +363,15 @@ hash_create_internal(int mode,
 	if (unlikely(!h))
 		return NULL;
 
-	if (unlikely(0 > hash_init(h,
-				   mode,
-				   vfree,
-				   kfree,
-				   kcp,
-				   kcmp,
-				   hfunc))) {
+	if (unlikely(0 > hash_init(
+		h,
+		mode,
+		vfree,
+		kfree,
+		kcp,
+		kcmp,
+		hfunc))
+	) {
 		yfree(h);
 		return NULL;
 	}
@@ -380,12 +379,14 @@ hash_create_internal(int mode,
 }
 
 int
-hash_add(struct yhash *h,
-	 const void ** const phkey,
-	 const void *key,
-	 void **oldv,
-	 void *v,
-	 bool overwrite) {
+hash_add(
+	struct yhash *h,
+	const void ** const phkey,
+	const void *key,
+	void **oldv,
+	void *v,
+	bool overwrite
+) {
 	struct hn *n = hfind(h, key);
 	if (n) {
 		if (!overwrite)
@@ -422,37 +423,41 @@ hash_add(struct yhash *h,
  ****************************************************************************/
 struct yhash *
 yhashi_create(void (*vfree)(void *)) {
-        return hash_create_internal(YHASH_KEYTYPE_I,
-                                    vfree, /* vfree */
-                                    NULL, /* kfree */
-                                    &kcp_i, /* kcp */
-                                    NULL, /* kcmp */
-                                    &hfunc_i);
+        return hash_create_internal(
+		YHASH_KEYTYPE_I,
+		vfree, /* vfree */
+		NULL, /* kfree */
+		&kcp_i, /* kcp */
+		NULL, /* kcmp */
+		&hfunc_i);
 }
 
 struct yhash *
-yhashs_create(void (*vfree)(void *),
-              bool key_deepcopy) {
-        return hash_create_internal(YHASH_KEYTYPE_S,
-                                    vfree, /* vfree */
-                                    &kfree_s, /* kfree */
-                                    key_deepcopy? &kcp_s: NULL, /* kcp */
-                                    &kcmp_s, /* kcmp */
-                                    &hfunc_s);
+yhashs_create(void (*vfree)(void *), bool key_deepcopy) {
+        return hash_create_internal(
+		YHASH_KEYTYPE_S,
+		vfree, /* vfree */
+		&kfree_s, /* kfree */
+		key_deepcopy ? &kcp_s : NULL, /* kcp */
+		&kcmp_s, /* kcmp */
+		&hfunc_s);
 }
 
 struct yhash *
-yhasho_create(void (*vfree)(void *),
-              void (*keyfree)(void *),
-              int (*keycopy)(void **, const void *),
-              int (*keycmp)(const void *, const void *),
-              u32 (*hfunc)(const void *key)) {
-        return hash_create_internal(YHASH_KEYTYPE_O,
-                                    vfree, /* vfree */
-                                    keyfree, /* kfree */
-                                    keycopy, /* kcp */
-                                    keycmp, /* kcmp */
-                                    hfunc);
+yhasho_create(
+	void (*vfree)(void *),
+	void (*keyfree)(void *),
+	int (*keycopy)(void **, const void *),
+	int (*keycmp)(const void *, const void *),
+	u32 (*hfunc)(const void *key)
+) {
+        return hash_create_internal(
+		YHASH_KEYTYPE_O,
+		vfree, /* vfree */
+		keyfree, /* kfree */
+		keycopy, /* kcp */
+		keycmp, /* kcmp */
+		hfunc);
 }
 
 /*---------------------------------------------------------------------------
@@ -460,25 +465,27 @@ yhasho_create(void (*vfree)(void *),
  *--------------------------------------------------------------------------*/
 struct yhash *
 yhash_create(const struct yhash *h) {
-	return hash_create_internal(h->mode,
-				    h->vfree,
-				    h->kfree,
-				    h->kcp,
-				    h->kcmp,
-				    h->hfunc);
+	return hash_create_internal(
+		h->mode,
+		h->vfree,
+		h->kfree,
+		h->kcp,
+		h->kcmp,
+		h->hfunc);
 }
 
 int
 yhash_reset(struct yhash *h) {
 	hdestroy_nodes(h);
 	yfree(h->map);
-	return hash_init(h,
-                         h->mode,
-                         h->vfree,
-                         h->kfree,
-                         h->kcp,
-                         h->kcmp,
-                         h->hfunc);
+	return hash_init(
+		h,
+		h->mode,
+		h->vfree,
+		h->kfree,
+		h->kcp,
+		h->kcmp,
+		h->hfunc);
 }
 
 void
@@ -496,23 +503,19 @@ yhash_sz(const struct yhash *h) {
 bool
 yhash_is_sametype(const struct yhash *h0, const struct yhash *h1) {
 	size_t modeoff = offsetof(struct yhash, mode);
-	return !!memcmp((const char *)h0 + modeoff,
-			(const char *)h1 + modeoff,
-			sizeof(struct yhash) - modeoff);
+	return !!memcmp(
+		(const char *)h0 + modeoff,
+		(const char *)h1 + modeoff,
+		sizeof(struct yhash) - modeoff);
 }
 
 u32
-yhash_keys(const struct yhash *h,
-	   const void **keysbuf,
-	   u32 bufsz) {
+yhash_keys(const struct yhash *h, const void **keysbuf, u32 bufsz) {
 	u32 r, i;
 	struct hn *n;
 	r = 0;
 	for (i = 0; i < hmapsz(h); i++) {
-		ylistl_foreach_item(n,
-				    &h->map[i],
-				    struct hn,
-				    lk) {
+		ylistl_foreach_item(n, &h->map[i], struct hn, lk) {
 			if (r < bufsz) {
 				keysbuf[r] = n->key;
 				++r;
@@ -534,11 +537,13 @@ yhash_add2(struct yhash *h, const void *key, void **oldv, void *v) {
 }
 
 int
-yhash_add3(struct yhash *h,
-	   const void ** const phkey,
-	   void *key,
-	   void *v,
-	   bool overwrite) {
+yhash_add3(
+	struct yhash *h,
+	const void ** const phkey,
+	void *key,
+	void *v,
+	bool overwrite
+) {
 	return hash_add(h, phkey, key, NULL, v, overwrite);
 }
 

@@ -158,11 +158,13 @@ ymsgq_destroy(struct ymsgq *q) {
 	int r __unused;
 	struct ymsg_ *pos, *tmp;
 	for (i = 0; i < yut_arrsz(q->q); i++) {
-		ylistl_foreach_item_removal_safe(pos,
-						 tmp,
-						 &q->q[i],
-						 struct ymsg_,
-						 lk) {
+		ylistl_foreach_item_removal_safe(
+			pos,
+			tmp,
+			&q->q[i],
+			struct ymsg_,
+			lk
+		) {
 			ymsg_destroy(&pos->m);
 		}
 	}
@@ -175,10 +177,11 @@ ymsgq_destroy(struct ymsgq *q) {
 
 int
 ymsgq_en(struct ymsgq *q, struct ymsg *ym) {
-	if (unlikely(!q || !ym
-		     || YMSG_TYP_INVALID == ym->type
-		     || YMSG_PRI_NR <= ym->pri))
-		return -EINVAL;
+	if (unlikely(!q
+		|| !ym
+		|| YMSG_TYP_INVALID == ym->type
+		|| YMSG_PRI_NR <= ym->pri)
+	) { return -EINVAL; }
 	return qen(q, msg_mutate(ym));
 }
 

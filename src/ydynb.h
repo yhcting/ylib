@@ -77,7 +77,7 @@ ydynb_create(uint32_t init_limit, uint16_t esz, uint8_t align);
 
 /**
  * Create new dynamic-buffer without alignment.
- * See {@link ydynb_create} for details
+ * See @ref ydynb_create for details
  */
 static YYINLINE struct ydynb *
 ydynb_create2(uint32_t init_limit, uint16_t esz) {
@@ -96,13 +96,12 @@ ydynb_reset(struct ydynb *b) {
 
 
 /**
- * Destroy dynamic-buffer
- * Memory also be freed.
- * So, pointer {@code b} is not valid anymore.
+ * Destroy dynamic-buffer. Memory also be freed.
+ * So, pointer @p b is not valid anymore.
  *
  * @param b Dynamic buffer object
  * @param pop_buf TRUE to return elements array(memory is preserved).
- *                FALSE to destroy all memories.
+ *	FALSE to destroy all memories.
  */
 YYEXPORT void *
 ydynb_destroy(struct ydynb *b, bool pop_buf);
@@ -153,7 +152,7 @@ ydynb_incsz(struct ydynb *b, uint32_t sz) {
 }
 
 /**
- * See {@link ydynb_incsz}
+ * See @ref ydynb_incsz
  */
 static YYINLINE void
 ydynb_decsz(struct ydynb *b, uint32_t sz) {
@@ -209,30 +208,30 @@ ydynb_getfree(const struct ydynb *b) {
 /**
  * Increase buffer size in double.
  *
- * @return 0 if success. Otherwise -errno.
+ * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
 ydynb_expand(struct ydynb *);
 
 /**
- * Increase buffer size until it can cover {@code sz_required}.
+ * Increase buffer size until it can cover @p sz_required.
  *
  * @param b Dynamic buffer object
  * @param sz_required Free size(# of elements) required to the buffer.
- * @return 0 if success. Otherwise -errno.
+ * @return 0 if success. Otherwise @c -errno.
  */
 static YYINLINE int
 ydynb_expand2(struct ydynb *b, uint32_t sz_required) {
 	while (sz_required > ydynb_freesz(b)
 	       && !ydynb_expand(b));
-	return sz_required <= ydynb_freesz(b)? 0: -ENOMEM;
+	return sz_required <= ydynb_freesz(b) ? 0 : -ENOMEM;
 }
 
 /**
- * Shrink buffer size to {@code sz_to} to reduce memory consumption.
+ * Shrink buffer size to @p sz_to to reduce memory consumption.
  *
  * @param sz_to Size(# of elements) that buffer should be shrinked to.
- * @return 0 if success, otherwise -errno.
+ * @return 0 if success, otherwise @c -errno.
  */
 YYEXPORT int
 ydynb_shrink(struct ydynb *, uint32_t sz_to);
@@ -243,7 +242,7 @@ ydynb_shrink(struct ydynb *, uint32_t sz_to);
  *
  * @param ea Aligned array of elements
  * @param easz Size of element-array(# of elements in array)
- * @return 0 if success. Otherwise -errno.
+ * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
 ydynb_appends(struct ydynb *, const void *ea, uint32_t easz);
@@ -253,7 +252,7 @@ ydynb_appends(struct ydynb *, const void *ea, uint32_t easz);
  *
  * @param b Dynamic buffer object
  * @param ea Element data.
- * @return 0 if success. Otherwise -errno.
+ * @return 0 if success. Otherwise @c -errno.
  */
 static YYINLINE int
 ydynb_append(struct ydynb *b, const void *ea) {

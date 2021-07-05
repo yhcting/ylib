@@ -49,17 +49,17 @@
 /**
  * Calculate 16bit crc.
  *
- * @param crc previous crc value
- * @param data data pointer
- * @param len number of bytes in the buffer.
- * @return calculated value
+ * @param crc Previous crc value
+ * @param data Data pointer
+ * @param len Number of bytes in the buffer.
+ * @return Calculated value
  */
 YYEXPORT uint16_t
 ycrc16(uint16_t crc, const uint8_t *data, uint32_t len);
 
 
 /**
- * See {@link ycrc16} for details.
+ * See @ref ycrc16 for details.
  */
 YYEXPORT uint32_t
 ycrc32(uint32_t crc, const uint8_t *data, uint32_t len);

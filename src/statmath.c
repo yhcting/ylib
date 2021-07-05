@@ -40,8 +40,9 @@
 /* u(n) = u(n-1) + (x(n) - u(n-1)) / n */
 static INLINE double
 imean_add(u32 n, /* # of elements - including given new value 'v' */
-	  double u,       /* mean of 'n-1' elements */
-	  double v) {     /* new value */
+	double u, /* mean of 'n-1' elements */
+	double v /* new value */
+) {
        /* n is never 0 */
        return u + (v - u) / (double)n;
 }
@@ -68,9 +69,11 @@ ysm_imean_add(struct ysm_imean *im, double v) {
 }
 
 void
-ysm_imean_combine(struct ysm_imean *out,
-		  const struct ysm_imean* a0,
-		  const struct ysm_imean* a1) {
+ysm_imean_combine(
+	struct ysm_imean *out,
+	const struct ysm_imean* a0,
+	const struct ysm_imean* a1
+) {
 	out->n = a0->n + a1->n;
 	/* We don't need to care a case that out->n == 0 - divide by zero,
 	 *   because NaN operations are well-defined at IEEE 754.
@@ -86,7 +89,7 @@ ysm_imean_combine(struct ysm_imean *out,
 	out->n = a0->n + a1->n;
 	/* u(n + m) = (u(n) * n + u(m) * m) / (n + m) */
 	out->u = (a0->u * (double)a0->n + a1->u * (double)a1->n)
-		 / (double)out->n;
+		/ (double)out->n;
 }
 
 
@@ -126,9 +129,11 @@ ysm_ivar_add(struct ysm_ivar *iv, double v) {
 
 
 void
-ysm_ivar_combine(struct ysm_ivar *out,
-		 const struct ysm_ivar* a0,
-		 const struct ysm_ivar* a1) {
+ysm_ivar_combine(
+	struct ysm_ivar *out,
+	const struct ysm_ivar* a0,
+	const struct ysm_ivar* a1
+) {
 	out->n = a0->n + a1->n;
 	/* We don't need to care a case that out->n == 0 - divide by zero,
 	 *   because NaN operations are well-defined at IEEE 754.

@@ -33,7 +33,7 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include "test.h"
+#include "../test.h"
 #ifdef CONFIG_DEBUG
 
 #include <string.h>

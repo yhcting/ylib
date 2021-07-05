@@ -71,21 +71,22 @@ struct ythreadex {
 
 
 /**
- * @return 0 if success. -errno if fails.
+ * @return 0 if success. @c -errno if fails.
  */
 int
-threadex_init(struct ythreadex *,
-              const char *name,
-              struct ymsghandler *owner,
-              enum ythreadex_priority priority,
-              const struct ythreadex_listener *listener,
-              void *arg,
-              void (*free_arg)(void *),
-              void (*free_result)(void *),
-              int (*run)(struct ythreadex *, void **result));
+threadex_init(
+	struct ythreadex *,
+	const char *name,
+	struct ymsghandler *owner,
+	enum ythreadex_priority priority,
+	const struct ythreadex_listener *listener,
+	void *arg,
+	void (*free_arg)(void *),
+	void (*free_result)(void *),
+	int (*run)(struct ythreadex *, void **result));
 
 /**
- * @return 0 if success. -errno if fails.
+ * @return 0 if success. @c -errno if fails.
  */
 int
 threadex_clean(struct ythreadex *);

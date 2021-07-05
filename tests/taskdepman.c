@@ -68,12 +68,7 @@ task_run(struct ytask *tsk, void **result) {
 
 static struct ytask *
 mk_task(struct ymsghandler *mh, const char *name) {
-	return ytask_create(name,
-			    mh,
-			    NULL,
-			    NULL,
-			    NULL,
-			    &task_run);
+	return ytask_create(name, mh, NULL, NULL, NULL, &task_run);
 }
 
 static void

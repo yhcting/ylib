@@ -122,11 +122,13 @@ pool_clear(void) {
  *
  *****************************************************************************/
 struct yo *
-yocreate4(void *o0, void (*ofree0)(void *),
-	  void *o1, void (*ofree1)(void *),
-	  void *o2, void (*ofree2)(void *),
-	  void *o3, void (*ofree3)(void *),
-	  void *o4, void (*ofree4)(void *)) {
+yocreate4(
+	void *o0, void (*ofree0)(void *),
+	void *o1, void (*ofree1)(void *),
+	void *o2, void (*ofree2)(void *),
+	void *o3, void (*ofree3)(void *),
+	void *o4, void (*ofree4)(void *)
+) {
 	struct o *o = pool_get();
 	if (unlikely(!o))
 		o = (struct o *)ycalloc(1, sizeof(*o));
@@ -173,11 +175,11 @@ o_clear(void) {
 
 static int
 minit(const struct ylib_config *cfg) {
-	int capacity = cfg && (cfg->yo_pool_capacity > 0)?
-		cfg->yo_pool_capacity:
-		DEFAULT_O_POOL_SIZE;
+	int capacity = cfg && (cfg->yo_pool_capacity > 0)
+		? cfg->yo_pool_capacity
+		: DEFAULT_O_POOL_SIZE;
         _pool = ypool_create(capacity);
-        return _pool? 0: -ENOMEM;
+        return _pool ? 0 : -ENOMEM;
 }
 
 static void

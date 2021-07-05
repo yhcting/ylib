@@ -77,9 +77,9 @@ task_runnable(struct ytask *tsk, void **result) {
 	int i;
 	struct targ *ta = ytask_get_arg(tsk);
 	ylogv("%s(%ld)[%d] run\n",
-	      ytask_get_name(tsk),
-	      ytask_get_id(tsk),
-	      ytask_get_priority(tsk));
+		ytask_get_name(tsk),
+		ytask_get_id(tsk),
+		ytask_get_priority(tsk));
 	for (i = 0; i < ta->sleep_cnt; i++) {
 		usleep(ta->sleep_interval * 1000);
 	}
@@ -134,15 +134,16 @@ tc0(struct ymsghandler *mh0,
 		strcpy(ta->s, "TC0");
 		ta->sleep_cnt = rand() % 10;
 		ta->sleep_interval = rand() % 10;
-		tsk = ytask_create3("TC0-0",
-				    mh0,
-				    rand() % YTHREADEX_NUM_PRIORITY,
-				    NULL,
-				    ta,
-				    &free_arg,
-				    NULL,
-				    &task_runnable,
-				    TRUE);
+		tsk = ytask_create3(
+			"TC0-0",
+			mh0,
+			rand() % YTHREADEX_NUM_PRIORITY,
+			NULL,
+			ta,
+			&free_arg,
+			NULL,
+			&task_runnable,
+			TRUE);
 		ytaskmanager_add_task(tm, tsk);
 		ptsks[ptski++] = tsk;
 	}
@@ -155,15 +156,16 @@ tc0(struct ymsghandler *mh0,
 		strcpy(ta->s, "TC0");
 		ta->sleep_cnt = rand() % 10;
 		ta->sleep_interval = rand() % 10;
-		tsk = ytask_create3("TC0-1",
-				    mh1,
-				    rand() % YTHREADEX_NUM_PRIORITY,
-				    NULL,
-				    ta,
-				    &free_arg,
-				    NULL,
-				    &task_runnable,
-				    TRUE);
+		tsk = ytask_create3(
+			"TC0-1",
+			mh1,
+			rand() % YTHREADEX_NUM_PRIORITY,
+			NULL,
+			ta,
+			&free_arg,
+			NULL,
+			&task_runnable,
+			TRUE);
 		ytaskmanager_add_task(tm, tsk);
 		ptsks[ptski++] = tsk;
 	}
@@ -195,8 +197,8 @@ test_taskmanager(void) {
 	ymsglooper_stop(ml0);
 	ymsglooper_stop(ml1);
 	while (YMSGLOOPER_TERMINATED != ymsglooper_get_state(ml0)
-	       || YMSGLOOPER_TERMINATED != ymsglooper_get_state(ml1))
-		usleep(10 * 1000);
+		|| YMSGLOOPER_TERMINATED != ymsglooper_get_state(ml1)
+	) { usleep(10 * 1000); }
 	ymsglooper_destroy(ml0);
 	ymsglooper_destroy(ml1);
 

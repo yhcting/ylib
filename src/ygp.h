@@ -37,7 +37,7 @@
 /**
  * @file ygp.h
  * @brief Header for general smart object pointer. gp module keep tracking
- *        reference count of object with MT-safe way(lock).
+ *	reference count of object with MT-safe way(lock).
  */
 
 #ifndef __YGp_h__
@@ -70,8 +70,8 @@ ygpinit(struct ygp *gp,
 
 /**
  * Put object. Reference counter is decreased.
- * If reference count is '0' and {@code ofree} is NOT NULL, object is freed by
- *  calling {@code ofree}.
+ * If reference count is '0' and @c ofree is NOT NULL, object is freed by
+ *  calling @c ofree.
  *
  * @return Reference count after put.
  */

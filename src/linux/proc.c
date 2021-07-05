@@ -56,16 +56,14 @@ int
 yproc_self_fd_path(int fd, char *buf, unsigned bufsz) {
 	int r;
 	char pathbuf[PATH_MAX];
-	if (unlikely(fd <= 0
-		     || !buf
-		     || !bufsz))
+	if (unlikely(fd <= 0 || !buf || !bufsz))
 		return -EINVAL;
 	r = snprintf(pathbuf, sizeof(pathbuf), "/proc/self/fd/%d", fd);
 	if (unlikely(r >= sizeof(pathbuf)))
 		return -EINVAL; // truncated!
 	if (0 > (r = readlink(pathbuf, buf, bufsz - 1)))
 		return -errno;
-	buf[r] = 0; // add trailing 0
+	buf[r] = 0; /* add trailing 0 */
 	return 0;
 }
 
@@ -76,14 +74,14 @@ yproc_pid_cmdline(int pid, char *buf, unsigned bufsz) {
 
 	if (unlikely(!buf || !bufsz))
 		return -EINVAL;
-	// Try to get program name by PID
+	/* Try to get program name by PID */
 	r = snprintf(buf, bufsz, "/proc/%d/cmdline", pid);
 	if (unlikely(r >= bufsz))
-		return -EINVAL; // truncated!
+		return -EINVAL; /* truncated! */
 	if (unlikely(0 > (fd = open(buf, O_RDONLY))))
 		return -errno;
 
-	// Read file contents into buffer
+	/* Read file contents into buffer */
 	if (unlikely(0 >= (r = read(fd, buf, bufsz - 1)))) {
 		r = errno;
 		close(fd);
@@ -101,43 +99,44 @@ yproc_pid_cmdline(int pid, char *buf, unsigned bufsz) {
 int
 yproc_pid_stat(struct yproc_pid_stat *stat, int pid) {
 	int r, fd;
-	char buf[4096]; // this is large enough
+	char buf[4096]; /* this is large enough */
 	if (unlikely(!stat))
 		return -EINVAL;
 	r = snprintf(buf, sizeof(buf), "/proc/%d/stat", pid);
 	if (unlikely(r >= sizeof(buf)))
-		return -EINVAL; // This is ABSOLUTELY UNEXPECTED!
+		return -EINVAL; /* This is UNEXPECTED! */
 	if (unlikely(0 > (fd = open(buf, O_RDONLY))))
 		return -errno;
 
-	// Read file contents into buffer
+	/* Read file contents into buffer */
 	if (unlikely(0 > (r = read(fd, buf, sizeof(buf) - 1)))) {
 		r = -errno;
 		goto close_fd;
 	}
-	buf[r] = 0; // trailing 0
+	buf[r] = 0; /* trailing 0 */
 
 	dpr("raw string:%s", buf);
-	r = sscanf(buf, "%d (%[^)]) %c %d %d %d",
-	       &stat->pid,
-	       stat->tcomm,
-	       &stat->state,
-	       &stat->ppid,
-	       &stat->pgid,
-	       &stat->sid);
+	r = sscanf(buf,
+		"%d (%[^)]) %c %d %d %d",
+		&stat->pid,
+		stat->tcomm,
+		&stat->state,
+		&stat->ppid,
+		&stat->pgid,
+		&stat->sid);
 	dpr("sscanf result: %d\n", r);
 	if (6 != r) {
-		// This is ABSOLUTELY UNEXPECTED! Kernel may be updated?
+		/* This is UNEXPECTED! Kernel may be updated? */
 		r = -EINVAL;
 		goto close_fd;
 	}
 	dpr("%d (%s) %c %d %d %d\n",
-	    stat->pid,
-	    stat->tcomm,
-	    stat->state,
-	    stat->ppid,
-	    stat->pgid,
-	    stat->sid);
+		stat->pid,
+		stat->tcomm,
+		stat->state,
+		stat->ppid,
+		stat->pgid,
+		stat->sid);
 
 	r = 0; // mark as success
 

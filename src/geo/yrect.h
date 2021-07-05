@@ -91,8 +91,7 @@ struct yrect {
  * @param b Bottom. 'open. value(excluded)
  */
 static YYINLINE void
-ygeor_set(struct yrect *or,
-	  int l, int t, int r, int b) {
+ygeor_set(struct yrect *or, int l, int t, int r, int b) {
 	YYassert(l <= r && t <= b);
 	or->l = l;
 	or->t = t;
@@ -109,7 +108,8 @@ ygeor_set(struct yrect *or,
  */
 static YYINLINE void
 ygeor_set2(struct yrect *r,
-	   const struct yband *xb, const struct yband *yb) {
+	const struct yband *xb, const struct yband *yb
+) {
 	r->xb = *xb;
 	r->yb = *yb;
 }
@@ -125,9 +125,7 @@ ygeor_set2(struct yrect *r,
  * @param y1 Y-value
  */
 YYEXPORT void
-ygeor_set3(struct yrect *r,
-	   int x0, int x1,
-	   int y0, int y1);
+ygeor_set3(struct yrect *r, int x0, int x1, int y0, int y1);
 
 
 /**
@@ -174,8 +172,7 @@ ygeor_eq(const struct yrect *r0, const struct yrect *r1) {
  * @return Boolean.
  */
 static YYINLINE bool
-ygeor_contain(const struct yrect *r,
-	      const struct ypoint *p) {
+ygeor_contain(const struct yrect *r, const struct ypoint *p) {
 	return r->l <= p->x
 		&& r->t <= p->y
 		&& r->r > p->x
@@ -189,7 +186,6 @@ ygeor_contain(const struct yrect *r,
  * @param r (Out) Intersection rect
  */
 YYEXPORT void
-ygeor_intersect(struct yrect *r,
-		const struct yrect *, const struct yrect *);
+ygeor_intersect(struct yrect *r, const struct yrect *, const struct yrect *);
 
 #endif /* __YRECt_h__ */

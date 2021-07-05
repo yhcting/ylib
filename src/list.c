@@ -85,8 +85,7 @@ remove_node(struct ylist *l, struct ylistl_link *lk, int free) {
  *
  ****************************************************************************/
 struct ylist *
-ylist_create(u32 max,
-	     void (*ifree)(void *)) {
+ylist_create(u32 max, void (*ifree)(void *)) {
 	struct ylist *l = (struct ylist *)ymalloc(sizeof(*l));
 	if (unlikely(!l))
 		return NULL;
@@ -102,11 +101,9 @@ ylist_create(u32 max,
 void
 ylist_destroy(struct ylist *l) {
 	struct ylist_node *n, *p;
-	ylistl_foreach_item_removal_safe(p,
-					 n,
-					 &l->head,
-					 struct ylist_node,
-					 lk) {
+	ylistl_foreach_item_removal_safe(
+		p, n, &l->head, struct ylist_node, lk
+	) {
 		ylist_free_item(l, p->item);
 		yfree(p);
 	}
@@ -120,12 +117,9 @@ ylist_destroy(struct ylist *l) {
 void
 ylist_reset(struct ylist *l) {
 	struct ylist_node *n, *p;
-	ylistl_foreach_item_removal_safe(p,
-					 n,
-					 &l->head,
-					 struct ylist_node,
-					 lk)
-		yfree(p);
+	ylistl_foreach_item_removal_safe(
+		p, n, &l->head, struct ylist_node, lk
+	) { yfree(p); }
 	l->sz = 0;
 }
 
@@ -142,8 +136,7 @@ ylist_has(const struct ylist *l, void *item) {
 int
 ylist_add_last(struct ylist *l, void *item) {
 	struct ylist_node *n;
-	if (unlikely(l->max
-		     && l->sz >= l->max))
+	if (unlikely(l->max && l->sz >= l->max))
 		return -EPERM;
 	n = node_create(item);
 	if (unlikely(!n))
@@ -156,8 +149,7 @@ ylist_add_last(struct ylist *l, void *item) {
 int
 ylist_add_first(struct ylist *l, void *item) {
 	struct ylist_node *n;
-	if (unlikely(l->max
-		     && l->sz >= l->max))
+	if (unlikely(l->max && l->sz >= l->max))
 		return -EPERM;
 	n = node_create(item);
 	if (unlikely(!n))
@@ -231,11 +223,11 @@ ylisti_create(struct ylist *l, int type) {
         case YLISTI_FORWARD:
 		itr->next = &inext_forward;
 		itr->lnext = l->head.next;
-		break;
+	break;
         case YLISTI_BACKWARD:
 		itr->next = &inext_backward;
 		itr->lnext = l->head.prev;
-		break;
+	break;
         default:
 		yfree(itr);
 		itr = NULL;

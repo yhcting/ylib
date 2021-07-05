@@ -60,8 +60,8 @@ test_msglooper(void) {
 	ymsglooper_stop(ml1);
 	yassert(!ymsglooper_get()); /* there is no message looper for this thread. */
 	while (!(ymsglooper_get_state(ml0) == YMSGLOOPER_TERMINATED
-		 && ymsglooper_get_state(ml1) == YMSGLOOPER_TERMINATED))
-		usleep(1000 * 50);
+		&& ymsglooper_get_state(ml1) == YMSGLOOPER_TERMINATED)
+	) { usleep(1000 * 50); }
 	ymsglooper_destroy(ml0);
 	ymsglooper_destroy(ml1);
 }

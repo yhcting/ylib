@@ -39,16 +39,19 @@
 
 #include "ylib.h"
 
-void ylib_register_module(const char *name,
-			  int (*init)(const struct ylib_config *),
-			  void (*exit)(void));
+void
+ylib_register_module(
+	const char *name,
+	int (*init)(const struct ylib_config *),
+	void (*exit)(void));
 
 /* Module requiring init/exit, SHOULD use this marco.
  */
-#define LIB_MODULE(name, init_, exit_)					\
-	static void __ylib_mod_register_##name(void) __attribute__ ((constructor)); \
-	static void __ylib_mod_register_##name(void) {			\
-		ylib_register_module(#name, &init_, &exit_);		\
+#define LIB_MODULE(name, init_, exit_)				\
+	static void __ylib_mod_register_##name(void) 		\
+		__attribute__ ((constructor)); 			\
+	static void __ylib_mod_register_##name(void) {		\
+		ylib_register_module(#name, &init_, &exit_);	\
 	}
 
 

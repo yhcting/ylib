@@ -53,12 +53,14 @@
 #define BAR_GRAPH_MAX_INTER_SPACE 5
 
 static int
-stats_double(double *omin, /* [out] */
-	     double *omax, /* [out] */
-	     double *mean, /* [out] */
-	     double *var,  /* [out] variance */
-	     const double *vs,
-	     u32 vsz) {
+stats_double(
+	double *omin, /* [out] */
+	double *omax, /* [out] */
+	double *mean, /* [out] */
+	double *var,  /* [out] variance */
+	const double *vs,
+	u32 vsz
+) {
 	const double *d, *de;
 	double r, min, max;
 	struct ysm_ivar iv;
@@ -71,8 +73,7 @@ stats_double(double *omin, /* [out] */
 		ysm_ivar_init(&iv);
 	for (d = vs; d < de; ++d) {
 		r = fpclassify(*d);
-		if (unlikely(r != FP_NORMAL
-			     && r != FP_ZERO))
+		if (unlikely(r != FP_NORMAL && r != FP_ZERO))
 			return -EINVAL;
 		if (unlikely(*d < min))
 			min = *d;
@@ -95,11 +96,13 @@ stats_double(double *omin, /* [out] */
 
 /* assmes that buffer is large enough */
 static void
-bargraph_prline(int fd,
-		char *buf,
-		u32 bufsz,
-		u32 sz,
-		double v) {
+bargraph_prline(
+	int fd,
+	char *buf,
+	u32 bufsz,
+	u32 sz,
+	double v
+) {
 	u32 i;
 	int r __unused;
 	char *p, *pe;
@@ -117,15 +120,17 @@ bargraph_prline(int fd,
 }
 
 int
-ystpr_bargraph(int fd,
-	       const double *vs,
-	       u32 vsz,
-	       u32 height,
-	       const u32 *idxs,
-	       const char * const *cmts,
-	       u32 isz,
-	       u32 isp,
-	       char barc) {
+ystpr_bargraph(
+	int fd,
+	const double *vs,
+	u32 vsz,
+	u32 height,
+	const u32 *idxs,
+	const char * const *cmts,
+	u32 isz,
+	u32 isp,
+	char barc
+) {
 	const double *d, *de;
 	char *p;
 	u32 i, j, n;
@@ -136,23 +141,23 @@ ystpr_bargraph(int fd,
 
 	assert(sizeof(ln) > BAR_GRAPH_MAX_VALUE_SZ);
 	if (unlikely(BAR_GRAPH_MIN_HEIGHT > height
-		     || isp > BAR_GRAPH_MAX_INTER_SPACE
-		     || vsz > BAR_GRAPH_MAX_VALUE_SZ
-		     || vsz * (isp + 1) + MAX_DOUBLE_STR_LEN > sizeof(ln)
-		     || fd < 0
-		     || !vs
-		     || !vsz))
-		return -EINVAL;
+		|| isp > BAR_GRAPH_MAX_INTER_SPACE
+		|| vsz > BAR_GRAPH_MAX_VALUE_SZ
+		|| vsz * (isp + 1) + MAX_DOUBLE_STR_LEN > sizeof(ln)
+		|| fd < 0
+		|| !vs
+		|| !vsz)
+	) { return -EINVAL; }
 
 	/* check buffer boundary */
 	n = 0; /* previous value */
 	for (i = 0; i < isz; i++) {
 		if (unlikely(idxs[i] >= vsz
-			     || n > idxs[i] /* array is well-sorted? */
-			     /* why + 3?. It is for \r \n \0. */
-			     || (idxs[i] * (isp + 1) + strlen(cmts[i]) + 3
-				 > sizeof(ln))))
-			return -EINVAL;
+			|| n > idxs[i] /* array is well-sorted? */
+			/* why + 3?. It is for \r \n \0. */
+			|| (idxs[i] * (isp + 1) + strlen(cmts[i]) + 3
+				> sizeof(ln)))
+		) { return -EINVAL; }
 		n = idxs[i];
 	}
 
@@ -170,11 +175,9 @@ ystpr_bargraph(int fd,
 		for (d = vs; d < de; ++d) {
 			iv = (int)((*d - min) * (double)height / (max - min));
 			if (iv >= i - 1
-			    || (i == height
-			        && iv >= height)
-			    || (i == 1
-			        && iv < 0))
-				*p++ = barc;
+				|| (i == height && iv >= height)
+				|| (i == 1 && iv < 0)
+			) { *p++ = barc; }
 			else
 				*p++ = ' ';
 			memset(p, ' ', isp);
@@ -221,13 +224,15 @@ ystpr_bargraph(int fd,
 }
 
 int
-ystpr_distgraph(int fd,
-		const double *vs,
-		u32 vsz,
-		u32 w,
-		u32 h,
-		u32 isp,
-		char barc) {
+ystpr_distgraph(
+	int fd,
+	const double *vs,
+	u32 vsz,
+	u32 w,
+	u32 h,
+	u32 isp,
+	char barc
+) {
 	/*
 	 * Comment text will be something like
 	 *   "-2s", "-s", "-3s", "u", "s", "2s" ...
@@ -260,8 +265,8 @@ ystpr_distgraph(int fd,
 	if (min >= max) {
 		/* ignore IO error. '- 1' to remove trailing 0 */
 		r = write(fd,
-			  _PRSTR_ALL_SAME_VALUES,
-			  sizeof(_PRSTR_ALL_SAME_VALUES) - 1);
+			_PRSTR_ALL_SAME_VALUES,
+			sizeof(_PRSTR_ALL_SAME_VALUES) - 1);
 		return 0;
 	}
 
@@ -331,15 +336,16 @@ ystpr_distgraph(int fd,
 	idxs[j] = w - 1;
 	snprintf(cmts[j++], _MAX_CMT_LEN, "%f", max);
 
-	r = ystpr_bargraph(fd,
-			   dist,
-			   w,
-			   h,
-			   idxs,
-			   (const char * const *)cmts,
-			   nrcmt,
-			   isp,
-			   barc);
+	r = ystpr_bargraph(
+		fd,
+		dist,
+		w,
+		h,
+		idxs,
+		(const char * const *)cmts,
+		nrcmt,
+		isp,
+		barc);
 
 	yfree(idxs);
 	yfree(dist);

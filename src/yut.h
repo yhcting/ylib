@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2015, 2016
+ * Copyright (C) 2015, 2016, 2021
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -50,71 +50,71 @@
  *
  *****************************************************************************/
 /**
- * Get {@code bitsz} bits at {@code offset} from LSB.
- * Ex. 0xc == %yut_bits(0xfcda, 8, 4)
+ * Get @p bitsz bits at @p offset from LSB.
+ * Ex. `0xc == %yut_bits(0xfcda, 8, 4)`
  *
  * @param x Value
  * @param offset Offset from LSB
  * @param bitsz Size of bits to get.
  */
-#define yut_bits(x, offset, bitsz)			\
+#define yut_bits(x, offset, bitsz) \
 	(((x) >> (offset)) & ((1LL << (bitsz)) - 1))
 
 /**
- * Get one bit at {@code offset} from LSB.
- * See {@link yut_bits}.
+ * Get one bit at @p offset from LSB.
+ * @see yut_bits.
  *
  * @param x Value
  * @param offset Offset from LSB.
  */
-#define yut_bit(x, offset)			\
+#define yut_bit(x, offset) \
 	yut_bits(x, offset, 1)
 
 /**
- * Clear {@code bitsz} bits at {@code offset} from LSB.
- * See {@link yut_bits}.
+ * Clear @p bitsz bits at @p offset from LSB.
+ * @see yut_bits.
  */
-#define yut_clear_bits(x, offset, bitsz)		\
+#define yut_clear_bits(x, offset, bitsz) \
 	((x) & ~(((1LL << (bitsz)) - 1) << (offset)))
 
 /**
- * Replace {@code bitsz} bits at {@code offset} with {@code bitsz} bits at 0 of
- *   x.
+ * Replace @p bitsz bits from @p offset at @p x with @p bitsz bits from
+ * @p offset at @p v.
  *
  * @param x Value
  * @param offset Offset from LSB
- * @param bitsz Size of bits to get
+ * @param bitsz Size of bits to set
  * @param v New value to be replaced with
  */
-#define yut_set_bits(x, offset, bitsz, v)			\
-	(yut_clear_bits(x, offset, bitsz)			\
-	 | ((((1LL << (bitsz)) - 1) & (v)) << (offset)))
+#define yut_set_bits(x, offset, bitsz, v) 	\
+	(yut_clear_bits(x, offset, bitsz)	\
+		| ((((1LL << (bitsz)) - 1) & (v)) << (offset)))
 
 /**
- * Test whether bit at {@code bit} is set.
+ * Test whether bit at @p bit is set.
  *
  * @param x Value
- * @param bit offset from LSB.
+ * @param bit Offset from LSB.
  */
-#define yut_test_bit(x, bit)			\
+#define yut_test_bit(x, bit) \
 	(((x) >> (bit)) & 1LL)
 
 /**
- * Set bit at offset {@code bit}
+ * Set bit at offset @p bit
  *
  * @param x Value
- * @param bit offset from LSB.
+ * @param bit Offset from LSB.
  */
-#define yut_set_bit(x, bit)			\
+#define yut_set_bit(x, bit) \
 	((x) | (1LL << (bit)))
 
 /**
- * Clear bit at offset {@code bit}
+ * Clear bit at offset @p bit
  *
  * @param x Value
- * @param bit offset from LSB.
+ * @param bit Offset from LSB.
  */
-#define yut_clear_bit(x, bit)			\
+#define yut_clear_bit(x, bit) \
 	((x) & ~(1LL << (bit)))
 
 
@@ -127,10 +127,10 @@
 /**
  * Compare two data.
  *
- * @param small (Out) Smaller value between {@code d0} and {@code d1}
- * @param big (Out) Bigger value between {@code d0} and {@code d1}
- * @param d0 (In)
- * @param d1 (In)
+ * @param[out] small Smaller value between @p d0 and @p d1
+ * @param[out] big Bigger value between @p d0 and @p d1
+ * @param d0
+ * @param d1
  * @param suffix Suffix of data.
  */
 #define yut_cmpst(small, big, d0, d1, suffix)		\
@@ -144,14 +144,15 @@
 		}					\
 	} while (0)
 
+
 /**
- * Compare two data.
+ * Compare two data - another version.
  *
- * @param d0small (Out) (bool) small == d0
- * @param small (Out) Smaller value between {@code d0} and {@code d1}
- * @param big (Out) Bigger value between {@code d0} and {@code d1}
- * @param d0 (In)
- * @param d1 (In)
+ * @param[out] d0small (bool) @p small == @p d0
+ * @param[out] small Smaller value between @p d0 and @p d1
+ * @param[out] big Bigger value between @p d0 and @p d1
+ * @param d0
+ * @param d1
  * @param suffix Suffix of data.
  */
 #define yut_cmpst2(d0small, small, big, d0, d1, suffix)		\
@@ -217,17 +218,17 @@
  *
  * @param x Value
  */
-#define yut_abs(x)				\
+#define yut_abs(x) \
 	(((x)>0)?(x):-(x))
 
 /**
  * Swap two values
  *
- * @param x Value
- * @param y Value
- * @param tmp Temporal value.
+ * @param[in,out] x Value
+ * @param[in,out] y Value
+ * @param[in,out] tmp Temporal value.
  */
-#define yut_swap(x,y,tmp)				\
+#define yut_swap(x,y,tmp) \
 	do { (tmp)=(x);(x)=(y);(y)=(tmp); } while (0)
 
 /**
@@ -236,7 +237,7 @@
  * @param x Value
  * @param y Value
  */
-#define yut_min(x,y)				\
+#define yut_min(x,y) \
 	(((x)<(y))?x:y)
 
 /**
@@ -245,7 +246,7 @@
  * @param x Value
  * @param y Value
  */
-#define yut_max(x,y)				\
+#define yut_max(x,y) \
 	(((x)<(y))?y:x)
 
 /**
@@ -253,13 +254,13 @@
  *
  * @param a Array
  */
-#define yut_arrsz(a)				\
+#define yut_arrsz(a) \
 	((int)(sizeof(a)/sizeof((a)[0])))
 
 /**
- * Check {@code str} stars with {@code substr}.
+ * Check @p str stars with @p substr.
  * This is inspired from String.startsWith of Java.
- * If {@code str} or {@code substr} are NULL, FALSE is returned.
+ * If @p str or @p substr are NULL, FALSE is returned.
  *
  * @return TRUE or FALSE
  */
@@ -268,7 +269,7 @@ yut_starts_with(const char *str, const char *substr);
 
 
 /**
- * Get current time in milliseconds. CLOCK_MONOTONIC is used.
+ * Get current time in milliseconds. @c CLOCK_MONOTONIC is used.
  */
 YYEXPORT uint64_t
 yut_current_time_millis(void);

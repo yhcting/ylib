@@ -44,7 +44,7 @@
 
 #include "ydef.h"
 
-/** Predefined function ID. 'free()' function for malloc() */
+/** Predefined function ID. 'free()' function for 'malloc()' */
 #define YLRU_PREDEFINED_FREE ((void (*)(void *))1)
 
 /** lru object */
@@ -54,52 +54,55 @@ struct ylru;
  * Create lru cache that uses integer value as key.
  *
  * @param maxsz Maximum size that cache can keep (NOT bytes).
- *              '0' means infinite (as many as possible)
+ *	'0' means infinite (as many as possible)
  * @param datafree Function to free user data evicted from cache
- *                 'NULL' means 'DO NOT free'.
+ *	'NULL' means 'DO NOT free'.
  * @param datacreate Function to create data if cache misses.
- *                   'NULL' means 'DO NOT create'.
+ *	'NULL' means 'DO NOT create'.
  * @param datasize Function to calculate data size.
- *                 This is to compare with 'maxsz' of cache.
- *                 'NULL' means fixed value (1).
+ *	This is to compare with 'maxsz' of cache.
+ *	'NULL' means fixed value (1).
  * @return NULL for fails (ex. there is NULL in arguments)
  */
 YYEXPORT struct ylru *
-ylrui_create(uint32_t maxsz,
-	     void (*datafree)(void *),
-	     void *(*datacreate)(const void *key),
-	     uint32_t (*datasize)(const void *));
+ylrui_create(
+	uint32_t maxsz,
+	void (*datafree)(void *),
+	void *(*datacreate)(const void *key),
+	uint32_t (*datasize)(const void *));
 
 
 /**
  * Create lru cache that uses string value as key.
- * See {@link ylrui_create}
+ * @see ylrui_create
  */
 YYEXPORT struct ylru *
-ylrus_create(uint32_t maxsz,
-	     void (*datafree)(void *),
-	     void *(*datacreate)(const void *key),
-	     uint32_t (*datasize)(const void *));
+ylrus_create(
+	uint32_t maxsz,
+	void (*datafree)(void *),
+	void *(*datacreate)(const void *key),
+	uint32_t (*datasize)(const void *));
 
 /**
  * Create lru cache that uses string value as key.
- * See {@link ylrui_create} and {@link yhasho_create} in {@link yhash.h}
+ * See @ref ylrui_create and @ref yhasho_create in {@link yhash.h}
  */
 YYEXPORT struct ylru *
-ylruo_create(uint32_t maxsz,
-	     /* functions to handle cache data */
-	     void (*datafree)(void *),
-	     void *(*datacreate)(const void *key),
-	     uint32_t  (*datasize)(const void *),
-	     /* functions to handle key object */
-	     void (*keyfree)(void *),
-	     int (*keycopy)(void **newkey, const void *),
-	     int (*keycmp)(const void *, const void *),
-	     uint32_t (*hfunc)(const void *key));
+ylruo_create(
+	uint32_t maxsz,
+	/* functions to handle cache data */
+	void (*datafree)(void *),
+	void *(*datacreate)(const void *key),
+	uint32_t  (*datasize)(const void *),
+	/* functions to handle key object */
+	void (*keyfree)(void *),
+	int (*keycopy)(void **newkey, const void *),
+	int (*keycmp)(const void *, const void *),
+	uint32_t (*hfunc)(const void *key));
 
 /**
  * Create empty lru cache that has same attributes with given one.
- * See {@link yhash_create} in {@link yhash.h} for details.
+ * @see yhash_create
  *
  * @return NULL if fails
  */
@@ -125,7 +128,7 @@ ylru_destroy(struct ylru *);
  *
  * @param key Key
  * @param data Data
- * @return 0 for success. Otherwise -errno.
+ * @return 0 for success. Otherwise @c -errno.
  */
 YYEXPORT int
 ylru_put(struct ylru *, const void *key, void *data);
@@ -137,19 +140,19 @@ ylru_put(struct ylru *, const void *key, void *data);
  *
  * @param data 'NULL' is NOT allowed.
  * @param key Key value of data to get.
- * @return - 0 for getting data(existing one, or newly created one)
- *         - 1 cache missed and not newly created.
- *         - <0 error (-errno)
+ * @return
+ *	- 0 for getting data(existing one, or newly created one)
+ *	- 1 cache missed and not newly created.
+ *	- <0 error (@c -errno)
  */
 YYEXPORT int
 ylru_get(struct ylru *, void **data, const void *key);
 
 /**
  * Get size of cached data.
- * This is based on {@code datasize} function passed when cache object is
- *   created.
- * See {@code datasize} at {@link ylrui_create}, {@link ylrus_create} and
- * {@link ylruo_create}
+ * This is based on @c datasize function passed when cache object is created.
+ * See @c datasize at @ref ylrui_create, @ref ylrus_create and
+ * @ref ylruo_create
  *
  * @return data size of the cache.
  */

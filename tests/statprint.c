@@ -56,50 +56,24 @@ test_bargraph(void) {
 	char buf[16384];
 	char *p;
 	const char *tmpf = "____temp__";
-	double v0[]
-		= { };
-	double v1[]
-		= {-1, -3 };
-	double v2[]
-		= {1.0f, 2.5f, 0.0f, 5.0f, -1.0f, 9.0f, 0.0f };
-	u32 ix0[]
-		= {};
-	u32 ix1[]
-		= {0};
-	u32 ix2[]
-		= {0, 1, 1000};
-	u32 ix3[]
-		= {0, 2, 4};
-	u32 ix4[]
-		= {0, 0, 2, 4, 4};
-	u32 ix5[]
-		= {0, 0, 0, 2, 4, 4};
-	const char *is[]
-		= {"is0", "is1", "is2", "is3", "is4", "is5" };
+	double v0[] = { };
+	double v1[] = {-1, -3 };
+	double v2[] = {1.0f, 2.5f, 0.0f, 5.0f, -1.0f, 9.0f, 0.0f };
+	u32 ix0[] = {};
+	u32 ix1[] = {0};
+	u32 ix2[] = {0, 1, 1000};
+	u32 ix3[] = {0, 2, 4};
+	u32 ix4[] = {0, 0, 2, 4, 4};
+	u32 ix5[] = {0, 0, 0, 2, 4, 4};
+	const char *is[] = {"is0", "is1", "is2", "is3", "is4", "is5" };
 
 	fd = open(tmpf, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-	r = ystpr_bargraph(fd,
-			   v0,
-			   0,
-			   10,
-			   NULL,
-			   NULL,
-			   0,
-			   0,
-			   '*');
+	r = ystpr_bargraph(fd, v0, 0, 10, NULL, NULL, 0, 0, '*');
 	close(fd);
 	yassert(r);
 
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
-	r = ystpr_bargraph(fd,
-			   v1,
-			   yut_arrsz(v1),
-			   10,
-			   NULL,
-			   NULL,
-			   0,
-			   1,
-			   '*');
+	r = ystpr_bargraph(fd, v1, yut_arrsz(v1), 10, NULL, NULL, 0, 1, '*');
 	close(fd);
 	yassert(!r);
 	expected_result =
@@ -125,28 +99,14 @@ test_bargraph(void) {
 
 
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
-	r = ystpr_bargraph(fd,
-			   v2,
-			   yut_arrsz(v2),
-			   20,
-			   ix2,
-			   is,
-			   yut_arrsz(ix2),
-			   1,
-			   '*');
+	r = ystpr_bargraph(
+		fd, v2, yut_arrsz(v2), 20, ix2, is, yut_arrsz(ix2), 1, '*');
 	close(fd);
 	yassert(r);
 
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
-	r = ystpr_bargraph(fd,
-			   v2,
-			   yut_arrsz(v2),
-			   20,
-			   ix0,
-			   is,
-			   yut_arrsz(ix0),
-			   1,
-			   '*');
+	r = ystpr_bargraph(
+		fd, v2, yut_arrsz(v2), 20, ix0, is, yut_arrsz(ix0), 1, '*');
 	close(fd);
 	yassert(!r);
 	expected_result =
@@ -181,15 +141,8 @@ test_bargraph(void) {
 	yassert(!strcmp(expected_result, buf));
 
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
-	r = ystpr_bargraph(fd,
-			   v2,
-			   yut_arrsz(v2),
-			   20,
-			   ix1,
-			   is,
-			   yut_arrsz(ix1),
-			   1,
-			   '*');
+	r = ystpr_bargraph(
+		fd, v2, yut_arrsz(v2), 20, ix1, is, yut_arrsz(ix1), 1, '*');
 	close(fd);
 	yassert(!r);
 	expected_result =
@@ -236,15 +189,8 @@ test_bargraph(void) {
 
 
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
-	r = ystpr_bargraph(fd,
-			   v2,
-			   yut_arrsz(v2),
-			   20,
-			   ix3,
-			   is,
-			   yut_arrsz(ix3),
-			   1,
-			   '*');
+	r = ystpr_bargraph(
+		fd, v2, yut_arrsz(v2), 20, ix3, is, yut_arrsz(ix3), 1, '*');
 	close(fd);
 	yassert(!r);
 	expected_result =
@@ -283,15 +229,8 @@ test_bargraph(void) {
 
 
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
-	r = ystpr_bargraph(fd,
-			   v2,
-			   yut_arrsz(v2),
-			   20,
-			   ix4,
-			   is,
-			   yut_arrsz(ix4),
-			   1,
-			   '*');
+	r = ystpr_bargraph(
+		fd, v2, yut_arrsz(v2), 20, ix4, is, yut_arrsz(ix4), 1, '*');
 	close(fd);
 	yassert(!r);
 	expected_result =
@@ -330,15 +269,8 @@ test_bargraph(void) {
 
 
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
-	r = ystpr_bargraph(fd,
-			   v2,
-			   yut_arrsz(v2),
-			   20,
-			   ix5,
-			   is,
-			   yut_arrsz(ix5),
-			   1,
-			   '*');
+	r = ystpr_bargraph(
+		fd, v2, yut_arrsz(v2), 20, ix5, is, yut_arrsz(ix5), 1, '*');
 	close(fd);
 	yassert(!r);
 	expected_result =
@@ -391,16 +323,10 @@ test_distgraph(void) {
 	double v2[] = {1.0f, 2.0f, 1.0f, 1.0f};
 	double v3[] = {
 		1.0f, 2.5f, 0.0f, 5.0f, -1.0f, 9.0f, 0.0f, 1.5f, 2.0f,
-		2.3f, 1.2f, 1.4f, 1.9f, 2.7f};
+		2.3f, 1.2f, 1.4f, 1.9f, 2.7f };
 
 	fd = open(tmpf, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-	r = ystpr_distgraph(fd,
-			    v0,
-			    yut_arrsz(v0),
-			    20,
-			    15,
-			    1,
-			    '*');
+	r = ystpr_distgraph(fd, v0, yut_arrsz(v0), 20, 15, 1, '*');
 	close(fd);
 	yassert(!r);
 	expected_result = "All values are same.\n";
@@ -414,13 +340,7 @@ test_distgraph(void) {
 
 
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
-	r = ystpr_distgraph(fd,
-			    v1,
-			    yut_arrsz(v1),
-			    20,
-			    15,
-			    1,
-			    '*');
+	r = ystpr_distgraph(fd, v1, yut_arrsz(v1), 20, 15, 1, '*');
 	close(fd);
 	yassert(!r);
 	expected_result = "All values are same.\n";
@@ -434,13 +354,7 @@ test_distgraph(void) {
 
 
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
-	r = ystpr_distgraph(fd,
-			    v2,
-			    yut_arrsz(v2),
-			    20,
-			    15,
-			    1,
-			    '*');
+	r = ystpr_distgraph(fd, v2, yut_arrsz(v2), 20, 15, 1, '*');
 	close(fd);
 	yassert(!r);
 	expected_result =
@@ -474,13 +388,7 @@ test_distgraph(void) {
 
 
 	fd = open(tmpf, O_WRONLY | O_TRUNC);
-	ystpr_distgraph(fd,
-			v3,
-			yut_arrsz(v3),
-			20,
-			15,
-			1,
-			'*');
+	ystpr_distgraph(fd, v3,	yut_arrsz(v3), 20, 15, 1, '*');
 	close(fd);
 	yassert(!r);
 	expected_result =

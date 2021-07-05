@@ -250,7 +250,6 @@ static void
 tc3(struct ymsghandler *mh) {
 	struct ythreadex *yt;
 	struct targ *ta;
-	struct tres *tr;
 	void *retval;
 	/* Normal successful thread */
 	ta = ymalloc(sizeof(*ta));
@@ -268,13 +267,10 @@ tc3(struct ymsghandler *mh) {
 		&free_arg,
 		&free_result,
 		&thread_run);
-	yassert(ythreadex_destroy(yt));
 	yassert(!ythreadex_start(yt));
 	yassert(!ythreadex_cancel(yt, FALSE));
 	ythreadex_join(yt, &retval);
 	yassert(YTHREADEX_TERMINATED_CANCELLED == ythreadex_get_state(yt));
-	tr = ythreadex_get_result(yt);
-	yassert(!tr);
 	yassert(!ythreadex_destroy(yt));
 
 }

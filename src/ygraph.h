@@ -110,8 +110,8 @@ struct ygraph {
  * @param e (struct @ref yedge *) variable used as iteration cursor
  * @param etmp (struct @ref yedge *) used as temporary storage.
  */
-#define ygraph_foreach_oedge_removal_safe(v, e, etmp) \
-	ylistl_foreach_item_removal_safe(e, etmp, &(v)->oe, struct yedge, olk)
+#define ygraph_foreach_oedge_safe(v, e, etmp) \
+	ylistl_foreach_item_safe(e, etmp, &(v)->oe, struct yedge, olk)
 
 /**
  * Iterates incoming edges of vertex @p v.
@@ -129,8 +129,8 @@ struct ygraph {
  * @param e (struct @ref yedge *) variable used as iteration cursor
  * @param etmp (struct @ref yedge *) used as temporary storage.
  */
-#define ygraph_foreach_iedge_removal_safe(v, e, etmp) \
-	ylistl_foreach_item_removal_safe(e, etmp, &(v)->ie, struct yedge, ilk)
+#define ygraph_foreach_iedge_safe(v, e, etmp) \
+	ylistl_foreach_item_safe(e, etmp, &(v)->ie, struct yedge, ilk)
 
 
 /**
@@ -149,45 +149,32 @@ struct ygraph {
  * @param v (struct @ref yvertex *) variable used as iteration cursor
  * @param vtmp (struct @ref yvertex *) used as temporary storage.
  */
-#define ygraph_foreach_vertex_removal_safe(g, v, vtmp) \
-	ylistl_foreach_item_removal_safe(v, vtmp, &(g)->vl, struct yvertex, lk)
+#define ygraph_foreach_vertex_safe(g, v, vtmp) \
+	ylistl_foreach_item_safe(v, vtmp, &(g)->vl, struct yvertex, lk)
 
 
 /**
- * Iterates vertices in graph @p g, with removal-safe.
- * @ref ygraph_foreach_edge_end should be followed at the end of iteration
- * body.
+ * Iterates edges in graph @p g, with removal-safe.
  *
  * @param g (struct @ref ygraph *) graph.
  * @param v (struct @ref yvertex *) variable used as iteration cursor
  * @param e (struct @ref yedge *) variable used as iteration cursor
   */
-#define ygraph_foreach_edge_begin(g, v, e)	\
-	ygraph_foreach_vertex(g, v) {		\
+#define ygraph_foreach_edge(g, v, e)	\
+	ygraph_foreach_vertex(g, v)	\
 		ygraph_foreach_oedge(v, e)
 
 /**
- * Closing @ref ygraph_foreach_edge_begin iteration body.
- */
-#define ygraph_foreach_edge_end() }
-
-/**
- * Iterates vertices in graph @p g, with removal-safe.
- * See @ref ygraph_foreach_edge_begin.
+ * Iterates edges in graph @p g, with removal-safe.
  *
  * @param g (struct @ref ygraph *) graph.
  * @param v (struct @ref yvertex *) variable used as iteration cursor
  * @param e (struct @ref yedge *) variable used as iteration cursor
  * @param etmp (struct @ref yedge *) used as temporary storage.
  */
-#define ygraph_foreach_edge_removal_safe_begin(g, v, e, etmp)	\
-	ygraph_foreach_vertex(g, v) {				\
-		ygraph_foreach_oedge_removal_safe(v, e, etmp)
-
-/**
- * See @ref ygraph_foreach_edge_end.
- */
-#define ygraph_foreach_edge_removal_safe_end() }
+#define ygraph_foreach_edge_safe(g, v, e, etmp)	\
+	ygraph_foreach_vertex(g, v)		\
+		ygraph_foreach_oedge_safe(v, e, etmp)
 
 
 /******************************************************************************
@@ -374,7 +361,7 @@ ygraph_init(struct ygraph *g) {
 static YYINLINE void
 ygraph_clean(struct ygraph *g) {
 	struct yvertex *v, *vtmp;
-	ygraph_foreach_vertex_removal_safe(g, v, vtmp) {
+	ygraph_foreach_vertex_safe(g, v, vtmp) {
 		ygraph_remove_vertex(g, v);
 	}
 }

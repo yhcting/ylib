@@ -120,9 +120,7 @@ static const u16 _crc16_table[256] = {
 
 
 u16
-ycrc16(register u16 crc,
-       register const u8 *data,
-       u32 len) {
+ycrc16(register u16 crc, register const u8 *data, u32 len) {
 	if (unlikely(!len || !data)) {
 		yassert(0);
 		return crc;
@@ -223,9 +221,7 @@ static const u32 _crc32_table[256] = {
  * crc using table.
  */
 u32
-ycrc32(register u32 crc,
-       register const u8 *data,
-       u32 len) {
+ycrc32(register u32 crc, register const u8 *data, u32 len) {
 	if (unlikely(!len || !data)) {
 		yassert(0);
 		return crc;

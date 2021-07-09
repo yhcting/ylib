@@ -351,7 +351,7 @@ task_clean(struct ytask *tsk) {
 	if (unlikely(r = threadex_clean(&tsk->t)))
 		return r;
 	/* clean up listeners */
-	ylistl_foreach_item_removal_safe(
+	ylistl_foreach_item_safe(
 		pos,
 		n,
 		&tsk->elhhd,

@@ -246,7 +246,7 @@ hmodify(struct yhash *h, u32 bits) {
 		ylistl_init_link(&h->map[i]);
 	/* re assign hash nodes */
 	for (i = 0; i < oldmapsz; i++) {
-		ylistl_foreach_item_removal_safe(
+		ylistl_foreach_item_safe(
 			n, tmp, &oldmap[i], struct hn, lk
 		) {
 			ylistl_remove(&n->lk);
@@ -306,7 +306,7 @@ hdestroy_nodes(struct yhash *h) {
 	u32 i;
 	struct hn *n, *tmp;
 	for (i = 0; i < hmapsz(h); i++) {
-		ylistl_foreach_item_removal_safe(
+		ylistl_foreach_item_safe(
 			n, tmp, &h->map[i], struct hn, lk
 		) {
 			ylistl_remove(&n->lk);

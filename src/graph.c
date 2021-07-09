@@ -86,12 +86,12 @@ ygraph_remove_vertex(struct ygraph *g __unused, struct yvertex *v) {
 	yassert(v);
 
 	/* removing connecting edges */
-	ygraph_foreach_oedge_removal_safe(v, e, etmp) {
+	ygraph_foreach_oedge_safe(v, e, etmp) {
 		edge_remove(e);
 		edge_destroy(e);
 	}
 
-	ygraph_foreach_iedge_removal_safe(v, e, etmp) {
+	ygraph_foreach_iedge_safe(v, e, etmp) {
 		edge_remove(e);
 		edge_destroy(e);
 	}

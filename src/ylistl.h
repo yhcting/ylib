@@ -232,102 +232,104 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
 /**
  * Iterates link-node of the list.
  *
- * @param pos (struct @ref ylistl_link *) Iteration cursor
+ * @param cur (struct @ref ylistl_link *) Iteration cursor
  * @param head (struct @ref ylistl_link *) Head of list
  */
-#define ylistl_foreach(pos, head) \
-        for ((pos) = (head)->next; (pos) != (head); (pos) = (pos)->next)
+#define ylistl_foreach(cur, head) \
+        for ((cur) = (head)->next; (cur) != (head); (cur) = (cur)->next)
 
 /**
  * Same with @ref ylistl_foreach. But direction is opposite.
  *
- * @param pos See @ref ylistl_foreach
+ * @param cur See @ref ylistl_foreach
  * @param head See @ref ylistl_foreach
  */
-#define ylistl_foreach_backward(pos, head) \
-        for ((pos) = (head)->prev; (pos) != (head); (pos) = (pos)->prev)
+#define ylistl_foreach_reverse(cur, head) \
+        for ((cur) = (head)->prev; (cur) != (head); (cur) = (cur)->prev)
 
 /**
- * Same with @ref ylistl_foreach. And it is safe from remove operation.
+ * Same with @ref ylistl_foreach. And it is safe from removal.
  *
- * @param pos See @ref ylistl_foreach
- * @param n (struct @ref ylistl_link *) Temporary storage
+ * @param cur See @ref ylistl_foreach
+ * @param tmp (struct @ref ylistl_link *) Temporary storage
  * @param head See @ref ylistl_foreach
  */
-#define ylistl_foreach_removal_safe(pos, n, head)	\
-        for ((pos) = (head), (n) = (pos)->next;		\
-	     (pos) != (head);				\
-	     (pos) = (n), (n) = (pos)->next)
+#define ylistl_foreach_safe(cur, tmp, head)		\
+        for ((cur) = (head), (tmp) = (cur)->next;	\
+	     (cur) != (head);				\
+	     (cur) = (tmp), (tmp) = (cur)->next)
 
 /**
- * Same with @ref ylistl_foreach_removal_safe. But direction is opposite.
+ * Same with @ref ylistl_foreach_safe. But direction is opposite.
  *
- * @param pos See @ref ylistl_foreach_removal_safe
- * @param n See @ref ylistl_foreach_removal_safe
- * @param head See See @ref ylistl_foreach_removal_safe
+ * @param cur See @ref ylistl_foreach_safe
+ * @param tmp See @ref ylistl_foreach_safe
+ * @param head See See @ref ylistl_foreach_safe
  */
-#define ylistl_foreach_removal_safe_backward(pos, n, head)	\
-        for ((pos) = (head), (n) = (pos)->prev;			\
-	     (pos) != (head);					\
-	     (pos) = (n), (n) = (pos)->prev)
+#define ylistl_foreach_safe_reverse(cur, tmp, head)	\
+        for ((cur) = (head), (tmp) = (cur)->prev;	\
+	     (cur) != (head);				\
+	     (cur) = (tmp), (tmp) = (cur)->prev)
 
 /**
  * Iterates item of the list.
  *
- * @param pos (@p type *) iteration cursor
+ * @param cur (@p type *) iteration cursor
  * @param head (struct @ref ylistl_link *) the head for list
- * @param type Type of list item iterated by @p pos.
+ * @param type Type of list item iterated by @p cur.
  * @param member Name of the @ref ylistl_link within item-struct
  */
-#define ylistl_foreach_item(pos, head, type, member)			\
-        for ((pos) = YYcontainerof((head)->next, type, member);		\
-		&(pos)->member != (head);				\
-		(pos) = YYcontainerof((pos)->member.next, type, member))
+#define ylistl_foreach_item(cur, head, type, member)			\
+        for ((cur) = YYcontainerof((head)->next, type, member);		\
+		&(cur)->member != (head);				\
+		(cur) = YYcontainerof((cur)->member.next, type, member))
 
 /**
  * Same with @ref ylistl_foreach_item. But direction is opposite.
  *
- * @param pos See @ref ylistl_foreach_item
+ * @param cur See @ref ylistl_foreach_item
  * @param head See @ref ylistl_foreach_item
  * @param type See @ref ylistl_foreach_item
  * @param member See @ref ylistl_foreach_item
  */
-#define ylistl_foreach_item_backward(pos, head, type, member)		\
-        for ((pos) = YYcontainerof((head)->prev, type, member);		\
-		&(pos)->member != (head);				\
-		(pos) = YYcontainerof((pos)->member.prev, type, member))
+#define ylistl_foreach_item_reverse(cur, head, type, member)		\
+        for ((cur) = YYcontainerof((head)->prev, type, member);		\
+		&(cur)->member != (head);				\
+		(cur) = YYcontainerof((cur)->member.prev, type, member))
 
 /**
  * Same with @ref ylistl_foreach_item. And it is safe from remove operation.
  *
- * @param pos See @ref ylistl_foreach_item
- * @param n (@p type *) Temporary storage
+ * @param cur See @ref ylistl_foreach_item
+ * @param tmp (@p type *) Temporary storage
  * @param head See @ref ylistl_foreach_item
  * @param type See @ref ylistl_foreach_item
  * @param member See @ref ylistl_foreach_item
  */
-#define ylistl_foreach_item_removal_safe(pos, n, head, type, member)    \
-        for ((pos) = YYcontainerof((head)->next, type, member),		\
-			(n) = YYcontainerof((pos)->member.next, type, member); \
-		&(pos)->member != (head);				\
-		(pos) = (n),						\
-			(n) = YYcontainerof((pos)->member.next, type, member))
+#define ylistl_foreach_item_safe(cur, tmp, head, type, member)    	\
+        for ((cur) = YYcontainerof((head)->next, type, member),		\
+			(tmp) = YYcontainerof((cur)->member.next,	\
+				type, member); 				\
+		&(cur)->member != (head);				\
+		(cur) = (tmp),						\
+			(tmp) = YYcontainerof((cur)->member.next, type, member))
 
 /**
- * See @ref ylistl_foreach_item_removal_safe. But direction is opposite.
+ * See @ref ylistl_foreach_item_safe. But direction is opposite.
  *
- * @param pos See @ref ylistl_foreach_item_removal_safe
- * @param n See @ref ylistl_foreach_item_removal_safe
- * @param head See @ref ylistl_foreach_item_removal_safe
- * @param type See @ref ylistl_foreach_item_removal_safe
- * @param member See @ref ylistl_foreach_item_removal_safe
+ * @param cur See @ref ylistl_foreach_item_safe
+ * @param tmp See @ref ylistl_foreach_item_safe
+ * @param head See @ref ylistl_foreach_item_safe
+ * @param type See @ref ylistl_foreach_item_safe
+ * @param member See @ref ylistl_foreach_item_safe
  */
-#define ylistl_foreach_item_removal_safe_backward(pos, n, head, type, member) \
-        for ((pos) = YYcontainerof((head)->prev, type, member),		\
-			(n) = YYcontainerof((pos)->member.prev, type, member); \
-		&(pos)->member != (head);				\
-		(pos) = (n),						\
-			(n) = YYcontainerof((pos)->member.prev, type, member))
+#define ylistl_foreach_item_safe_reverse(cur, tmp, head, type, member)	\
+        for ((cur) = YYcontainerof((head)->prev, type, member),		\
+			(tmp) = YYcontainerof((cur)->member.prev,	\
+				type, member); 				\
+		&(cur)->member != (head);				\
+		(cur) = (tmp),						\
+			(tmp) = YYcontainerof((cur)->member.prev, type, member))
 
 /****************************************************************************
  *
@@ -342,9 +344,9 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
  */
 static YYINLINE int
 ylistl_size(const struct ylistl_link *head) {
-	struct ylistl_link *pos;
+	struct ylistl_link *cur;
 	int size = 0;
-	ylistl_foreach(pos, head)
+	ylistl_foreach(cur, head)
 		size++;
 	return size;
 }
@@ -361,9 +363,9 @@ ylistl_contains(
 	const struct ylistl_link *head,
 	const struct ylistl_link *node
 ) {
-	const struct ylistl_link *pos;
-	ylistl_foreach(pos, head) {
-		if (pos == node)
+	const struct ylistl_link *cur;
+	ylistl_foreach(cur, head) {
+		if (cur == node)
 			return TRUE;
 	}
 	return FALSE;
@@ -371,7 +373,7 @@ ylistl_contains(
 
 /**
  * Delete link.
- * If @p node is NOT in the list headed by {@code head}, FALSE is returned.
+ * If @p node is NOT in the list headed by @p head, FALSE is returned.
  *
  * @param head Head of list.
  * @param node Node link.

@@ -498,7 +498,7 @@ ytaskmanager_destroy(struct ytaskmanager *tm) {
 	struct ytaskmanager_qevent_listener_handle *elh, *elhtmp;
 	if (ytaskmanager_size(tm) > 0)
 		return -EPERM;
-	ylistl_foreach_item_removal_safe(
+	ylistl_foreach_item_safe(
 		elh,
 		elhtmp,
 		&tm->elhhd,
@@ -627,7 +627,7 @@ ytaskmanager_cancel_all(struct ytaskmanager *tm) {
 	lock_q(tm);
 	/* Cancel all tasks at the ready Q */
 	while (nrpri--) {
-		ylistl_foreach_removal_safe(p, n, &tm->readyq_hd[nrpri]) {
+		ylistl_foreach_safe(p, n, &tm->readyq_hd[nrpri]) {
 			struct ytask *tsk = ttglk_task(p);
 			fatali0(readyq_remove_locked(tm, tsk));
 			notify_qevent_locked(

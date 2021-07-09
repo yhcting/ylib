@@ -522,7 +522,7 @@ ytaskdepman_cancel(struct ytaskdepman *tdm) {
 
 	lock_graph(tdm);
 	/* TODO: Improve fault tolerance here! */
-	ygraph_foreach_vertex_removal_safe(&tdm->g, v, vtmp) {
+	ygraph_foreach_vertex_safe(&tdm->g, v, vtmp) {
 		tsk = vertex_ttg(v)->tsk;
 		yassert(YTHREADEX_READY == ytask_get_state(tsk));
 		/* Ignore return value. Try to cancel all tasks */

@@ -192,7 +192,7 @@ test_graph(void) {
 			&& e->vf != &v022->v);
 	}
 
-	ygraph_foreach_vertex_removal_safe(g, v, vtmp) {
+	ygraph_foreach_vertex_safe(g, v, vtmp) {
 		ygraph_remove_vertex(g, v);
 		yfree(YYcontainerof(v, struct mynode, v));
 	}

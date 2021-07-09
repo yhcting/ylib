@@ -158,7 +158,7 @@ ymsgq_destroy(struct ymsgq *q) {
 	int r __unused;
 	struct ymsg_ *pos, *tmp;
 	for (i = 0; i < yut_arrsz(q->q); i++) {
-		ylistl_foreach_item_removal_safe(
+		ylistl_foreach_item_safe(
 			pos,
 			tmp,
 			&q->q[i],

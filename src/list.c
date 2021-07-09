@@ -101,7 +101,7 @@ ylist_create(u32 max, void (*ifree)(void *)) {
 void
 ylist_destroy(struct ylist *l) {
 	struct ylist_node *n, *p;
-	ylistl_foreach_item_removal_safe(
+	ylistl_foreach_item_safe(
 		p, n, &l->head, struct ylist_node, lk
 	) {
 		ylist_free_item(l, p->item);
@@ -117,7 +117,7 @@ ylist_destroy(struct ylist *l) {
 void
 ylist_reset(struct ylist *l) {
 	struct ylist_node *n, *p;
-	ylistl_foreach_item_removal_safe(
+	ylistl_foreach_item_safe(
 		p, n, &l->head, struct ylist_node, lk
 	) { yfree(p); }
 	l->sz = 0;

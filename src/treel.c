@@ -134,7 +134,7 @@ preot_next(struct ytreeli *itr, bool l2r) {
 	}
 
 	if (likely(l2r)) {
-		ylistl_foreach_backward(pos, &itr->ln->child) {
+		ylistl_foreach_reverse(pos, &itr->ln->child) {
 			push_siblings();
 		}
 	} else {

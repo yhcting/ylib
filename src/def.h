@@ -67,7 +67,6 @@
 /* GNU C Specific */
 #ifdef __GNUC__
 
-
 #	define __barrier() __asm__ __volatile__("": : :"memory")
 #	define __unused __attribute__((unused))
 

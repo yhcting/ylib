@@ -255,7 +255,7 @@ ylru_put(struct ylru *lru, const void *key, void *data) {
 	 * shrink cache if cache becomes too large
 	 * the 'last' in the list is the 'oldest'.
 	 */
-	ylistl_foreach_item_removal_safe_backward(
+	ylistl_foreach_item_safe_reverse(
 		n, tmp, &lru->head, struct lnode, lk
 	) {
 		if (unlikely(lru->sz + dsz > lru->maxsz)) {

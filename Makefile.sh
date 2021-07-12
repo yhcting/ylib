@@ -4,10 +4,11 @@
 # This is source of Makefile.am
 #
 
-modenames="
+modules="
 :crc
 :dynb
 :graph
+:hashl
 :hash
 :heap
 :listl
@@ -96,7 +97,7 @@ inc_headers=
 for h in $common_headers; do
     inc_headers+=" $h"
 done
-for m in $modenames; do
+for m in $modules; do
     hdrf=$(header_file $m)
     inc_headers+=" $hdrf"
 done
@@ -112,7 +113,7 @@ lib_sources=
 for s in $common_sources; do
     lib_sources+=" $s"
 done
-for m in $modenames; do
+for m in $modules; do
     srcf=$(src_file $m)
     lib_sources+=" $srcf"
 done
@@ -128,7 +129,7 @@ prog_sources=
 for s in $common_sources; do
     prog_sources+=" $s"
 done
-for m in $modenames; do
+for m in $modules; do
     srcf=$(src_file $m)
     prog_sources+=" $srcf"
 done
@@ -204,7 +205,7 @@ LOCAL_MODULE := y
 LOCAL_SRC_FILES := \\
 EOF
 
-for m in $modenames; do
+for m in $modules; do
     srcf=$(src_file $m)
     echo "	$srcf \\" >>$autogenfile
 done

@@ -39,6 +39,7 @@
 #include <unistd.h>
 #include <malloc.h>
 #include <string.h>
+#include <errno.h>
 #include <pthread.h>
 
 #include "ylib.h"
@@ -195,6 +196,18 @@ dfree(void *p) {
 	rm_mem_locked(m);
 	unlock_mem();
 	free(m);
+}
+
+char *
+dstrdup(const char *s, const char *file, int lineno) {
+	size_t len = strlen(s);
+	char *d = dmalloc(len + 1, file, lineno);
+	if (unlikely(!d)) {
+		errno = ENOMEM;
+		return NULL;
+	}
+	memcpy(d, s, len + 1);
+	return d;
 }
 
 int

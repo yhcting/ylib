@@ -53,8 +53,8 @@ test_hashl(void) {
 	struct yhashl_node *rn, *tmp;
 	struct item *itm;
 	char sbuf[128];
-	struct yhashl *h = yhashl_create(
-		YHASHL_HFUNC_STR, YHASHL_KEYEQ_STR);
+	struct yhashl *h = ymalloc(sizeof(*h));
+	yhashl_init(h, YHASHL_HFUNC_STR, YHASHL_KEYEQ_STR);
 	for (i = 0; i < 1024; i++) {
 		itm = ymalloc(sizeof(*itm));
 		sprintf(sbuf, "item-%d", i);
@@ -77,7 +77,8 @@ test_hashl(void) {
 		yfree((void *)yhashl_node_key(rn));
 		yfree(containerof(rn, struct item, hn));
 	}
-	yhashl_destroy(h);
+	yhashl_clean(h);
+	yfree(h);
 }
 
 TESTFN(hashl)

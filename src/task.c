@@ -494,7 +494,7 @@ ytask_add_tag(
         if (unlikely(!o))
                 return -ENOMEM;
 	lock_tagmap(tsk);
-        r = yhash_add(tsk->tagmap, name, o, TRUE);
+        r = yhash_set(tsk->tagmap, (void *)name, o);
 	unlock_tagmap(tsk);
 	return r;
 }
@@ -504,7 +504,7 @@ ytask_get_tag(struct ytask *tsk, const char *name) {
 	int r;
         struct yo *o;
 	lock_tagmap(tsk);
-	r = yhash_find(tsk->tagmap, (void **)&o, name);
+	r = yhash_get(tsk->tagmap, name, (void **)&o);
 	unlock_tagmap(tsk);
         if (unlikely(r))
                 return NULL;

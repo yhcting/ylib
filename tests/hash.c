@@ -53,7 +53,7 @@ vfree(void *v) {
 }
 
 static int
-strkey_copy(void **newkey, const void *key) {
+strkey_copy(const void **newkey, const void *key) {
 	char *nk = ymalloc(strlen((char *)key) + 1);
 	if (!nk)
 		return ENOMEM;
@@ -84,8 +84,8 @@ test_hasho(void) {
 	 * Test normal hash.
 	 */
 	struct yhash *h = yhasho_create(
-		YHASH_PREDEFINED_FREE,
-		YHASH_PREDEFINED_FREE,
+		YHASH_MEM_FREE,
+		YHASH_MEM_FREE,
 		&strkey_copy,
 		&strkey_cmp,
 		&strkey_hash);
@@ -95,7 +95,7 @@ test_hasho(void) {
 		v = ymalloc(strlen(buf) + 1);
 		strcpy(v, buf);
 		/* key and value is same */
-		yhash_add(h, (void *)buf, v, TRUE);
+		yhash_set(h, (void *)buf, v);
 		yassert(i + 1 == yhash_sz(h));
 	}
 
@@ -114,7 +114,7 @@ test_hasho(void) {
 
 	for (i = 256; i < 512; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-	        r = yhash_find(h, &v, (void *)buf);
+	        r = yhash_get(h, (void *)buf, &v);
 		yassert(!r && 0 == strcmp(v, buf));
 	}
 
@@ -137,18 +137,17 @@ test_hashs(void) {
 	void *v;
 	int r;
 	const char *keys[4096];
-
 	/*
 	 * Test normal hash.
 	 */
-	struct yhash *h = yhashs_create(YHASH_PREDEFINED_FREE, TRUE);
+	struct yhash *h = yhashs_create(YHASH_MEM_FREE, TRUE);
 
 	for (i = 0; i < 1024; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
 		v = ymalloc(strlen(buf) + 1);
 		strcpy(v, buf);
 		/* key and value is same */
-		yhash_add(h, (void *)buf, v, TRUE);
+		yhash_set(h, (void *)buf, v);
 		yassert(i + 1 == yhash_sz(h));
 	}
 
@@ -167,7 +166,7 @@ test_hashs(void) {
 
 	for (i = 256; i < 512; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-	        r = yhash_find(h, &v, (void *)buf);
+	        r = yhash_get(h, (void *)buf, &v);
 		yassert(!r && 0 == strcmp(v, buf));
 	}
 
@@ -184,6 +183,8 @@ test_hashs(void) {
 }
 
 static void
+test_hashi(void) __unused;
+static void
 test_hashi(void) {
 	int i, r;
 	char buf[4096];
@@ -199,14 +200,14 @@ test_hashi(void) {
 		v = ymalloc(strlen(buf)+1);
 		strcpy(v, buf);
 		/* key and value is same */
-		yhash_add(h, (void *)v, v, TRUE);
+		yhash_set(h, (void *)v, v);
 		ptsv[i] = v;
 		yassert(i+1 == yhash_sz(h));
 	}
 
 	for (i = 256; i < 512; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-		r = yhash_find(h, &v, (void *)ptsv[i]);
+		r = yhash_get(h, (void *)ptsv[i], &v);
 		yassert(!r && 0 == strcmp(v, buf));
 	}
 

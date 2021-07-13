@@ -73,7 +73,7 @@ typedef int (*yhashl_keyeq_t)(const void *, const void *);
 struct yhashl_node {
 	/* @cond */
 	struct ylistl_link lk;
-	const void *key;
+	void *key;
 	uint32_t hv32; /* 32bit hash value */
 	/* @endcond */
 };
@@ -92,18 +92,26 @@ struct yhashl {
 	/* @endcond */
 };
 
-
 /**
  * Size of hash map. It's different from hash size.
  * You may rarely need to know this.
  */
-static YYINLINE u32
+static YYINLINE uint32_t
 yhashl_hmapsz(const struct yhashl *h) {
 	return 1 << h->mapbits;
 }
 
+/** Number of items(nodes) in hash */
+static YYINLINE uint32_t
+yhashl_sz(const struct yhashl *h) {
+	return h->sz;
+}
+
+/**
+ * Initialize node
+ */
 static YYINLINE void
-yhashl_init_node(struct yhashl_node *n) {
+yhashl_node_init(struct yhashl_node *n) {
 	ylistl_init_link(&n->lk);
 	n->key = NULL;
 	n->hv32 = 0;
@@ -112,31 +120,36 @@ yhashl_init_node(struct yhashl_node *n) {
 /**
  * Get key value of this node.
  */
-static YYINLINE const void *
-yhashl_node_key(struct yhashl_node *n) {
+static YYINLINE void *
+yhashl_node_key(const struct yhashl_node *n) {
 	return n->key;
 }
 
-YYEXPORT struct yhashl *
-yhashl_create(yhashl_hfunc_t hfunc, yhashl_keyeq_t keyeq);
+/**
+ * Initialize hash
+ */
+YYEXPORT int
+yhashl_init(struct yhashl *, yhashl_hfunc_t hfunc, yhashl_keyeq_t keyeq);
 
 /**
+ * @param hfunc NULLable. Default is @ref YHASHL_HFUNC_PTR
+ * @param keqfunc NULLable. Default is @ref YHASHL_KEYEQ_PTR
  * @param initbits <= 32. 2 ^ initbits is used as initial map size.
  */
-YYEXPORT struct yhashl *
-yhashl_create2(
+YYEXPORT int
+yhashl_init2(
+	struct yhashl *,
 	yhashl_hfunc_t hfunc,
 	yhashl_keyeq_t keqfunc,
 	uint32_t initbits);
 
+/**
+ * Counterpart of @ref yhashl_init and @ref yhashl_init2.
+ * `struct yhashl` should be freed explicitly.
+ * This just clear internal data of `struct yhashl`.
+ */
 EXPORT void
-yhashl_destroy(struct yhashl *);
-
-/** Number of items(nodes) in hash */
-static YYINLINE uint32_t
-yhashl_sz(const struct yhashl *h) {
-	return h->sz;
-}
+yhashl_clean(struct yhashl *);
 
 /**
  * Change hash map size.
@@ -156,13 +169,13 @@ yhashl_hremap(struct yhashl *, u32 mapbits);
  *	Otherwise NULL.
  */
 YYEXPORT struct yhashl_node *
-yhashl_set(struct yhashl *h, const void *key, struct yhashl_node *);
+yhashl_set(struct yhashl *h, void *key, struct yhashl_node *);
 
 /**
  * @p n should be node in hash @p h. If it's not, behavior is not defined.
  */
 YYEXPORT void
-yhashl_remove_node(struct yhashl *h, struct yhashl_node *n);
+yhashl_node_remove(struct yhashl *h, struct yhashl_node *n);
 
 /**
  * Remove node from hash and return it.
@@ -172,6 +185,9 @@ yhashl_remove_node(struct yhashl *h, struct yhashl_node *n);
 YYEXPORT struct yhashl_node *
 yhashl_remove(struct yhashl *h, const void *key);
 
+/**
+ * @return NULL if not found
+ */
 YYEXPORT struct yhashl_node *
 yhashl_get(const struct yhashl *h, const void *key);
 
@@ -183,7 +199,8 @@ yhashl_get(const struct yhashl *h, const void *key);
  */
 #define yhashl_foreach(h, cur)						\
 	for (unsigned int i___ = 0; i___ < yhashl_hmapsz(h); i___++)	\
-		ylistl_foreach_item(cur, &h->map[i___], struct yhashl_node, lk)
+		ylistl_foreach_item(cur, &(h)->map[i___], 		\
+			struct yhashl_node, lk)
 
 /**
  * Visit all hash nodes with removal-safe.
@@ -192,9 +209,9 @@ yhashl_get(const struct yhashl *h, const void *key);
  * @param cur (struct yhashl_node *) Cursor
  * @param tmp (struct yhashl_node *) Temporary storage.
  */
-#define yhashl_foreach_safe(h, cur, tmplk)				\
+#define yhashl_foreach_safe(h, cur, tmp)				\
 	for (unsigned int i___ = 0; i___ < yhashl_hmapsz(h); i___++)	\
-		ylistl_foreach_item_safe(cur, tmp, &h->map[i___],	\
+		ylistl_foreach_item_safe(cur, tmp, &(h)->map[i___],	\
 			struct yhashl_node, lk)
 
 

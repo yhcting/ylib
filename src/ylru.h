@@ -96,7 +96,7 @@ ylruo_create(
 	uint32_t  (*datasize)(const void *),
 	/* functions to handle key object */
 	void (*keyfree)(void *),
-	int (*keycopy)(void **newkey, const void *),
+	int (*keycopy)(const void **newkey, const void *),
 	int (*keycmp)(const void *, const void *),
 	uint32_t (*hfunc)(const void *key));
 

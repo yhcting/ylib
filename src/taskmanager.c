@@ -537,7 +537,7 @@ ytaskmanager_add_tag(
         if (unlikely(!o))
                 return -ENOMEM;
 	lock_tagmap(tm);
-        r = yhash_add(tm->tagmap, key, o, TRUE);
+        r = yhash_set(tm->tagmap, (void *)key, o);
 	unlock_tagmap(tm);
 	return r;
 }
@@ -547,7 +547,7 @@ ytaskmanager_get_tag(struct ytaskmanager *tm, const char *key) {
 	int r;
         struct yo *o;
 	lock_tagmap(tm);
-	r = yhash_find(tm->tagmap, (void **)&o, key);
+	r = yhash_get(tm->tagmap, key, (void **)&o);
 	unlock_tagmap(tm);
         if (unlikely(r))
                 return NULL;

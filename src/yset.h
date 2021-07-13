@@ -81,7 +81,7 @@ ysets_create(void) {
 static YYINLINE yset_t
 yseto_create(
 	void (*elemfree)(void *),
-	int (*elemcopy)(void **newelem, const void *),
+	int (*elemcopy)(const void **newelem, const void *),
 	int (*elemcmp)(const void *, const void *),
 	uint32_t (*hfunc)(const void *elem)
 ) {
@@ -154,7 +154,7 @@ yset_elements(
  */
 static YYINLINE int
 yset_add(yset_t s, void *elem) {
-	return yhash_add(s, elem, (void *)1, TRUE);
+	return yhash_set(s, elem, (void *)1);
 }
 
 /**

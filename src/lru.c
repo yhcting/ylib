@@ -182,7 +182,7 @@ ylruo_create(
 	void *(*datacreate)(const void *key),
 	u32 (*datasize)(const void *),
 	void(*keyfree)(void *),
-	int (*keycopy)(void **newkey, const void *),
+	int (*keycopy)(const void **newkey, const void *),
 	int (*keycmp)(const void *, const void *),
 	u32 (*hfunc)(const void *key)
 ) {
@@ -190,7 +190,7 @@ ylruo_create(
 	struct yhash *h;
 
 	if (YLRU_PREDEFINED_FREE == keyfree)
-		keyfree = YHASH_PREDEFINED_FREE;
+		keyfree = YHASH_MEM_FREE;
 
 	h = yhasho_create(
 		(void(*)(void *))&lnode_free,
@@ -269,7 +269,7 @@ ylru_put(struct ylru *lru, const void *key, void *data) {
 		return -ENOMEM;
 	n->data = data;
 	n->lru = lru;
-	if (unlikely(-1 == yhash_add3(lru->h, &n->key, (void *)key, n, TRUE))) {
+	if (unlikely(-1 == yhash_set3(lru->h, &n->key, (void *)key, n))) {
 		yfree(n);
 		return -ENOMEM;
 	}
@@ -287,7 +287,7 @@ ylru_get(struct ylru *lru, void **data, const void *key) {
 	void *nd = NULL;
 	if (unlikely(!data))
 		return -EINVAL;
-	if (0 < yhash_remove2(lru->h, (void **)&n, key)) {
+	if (0 < yhash_remove2(lru->h, key, (void **)&n)) {
 		/* found */
 		ylistl_remove(&n->lk);
 		lru->sz -= data_size(lru, n->data);

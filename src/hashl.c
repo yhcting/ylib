@@ -102,7 +102,7 @@ hv(const struct yhashl *h, const struct yhashl_node *n) {
  *
  ****************************************************************************/
 int
-yhash_hremap(struct yhashl *h, u32 bits) {
+yhashl_hremap(struct yhashl *h, u32 bits) {
 	u32 i;
 	struct yhashl_node *n, *tmp;
 	struct ylistl_link *oldmap;
@@ -148,27 +148,25 @@ yhash_hremap(struct yhashl *h, u32 bits) {
  *
  *
  ****************************************************************************/
-struct yhashl *
-yhashl_create2(
+int
+yhashl_init2(
+	struct yhashl *h,
 	yhashl_hfunc_t hfunc,
 	yhashl_keyeq_t keqfunc,
 	uint32_t initbits
 ) {
 	u32 i;
-	struct yhashl *h;
 	if (initbits < MIN_HBITS || initbits > MAX_HBITS)
-		return NULL;
+		return -EINVAL;
 
-	h = ymalloc(sizeof(*h));
-	if (unlikely(!h)) return NULL;
 	h->sz = 0;
 	h->mapbits = initbits;
-	if (YHASHL_HFUNC_PTR == hfunc)
+	if (!hfunc || YHASHL_HFUNC_PTR == hfunc)
 		hfunc = &hf_default_ptr;
 	else if (YHASHL_HFUNC_STR == hfunc)
 		hfunc = &hf_default_str;
 	h->h = hfunc;
-	if (YHASHL_KEYEQ_PTR == keqfunc)
+	if (!keqfunc || YHASHL_KEYEQ_PTR == keqfunc)
 		keqfunc = &keq_default_ptr;
 	else if (YHASHL_KEYEQ_STR == keqfunc)
 		keqfunc = &keq_default_str;
@@ -177,35 +175,31 @@ yhashl_create2(
 	/* allocate and initialize slot list heads */
 	h->map = (struct ylistl_link *)ymalloc(
 		sizeof(*h->map) * yhashl_hmapsz(h));
-	if (unlikely(!h->map)) {
-		yfree(h);
-		return NULL;
-	}
+	if (unlikely(!h->map)) return -ENOMEM;
 	for (i = 0; i < yhashl_hmapsz(h); i++)
 		ylistl_init_link(&h->map[i]);
-	return h;
+	return 0;
 }
 
-struct yhashl *
-yhashl_create(yhashl_hfunc_t hfunc, yhashl_keyeq_t keqfunc) {
-	return yhashl_create2(hfunc, keqfunc, DEFAULT_HBITS);
+int
+yhashl_init(struct yhashl *h, yhashl_hfunc_t hfunc, yhashl_keyeq_t keqfunc) {
+	return yhashl_init2(h, hfunc, keqfunc, DEFAULT_HBITS);
 }
 
 void
-yhashl_destroy(struct yhashl *h) {
+yhashl_clean(struct yhashl *h) {
 	yfree(h->map);
-	yfree(h);
 }
 
 
 struct yhashl_node *
-yhashl_set(struct yhashl *h, const void *key, struct yhashl_node *nnew) {
+yhashl_set(struct yhashl *h, void *key, struct yhashl_node *nnew) {
 	struct yhashl_node *n = yhashl_get(h, key);
 	if (n) {
 		nnew->hv32 = n->hv32;
 		nnew->key = n->key;
 		ylistl_replace(&n->lk, &nnew->lk);
-		ylistl_init_link(&n->lk);
+		yhashl_node_init(n);
 		return n;
 	}
 	nnew->hv32 = (*h->h)(key);
@@ -217,9 +211,8 @@ yhashl_set(struct yhashl *h, const void *key, struct yhashl_node *nnew) {
 }
 
 void
-yhashl_remove_node(struct yhashl *h, struct yhashl_node *n) {
+yhashl_node_remove(struct yhashl *h, struct yhashl_node *n) {
 	ylistl_remove(&n->lk);
-	yhashl_init_node(n);
 	h->sz--;
 }
 
@@ -227,7 +220,7 @@ struct yhashl_node *
 yhashl_remove(struct yhashl *h, const void *key) {
 	struct yhashl_node *n = yhashl_get(h, key);
 	if (unlikely(!n)) return NULL;
-	yhashl_remove_node(h, n);
+	yhashl_node_remove(h, n);
 	return n;
 }
 

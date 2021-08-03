@@ -23,6 +23,7 @@ doxy/
 !.gitignore
 !.editorconfig
 !.emacs-ede.el
+!.vscode/
 
 # auto-generated files
 Android.mk

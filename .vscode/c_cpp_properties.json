@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "name": "ylib",
+            "defines": [
+                "_GNU_SOURCE"
+            ],
+            // Set priority on ardk SDK.
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/src"
+            ]
+        }
+    ],
+    "version": 4
+}

@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "functional": "c",
+        "string_view": "c",
+        "*.h": "c",
+        "*.c": "c"
+    }
+}

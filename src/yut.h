@@ -117,6 +117,14 @@
 #define yut_clear_bit(x, bit) \
 	((x) & ~(1LL << (bit)))
 
+/**
+ * Test whether bits in @p flag are all set in @p x
+ *
+ * @param x Value
+ * @param flag Value(ex. 0x0101)
+ */
+#define yut_test_flag(x, flag) \
+	(!(~(x) & (flag)))
 
 
 /*****************************************************************************

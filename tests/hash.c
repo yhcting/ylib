@@ -172,7 +172,7 @@ test_hashs(void) {
 
 	for (i = 1023; i >= 0; i--) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-		yhash_remove(h, (void *)buf);
+		yassert(1 == yhash_remove(h, (void *)buf));
 		yassert(i == yhash_sz(h));
 	}
 	r = yhash_keys(h, (const void **)keys, 10);

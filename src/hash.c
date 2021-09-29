@@ -396,7 +396,7 @@ yhash_remove2(struct yhash *h, const void *key, void **value) {
 		 * Failure is not harmful.
 		 */
 		yhashl_hremap(&h->h, h->h.mapbits - 1);
-	return 0;
+	return 1;
 }
 
 int

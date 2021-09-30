@@ -35,7 +35,10 @@
  *****************************************************************************/
 
 #include <pthread.h>
+#include <sys/eventfd.h>
+#include <stdint.h>
 #include <time.h>
+#include <unistd.h>
 #include <errno.h>
 
 #include "common.h"
@@ -58,7 +61,7 @@ struct ymsgq {
 	 */
 	u32 capacity;
 	pthread_mutex_t lock;
-	pthread_cond_t cond;
+	int evfd; /* event fd */
 };
 
 
@@ -103,23 +106,23 @@ static INLINE void set_time_stamp(struct ymsg_ *m) { }
  *****************************************************************************/
 static int
 qen(struct ymsgq *q, struct ymsg_ *m) {
-	int err = 0;
-	int r __unused;
+	int r;
+	int64_t v = 1;
 	r = pthread_mutex_lock(&q->lock);
 	yassert(!r);
 	if (unlikely(q->sz >= q->capacity)) {
-		err = -EAGAIN;
-		goto unlock;
+		r = pthread_mutex_unlock(&q->lock);
+		yassert(!r);
+		return -EAGAIN;
 	}
 	set_time_stamp(m);
 	ylistl_add_last(&q->q[m->m.pri], &m->lk);
 	++q->sz;
-	r = pthread_cond_broadcast(&q->cond);
-	yassert(!r);
- unlock:
 	r = pthread_mutex_unlock(&q->lock);
 	yassert(!r);
-	return err;
+	r = write(q->evfd, &v, sizeof(v));
+	yassert(r == sizeof(v));
+	return 0;
 }
 
 /******************************************************************************
@@ -140,7 +143,7 @@ ymsgq_create(int capacity) {
 	q->sz = 0;
 	if (unlikely(pthread_mutex_init(&q->lock, NULL)))
 		goto free_q;
-	if (unlikely(pthread_cond_init(&q->cond, NULL)))
+	if (unlikely(0 > (q->evfd = eventfd(0, EFD_SEMAPHORE | EFD_CLOEXEC))))
 		goto free_lock;
 	return q;
 
@@ -168,11 +171,16 @@ ymsgq_destroy(struct ymsgq *q) {
 			ymsg_destroy(&pos->m);
 		}
 	}
-	r = pthread_cond_destroy(&q->cond);
+	r = close(q->evfd);
 	yassert(!r);
 	r = pthread_mutex_destroy(&q->lock);
 	yassert(!r);
 	yfree(q);
+}
+
+int
+ymsgq_evfd(const struct ymsgq *q) {
+	return q->evfd;
 }
 
 int
@@ -191,19 +199,15 @@ ymsgq_en(struct ymsgq *q, struct ymsg *ym) {
  */
 struct ymsg *
 ymsgq_de(struct ymsgq *q) {
-	int i;
+	int i, r;
+	int64_t v;
 	struct ylistl_link *lk;
-	int r __unused;
 
+	/* read with block */
+	r = read(q->evfd, &v, sizeof(v));
+	yassert(r == sizeof(v));
 	r = pthread_mutex_lock(&q->lock);
 	yassert(!r);
-	if (!q->sz) {
-		/* queue is empty. wait! */
-		r = pthread_cond_wait(&q->cond, &q->lock);
-		yassert(!r);
-
-	}
-	yassert(q->sz > 0);
 	lk = NULL;
 	/* Highest priority = index 0 */
 	for (i = 0 ; i < yut_arrsz(q->q); i++) {
@@ -217,8 +221,7 @@ ymsgq_de(struct ymsgq *q) {
 	}
 	r = pthread_mutex_unlock(&q->lock);
 	yassert(!r);
-	yassert(lk);
-	return &containerof(lk, struct ymsg_, lk)->m;
+	return lk ? &containerof(lk, struct ymsg_, lk)->m : NULL;
 }
 
 u32

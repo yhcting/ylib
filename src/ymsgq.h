@@ -67,6 +67,12 @@ YYEXPORT void
 ymsgq_destroy(struct ymsgq *);
 
 /**
+ * Get event fd file descriptor for this message Q.
+ */
+YYEXPORT int
+ymsgq_evfd(const struct ymsgq *);
+
+/**
  * Enqueue message to message queue
  *
  * @return 0 if success. Otherwise @c -errno
@@ -78,7 +84,7 @@ ymsgq_en(struct ymsgq *, struct ymsg *);
 /**
  * Dequeue message from message queue.
  * This is blocking function.
- * So, if message queue is empty, wait until message is available.
+ * So, if queue is empty, caller is blocked.
  *
  * @return NULL if fails.
  */

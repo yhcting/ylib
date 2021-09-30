@@ -139,7 +139,7 @@ ymsgq_create(int capacity) {
 		return NULL; /* OOM */
 	for (i = 0; i < yut_arrsz(q->q); i++)
 		ylistl_init_link(&q->q[i]);
-	q->capacity = capacity <= 0? 0xffffffff: (u32)capacity;
+	q->capacity = capacity <= 0 ? 0xffffffff : (u32)capacity;
 	q->sz = 0;
 	if (unlikely(pthread_mutex_init(&q->lock, NULL)))
 		goto free_q;

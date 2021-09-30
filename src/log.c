@@ -129,7 +129,7 @@ ___ylog_write(enum yloglv lv,
 	}
 	if (unlikely(r > LOG_BUF_SZ))
 		r = LOG_BUF_SZ;
-	fd = (likely(lv < YLOG_ERR))? _cfg.stdfd: _cfg.errfd;
+	fd = (likely(lv < YLOG_ERR)) ? _cfg.stdfd : _cfg.errfd;
 	write_fd(fd, buf, r); /* return value is ignored intentionally */
 }
 

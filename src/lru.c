@@ -91,7 +91,7 @@ lru_free_default(void *v) {
 
 static INLINE u32
 data_size(struct ylru *l, void *d) {
-	return (l->dsize)? (*l->dsize)(d): 1;
+	return (l->dsize) ? (*l->dsize)(d) : 1;
 }
 
 static INLINE void

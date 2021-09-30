@@ -161,7 +161,7 @@ minit(const struct ylib_config *cfg) {
 		? cfg->ymsg_pool_capacity
 		: DEFAULT_MSG_POOL_SIZE;
         _pool = ypool_create(capacity);
-        return _pool? 0: -ENOMEM;
+        return _pool ? 0 : -ENOMEM;
 }
 
 static void

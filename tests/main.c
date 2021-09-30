@@ -176,7 +176,7 @@ drealloc(void *p, size_t sz, const char *file, int line) {
 	struct memblk *m = YYcontainerof(p, struct memblk, blk);
 	void *newp;
 	newp = dmalloc(sz, file, line);
-	memcpy(newp, p, sz > m->sz? m->sz: sz);
+	memcpy(newp, p, sz > m->sz ? m->sz : sz);
 	dfree(p);
 	return newp;
 }

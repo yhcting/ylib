@@ -257,7 +257,8 @@ yheap_pop(struct yheap *h) {
 			maxc = lc;
 		else
 			/* Both left and right are available. */
-			maxc = 0 < (*h->cmp)(gete(h, lc), gete(h, rc))? lc: rc;
+			maxc = 0 < (*h->cmp)(gete(h, lc), gete(h, rc))
+				? lc : rc;
 
 		if (0 < (*h->cmp)(gete(h, maxc), gete(h, i))) {
 			swape(h, maxc, i);

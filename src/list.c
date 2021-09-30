@@ -161,12 +161,12 @@ ylist_add_first(struct ylist *l, void *item) {
 
 void *
 ylist_peek_last(const struct ylist *l) {
-	return ylist_is_empty(l)? NULL: lkitem(l->head.prev);
+	return ylist_is_empty(l) ? NULL : lkitem(l->head.prev);
 }
 
 void *
 ylist_peek_first(const struct ylist *l) {
-	return ylist_is_empty(l)? NULL: lkitem(l->head.next);
+	return ylist_is_empty(l) ? NULL : lkitem(l->head.next);
 }
 
 void *

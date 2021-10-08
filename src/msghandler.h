@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2021
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -37,11 +37,13 @@
 #ifndef __MSGHANDLEr_h__
 #define __MSGHANDLEr_h__
 
-#include "ymsghandler.h"
-
+struct ymsg;
+struct ymsglooper;
+struct ymsgq;
 
 struct ymsghandler {
 	struct ymsglooper *ml;
+	struct ymsgq *mq;
 	void (*handle)(struct ymsghandler *, const struct ymsg *);
 	void *tag;
 	void (*tagfree)(void *);

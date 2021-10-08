@@ -82,6 +82,8 @@ Term 'delete' SHOULD NOT be used as couter-part of term 'add'.
 ====
 TODO
 ====
-* module for timer
-* module for stack heap
-* module implementing 'collection' and 'set' - like python 'set', 'list', 'dict'
+* Re-design & implement build description (Makefile)
+* Implement module for timer
+* Implement module for stack heap
+* 'msghandler' should be able to be destroyed regardless of msglooper.
+* Implement 'collection' and 'set' module - like python 'set', 'list', 'dict'

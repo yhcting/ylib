@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2021
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -160,6 +160,10 @@ ymsgq_destroy(struct ymsgq *q) {
 	int i;
 	int r __unused;
 	struct ymsg_ *pos, *tmp;
+	r = close(q->evfd);
+	yassert(!r);
+	r = pthread_mutex_lock(&q->lock);
+	yassert(!r);
 	for (i = 0; i < yut_arrsz(q->q); i++) {
 		ylistl_foreach_item_safe(
 			pos,
@@ -171,7 +175,7 @@ ymsgq_destroy(struct ymsgq *q) {
 			ymsg_destroy(&pos->m);
 		}
 	}
-	r = close(q->evfd);
+	r = pthread_mutex_unlock(&q->lock);
 	yassert(!r);
 	r = pthread_mutex_destroy(&q->lock);
 	yassert(!r);

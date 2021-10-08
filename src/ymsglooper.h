@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2021
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -46,8 +46,6 @@
 
 #include "ydef.h"
 
-struct ymsgq;
-
 /** Message looper object(opaque) */
 struct ymsglooper;
 
@@ -76,17 +74,20 @@ enum ymsglooper_state {
 };
 
 /**
+ * events is epoll events (ex. EPOLLIN)
+ */
+typedef void (*ymsglooper_eventcb_t)(
+	int fd, int events, void *data);
+
+/**
  * Prepare message looper for current thread.
  * If success, returned looper is assigned to current thread.
  *
- * @param msgq_capacity capacity of message Q.
- *	'<= 0' means 'unlimited capacity'
- * @param destroy_on_exit destroy instance on exiting thread
  * @return 0 if success. Otherwise @c -errno
  *	(ex. -EPERM if there is looper already at current thread.)
  */
 YYEXPORT int
-ymsglooper_create(int msgq_capacity, bool destroy_on_exit);
+ymsglooper_create(void);
 
 /**
  * Destroy looper instance.
@@ -97,6 +98,28 @@ ymsglooper_create(int msgq_capacity, bool destroy_on_exit);
  */
 YYEXPORT int
 ymsglooper_destroy(struct ymsglooper *);
+
+/**
+ * Add fd to watch list. Note that @c cb is called at looper context. Therefore
+ * @c cb should not spend too much time in it.
+ *
+ * @param ml Message looper
+ * @param fd File descriptor
+ * @param events Epoll events (ex, EPOLLIN)
+ * @param cb Callback called when given events is issued (MUST NOT NULL)
+ * @param data Opaque userdata passed to @c cb
+ * @return 0 if success. Otherwise @c -errno
+ */
+YYEXPORT int
+ymsglooper_add_fd(struct ymsglooper *ml,
+	int fd, int events, ymsglooper_eventcb_t cb, void *data);
+
+/**
+ * Delete fd from watch list immediately. Note that data passed at
+ * @ref ymsglooper_add_fd is not modified(or freed)
+ */
+YYEXPORT int
+ymsglooper_del_fd(struct ymsglooper *, int fd);
 
 /**
  * Start loop of current-thread-looper.
@@ -111,21 +134,10 @@ ymsglooper_loop(void);
  * Start new msg looper thread(new thread is started and enter msg looper).
  * Returned value MUST NOT freed by client. It will be handled internally.
  *
- * @param destroy_on_exit destroy instance on exiting thread
  * @return NULL if fails. Otherwise, msg looper of newly started thread.
  */
 YYEXPORT struct ymsglooper *
-ymsglooper_start_looper_thread(bool destroy_on_exit);
-
-/**
- * Get message Q of this looper.
- * This function MUST NOT be called when/after looper is finished(stopped).
- * (That is, it's available only while looping.)
- *
- * @return message Q. Tt SHOULD NOT be NULL.
- */
-YYEXPORT struct ymsgq *
-ymsglooper_get_msgq(struct ymsglooper *);
+ymsglooper_start_looper_thread(void);
 
 /**
  * Get thread that looper is belongs to.
@@ -153,6 +165,7 @@ ymsglooper_get_state(struct ymsglooper *);
 
 /**
  * Stop looper. This is async function.
+ * Looper is stopped if there is no r
  *
  * @return 0 if success otherwise @c -errno.
  */

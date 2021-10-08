@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2021
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -96,8 +96,8 @@ static void
 test_msghandler(void) {
 	int i;
 	struct ymsghandler *mh0, *mh1;
-	struct ymsglooper *ml0 = ymsglooper_start_looper_thread(FALSE);
-	struct ymsglooper *ml1 = ymsglooper_start_looper_thread(FALSE);
+	struct ymsglooper *ml0 = ymsglooper_start_looper_thread();
+	struct ymsglooper *ml1 = ymsglooper_start_looper_thread();
 	mh0 = ymsghandler_create(ml0, NULL, NULL, NULL); /* use default handle */
 	mh1 = ymsghandler_create(ml1, NULL, NULL, &handle0);
 
@@ -113,15 +113,17 @@ test_msghandler(void) {
 	        sprintf(m->s, "ABC %d: message", i);
 		ymsghandler_post_exec(mh0, m, &free_msgB, &run);
 	}
+	usleep(1000 * 500);
 	while (ymsglooper_stop(ymsghandler_get_looper(mh0)));
 	while (ymsglooper_stop(ymsghandler_get_looper(mh1)));
-
-	ymsghandler_destroy(mh0);
-	ymsghandler_destroy(mh1);
 
 	while (!(ymsglooper_get_state(ml0) == YMSGLOOPER_TERMINATED
 		&& ymsglooper_get_state(ml1) == YMSGLOOPER_TERMINATED)
 	) { usleep(1000 * 50); }
+
+	ymsghandler_destroy(mh0);
+	ymsghandler_destroy(mh1);
+
 	ymsglooper_destroy(ml0);
 	ymsglooper_destroy(ml1);
 }

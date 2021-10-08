@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2021
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -34,6 +34,7 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 #include <errno.h>
+#include <sys/epoll.h>
 
 #include "common.h"
 #include "msg.h"
@@ -57,6 +58,20 @@ default_handle(
 	(*m->run)(m->data);
 }
 
+static void
+on_msgq_event(int fd, int events, void *data) {
+	struct ymsg *m;
+	struct ymsghandler *mh = data;
+	m = ymsgq_de(mh->mq);
+	/* TODO: Any good way to feedback to user about this error.
+	 * Fail to read from message Q.
+	 */
+	if (unlikely(!m))
+		return;
+	(*mh->handle)(mh, m);
+	ymsg_destroy(m);
+}
+
 struct ymsghandler *
 ymsghandler_create(
 	struct ymsglooper *ml,
@@ -64,27 +79,44 @@ ymsghandler_create(
 	void (*tagfree)(void *),
 	void (*handle)(struct ymsghandler *, const struct ymsg *)
 ) {
-	struct ymsghandler *mh;
+	struct ymsghandler *mh = NULL;
+	struct ymsgq *mq = NULL;
 	if (unlikely(!ml))
 		return NULL;
+	mq = ymsgq_create(-1);
+	if (unlikely(!mq))
+		goto fail;
 	mh = ymalloc(sizeof(*mh));
 	if (unlikely(!mh))
-		return NULL;
+		goto fail;
+	mh->mq = mq;
 	mh->ml = ml;
 	if (!handle)
 		handle = &default_handle;
 	mh->tag = tag;
 	mh->tagfree = tagfree;
 	mh->handle = handle;
+	ymsglooper_add_fd(ml, ymsgq_evfd(mq), EPOLLIN, &on_msgq_event, mh);
 	return mh;
+ fail:
+	if (mq)
+		ymsgq_destroy(mq);
+	if (mh)
+		yfree(mh);
+	return NULL;
 }
 
-void
+int
 ymsghandler_destroy(struct ymsghandler *mh) {
+	if (unlikely(!mh))
+		return -EINVAL;
+	if (YMSGLOOPER_TERMINATED != ymsglooper_get_state(mh->ml))
+		return -EPERM;
 	if (mh->tag && mh->tagfree)
 		(*mh->tagfree)(mh->tag);
-	if (likely(mh))
-		yfree(mh);
+	ymsgq_destroy(mh->mq);
+	yfree(mh);
+	return 0;
 }
 
 void *
@@ -95,6 +127,23 @@ ymsghandler_get_tag(struct ymsghandler *mh) {
 struct ymsglooper *
 ymsghandler_get_looper(struct ymsghandler *mh) {
 	return mh->ml;
+}
+
+int
+ymsghandler_post_data2(
+	struct ymsghandler *mh,
+	int code,
+	void *data,
+	void (*dfree)(void *),
+	uint8_t pri,
+	uint32_t opt
+) {
+	struct ymsg *m = ymsg_create();
+	if (unlikely(!m))
+		return -ENOMEM;
+	ymsg_set_data(m, pri, opt, code, data, dfree);
+	msg_set_handler(msg_mutate(m), mh);
+	return ymsgq_en(mh->mq, m);
 }
 
 int
@@ -114,20 +163,20 @@ ymsghandler_post_data(
 }
 
 int
-ymsghandler_post_data2(
+ymsghandler_post_exec2(
 	struct ymsghandler *mh,
-	int code,
-	void *data,
-	void (*dfree)(void *),
+	void *arg,
+	void (*argfree)(void *),
+	void (*run)(void *),
 	uint8_t pri,
 	uint32_t opt
 ) {
 	struct ymsg *m = ymsg_create();
 	if (unlikely(!m))
 		return -ENOMEM;
-	ymsg_set_data(m, pri, opt, code, data, dfree);
+	ymsg_set_exec(m, pri, opt, arg, argfree, run);
 	msg_set_handler(msg_mutate(m), mh);
-	return ymsgq_en(ymsglooper_get_msgq(mh->ml), m);
+	return ymsgq_en(mh->mq, m);
 }
 
 int
@@ -144,23 +193,6 @@ ymsghandler_post_exec(
 		run,
 		YMSG_PRI_NORMAL,
 		0);
-}
-
-int
-ymsghandler_post_exec2(
-	struct ymsghandler *mh,
-	void *arg,
-	void (*argfree)(void *),
-	void (*run)(void *),
-	uint8_t pri,
-	uint32_t opt
-) {
-	struct ymsg *m = ymsg_create();
-	if (unlikely(!m))
-		return -ENOMEM;
-	ymsg_set_exec(m, pri, opt, arg, argfree, run);
-	msg_set_handler(msg_mutate(m), mh);
-	return ymsgq_en(ymsglooper_get_msgq(mh->ml), m);
 }
 
 int

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2021
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -36,6 +36,9 @@
 
 #include <string.h>
 #include <pthread.h>
+#include <sys/epoll.h>
+#include <sys/eventfd.h>
+#include <stdint.h>
 #include <time.h>
 #include <errno.h>
 #include <unistd.h>
@@ -44,28 +47,26 @@
 #include "common.h"
 #include "yerrno.h"
 #include "ylog.h"
+#include "yut.h"
 #include "ymsgq.h"
 #include "msg.h"
 #include "ymsglooper.h"
 #include "msghandler.h"
 
-/**
- * [NOTE]: 'stop' field.
- * 'stop' field is NOT multithreading-safe(May NOT atomic. But, it's ok.
- * It's just boolean value. And if it's dirty due to any-reason
- *   (including race-condition), we can tell as 'stop == TRUE'.
- * So, we don't need to lock 'read' operation of 'stop'.
- * ('stop' field is read very frequently(every loop).
- * Therefore we can get good performance benefits.
- * But, in case of write, things are different.
- * Concurrent-wrting may result-in unexpected value.
- * 'write' operation should be synchronized.
- */
+struct looper_event_data {
+	struct ylistl_link lk;
+	int fd; /**< File descriptor added to epoll */
+	ymsglooper_eventcb_t cb; /**< Callback called  */
+	void *data; /**< User data */
+};
+
 struct ymsglooper {
-	struct ymsgq *mq; /**< Message Q. */
+	int epfd; /**< epoll fd */
+	int ctlfd; /**< control fd */
+	struct ylistl_link evds; /**< event datas */
+	struct looper_event_data ctled; /* ConTroL Event Data */
 	pthread_t thread; /**< Attached thread */
-	bool destroy_on_exit; /**< destroy instance on exiting thread */
-	pthread_mutex_t state_lock; /**< lock for {@code state} */
+	pthread_mutex_t lock; /**< lock general lock for msglooper */
 	volatile enum ymsglooper_state state; /**< state of looper */
 };
 
@@ -76,7 +77,6 @@ struct ymsglooper {
 struct looper_thread_share {
 	pthread_cond_t cond; /**< [IN] input of thread */
 	pthread_mutex_t lock; /**< [IN] input of thread */
-	bool destroy_on_exit; /**< [IN] destroy instance on exiting thread */
 	int result; /**< [OUT] 0: initial. >0 ready. -errno: err */
 	struct ymsglooper *ml; /**< [OUT] */
 };
@@ -89,79 +89,89 @@ static pthread_key_t _tkey;  /* thread key for msglooper */
  *
  *
  *****************************************************************************/
+static void
+looper_control(int fd, int events, void *data) {
+	/* nothing to do except for consume */
+	int64_t v;
+	if (unlikely(sizeof(v) != read(fd, &v, sizeof(v)))) {
+		/* TOOD: Any thing to do here ? */
+		;
+	}
+}
+
 static struct ymsglooper *
-create_msglooper(pthread_t thread, int msgq_capacity) {
+create_msglooper(pthread_t thread) {
+	struct epoll_event ev;
 	struct ymsglooper *ml = ymalloc(sizeof(*ml));
 	if (unlikely(!ml))
 		return NULL;
-	ml->mq = ymsgq_create(msgq_capacity);
-	if (unlikely(!ml->mq))
+	if (unlikely(0 > (ml->ctlfd = eventfd(0, 0))))
 		goto free_ml;
+	if (unlikely(0 > (ml->epfd = epoll_create1(EPOLL_CLOEXEC))))
+		goto close_ctlfd;
+	ylistl_init_link(&ml->evds);
+	ev.events = EPOLLIN;
+	ev.data.ptr = &ml->ctled;
+	ml->ctled.fd = ml->ctlfd;
+	ml->ctled.cb = &looper_control;
+	ml->ctled.data = NULL;
+	epoll_ctl(ml->epfd, EPOLL_CTL_ADD, ml->ctlfd, &ev);
 	yassert(thread); /* NOT NULL */
 	ml->thread = thread;
-	if (unlikely(pthread_mutex_init(&ml->state_lock, NULL)))
-		goto free_mq;
+	if (unlikely(pthread_mutex_init(&ml->lock, NULL)))
+		goto close_epfd;
 	return ml;
-
- free_mq:
-	ymsgq_destroy(ml->mq);
+ close_epfd:
+	close(ml->epfd);
+ close_ctlfd:
+	close(ml->ctlfd);
  free_ml:
 	yfree(ml);
 	return NULL;
 }
 
 static void
-dummy_do_nothing(void *arg __unused) { }
-
-static void
 destroy_msglooper(void *arg) {
 	/* ignore all return value intentionally.
 	 * We can't do anything for errors
 	 */
+	struct looper_event_data *cur, *tmp;
 	struct ymsglooper *ml = (struct ymsglooper *)arg;
-	pthread_mutex_destroy(&ml->state_lock);
-	ymsgq_destroy(ml->mq);
+	ylistl_foreach_item_safe(
+		cur, tmp, &ml->evds, struct looper_event_data, lk
+	) {
+		ylistl_remove(&cur->lk);
+		yfree(cur);
+	}
+	pthread_mutex_destroy(&ml->lock);
+	close(ml->ctlfd);
+	close(ml->epfd);
 	yfree(ml);
 }
 
-static inline void
-lock_state(struct ymsglooper *ml) {
-        fatali0(pthread_mutex_lock(&ml->state_lock));
-}
 
 static inline void
-unlock_state(struct ymsglooper *ml) {
-        fatali0(pthread_mutex_unlock(&ml->state_lock));
+do_lock(struct ymsglooper *ml) {
+        fatali0(pthread_mutex_lock(&ml->lock));
 }
 
-static void
-set_state_locked(struct ymsglooper *ml, enum ymsglooper_state state) {
-	ml->state = state;
+static inline void
+do_unlock(struct ymsglooper *ml) {
+        fatali0(pthread_mutex_unlock(&ml->lock));
 }
 
-static void
+static inline void
 set_state(struct ymsglooper *ml, enum ymsglooper_state state) {
-	lock_state(ml);
-	set_state_locked(ml, state);
-	unlock_state(ml);
+	__atomic_store_n(&ml->state, state, __ATOMIC_SEQ_CST);
 }
 
-static enum ymsglooper_state
-get_state_locked(struct ymsglooper *ml) {
-	return ml->state;
-}
-
-static enum ymsglooper_state
+static inline enum ymsglooper_state
 get_state(struct ymsglooper *ml) {
-	enum ymsglooper_state st;
-	lock_state(ml);
-	st = get_state_locked(ml);
-	unlock_state(ml);
-	return st;
+	return __atomic_load_n(&ml->state, __ATOMIC_SEQ_CST);
 }
 
 
-static struct ymsg *
+static inline struct ymsg *
 create_dummy_msg(void) {
 	/* initialized dummy message. */
 	struct ymsg *m = ymsg_create();
@@ -169,13 +179,18 @@ create_dummy_msg(void) {
 	return m;
 }
 
+static inline void
+looper_stop(void *arg) {
+	struct ymsglooper *ml = arg;
+	ymsglooper_stop(ml);
+}
+
 static void *
 looper_thread(void *arg) {
 	int r;
-	void (*cleanup)(void *);
 	struct looper_thread_share *ts = (struct looper_thread_share *)arg;
 	dfpr("looper thread");
-	r = ymsglooper_create(0, ts->destroy_on_exit);
+	r = ymsglooper_create();
         fatali0(pthread_mutex_lock(&ts->lock));
 	if (unlikely(r)) {
 		ts->result = r;
@@ -190,8 +205,7 @@ looper_thread(void *arg) {
 	if (unlikely(r))
 	    return NULL;
 
-	cleanup = ts->destroy_on_exit ? &destroy_msglooper : &dummy_do_nothing;
-	pthread_cleanup_push(cleanup, ts->ml);
+	pthread_cleanup_push(&looper_stop, ts->ml);
 	ymsglooper_loop();
 	pthread_cleanup_pop(1); /* execute cleanup */
 	return NULL;
@@ -203,16 +217,15 @@ looper_thread(void *arg) {
  *
  *****************************************************************************/
 int
-ymsglooper_create(int msgq_capacity, bool destroy_on_exit) {
+ymsglooper_create(void) {
 	struct ymsglooper *ml;
 	ml = ymsglooper_get();
 	if (unlikely(ml))
 		/* looper is already assigned! */
 		return -EPERM;
-	ml = create_msglooper(pthread_self(), msgq_capacity);
+	ml = create_msglooper(pthread_self());
 	if (unlikely(!ml))
 		return -EINVAL; /* unknown */
-	ml->destroy_on_exit = destroy_on_exit;
 	fatali0(pthread_setspecific(_tkey, ml));
 	set_state(ml, YMSGLOOPER_READY);
 	return 0;
@@ -227,49 +240,86 @@ ymsglooper_destroy(struct ymsglooper *ml) {
 }
 
 int
+ymsglooper_add_fd(struct ymsglooper *ml,
+	int fd, int events, ymsglooper_eventcb_t cb, void *data
+) {
+	int err;
+	struct epoll_event epev;
+	struct looper_event_data *ed;
+
+	if (unlikely(!cb))
+		return -EINVAL;
+
+	ed = ymalloc(sizeof(*ed));
+	if (unlikely(!ed))
+		return -ENOMEM;
+	ed->fd = fd;
+	ed->data = data;
+	ed->cb = cb;
+	epev.events = events;
+	epev.data.ptr = ed;
+	if (unlikely(epoll_ctl(ml->epfd, EPOLL_CTL_ADD, fd, &epev))) {
+		err = errno;
+		yfree(ed);
+		return -err;
+	}
+	do_lock(ml);
+	ylistl_add_last(&ml->evds, &ed->lk);
+	do_unlock(ml);
+	return 0;
+}
+
+int
+ymsglooper_del_fd(struct ymsglooper *ml, int fd) {
+	struct looper_event_data *cur;
+	do_lock(ml);
+	ylistl_foreach_item(cur, &ml->evds, struct looper_event_data, lk) {
+		if (fd == cur->fd) {
+			ylistl_remove(&cur->lk);
+			yfree(cur);
+			break;
+		}
+	}
+	do_unlock(ml);
+	return 0;
+}
+
+int
 ymsglooper_loop(void) {
-	int r __unused;
+#define MAX_EP_EVENTS 64
+	int r;
+	struct epoll_event epevs[MAX_EP_EVENTS];
+	enum ymsglooper_state expected = YMSGLOOPER_READY;
 	struct ymsglooper *ml = ymsglooper_get();
 	if (unlikely(!ml))
 		return -EPERM;
+	r = __atomic_compare_exchange_n(&ml->state, &expected,
+		YMSGLOOPER_LOOP, FALSE, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+	if (!r) goto skip_loop;
 	dfpr("start LOOP!");
-	lock_state(ml);
-	if (YMSGLOOPER_READY != get_state_locked(ml)) {
-		unlock_state(ml);
-		goto skip_loop;
-	}
-	set_state_locked(ml, YMSGLOOPER_LOOP);
-	unlock_state(ml);
 	while (TRUE) {
-		struct ymsg *m = ymsgq_de(ml->mq);
-		struct ymsg_ *m_ = msg_mutate(m);
-		/* Operation is NOT locked intentionally.
-		 * See comment for 'struct ymsglooper'.
-		 */
+		int i, nfds;
+		nfds = epoll_wait(ml->epfd, epevs, yut_arrsz(epevs), -1);
+		for (i = 0; i < nfds; i++) {
+			struct looper_event_data *ed = epevs[i].data.ptr;
+			(*ed->cb)(ed->fd, epevs[i].events, ed->data);
+		}
 		if (YMSGLOOPER_STOPPING == get_state(ml)) {
-			if (likely(m))
-				ymsg_destroy(m);
 			dfpr("break!!!! from loop!");
 			break;
 		}
-		if (unlikely(!m))
-			continue;
-		/* Handler code here! */
-		yassert(m_->handler && m_->handler->handle);
-		(*m_->handler->handle)(m_->handler, m);
-		ymsg_destroy(m);
 	}
  skip_loop:
 	r = pthread_setspecific(_tkey, NULL);
 	yassert(!r);
 	set_state(ml, YMSGLOOPER_TERMINATED);
 	return 0;
+#undef MAX_EP_EVENTS
 }
 
 struct ymsglooper *
-ymsglooper_start_looper_thread(bool destroy_on_exit) {
-	int r __unused;
-	int r0 __unused;
+ymsglooper_start_looper_thread(void) {
+	int r, r0;
 	pthread_t thread;
 	struct looper_thread_share ts;
 
@@ -283,7 +333,6 @@ ymsglooper_start_looper_thread(bool destroy_on_exit) {
 	r = pthread_mutex_init(&ts.lock, NULL);
 	if (unlikely(r))
 		goto free_cond;
-	ts.destroy_on_exit = destroy_on_exit;
 	r = pthread_create(
 		&thread,
 		NULL,
@@ -329,12 +378,6 @@ ymsglooper_start_looper_thread(bool destroy_on_exit) {
 	return ts.ml;
 }
 
-struct ymsgq *
-ymsglooper_get_msgq(struct ymsglooper *ml) {
-	/* ml->mq is read only. So, lock is NOT required */
-	return ml->mq;
-}
-
 pthread_t
 ymsglooper_get_thread(const struct ymsglooper *ml) {
 	/* ml->thread is read only. So, lock is NOT required */
@@ -353,26 +396,25 @@ ymsglooper_get_state(struct ymsglooper *ml) {
 
 int
 ymsglooper_stop(struct ymsglooper *ml) {
-	int r __unused;
-	if (ymsgq_sz(ml->mq) > 0)
-		return -EPERM; /* There is not-handled-message. */
-	lock_state(ml);
-	switch (get_state_locked(ml)) {
-	case YMSGLOOPER_LOOP:
-		r = ymsgq_en(ml->mq, create_dummy_msg());
-		if (unlikely(r)) {
-			unlock_state(ml);
-			return r;
-		}
-		/* missing break in intention */
-		/* @suppress("No break at end of case") */
+	enum ymsglooper_state st;
+	st = __atomic_exchange_n(&ml->state,
+		YMSGLOOPER_STOPPING, __ATOMIC_SEQ_CST);
+	switch (st) {
 	case YMSGLOOPER_READY:
-		set_state_locked(ml, YMSGLOOPER_STOPPING);
-		/* @suppress("No break at end of case") */
-	default: /* do nothing */
-		;
+	case YMSGLOOPER_LOOP: {
+		int64_t v = 1;
+		if (unlikely(sizeof(v) != write(ml->ctlfd, &v, sizeof(v)))) {
+			set_state(ml, YMSGLOOPER_LOOP);
+			return -errno;
+		}
+	} break;
+	case YMSGLOOPER_TERMINATED:
+		/* back to terminated state */
+		set_state(ml, YMSGLOOPER_TERMINATED);
+	break;
+	case YMSGLOOPER_STOPPING:
+	break; /* do nothing */
 	}
-	unlock_state(ml);
 	return 0;
 }
 

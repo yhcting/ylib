@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2021
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -70,6 +70,9 @@ ymsghandler_create(
 
 /**
  * Destroy handler.
+ * ymsghandler SHOULD be destroied after looper is terminated.
+ * But, looper SHOULD NOT be destroyed before handler is destroyed.
+ * TODO: handler should be able to be destroyed regardless of msglooper
  */
 YYEXPORT void
 ymsghandler_destroy(struct ymsghandler *);

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2017
+ * Copyright (C) 2017, 2021
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -171,7 +171,7 @@ test_taskdepman(void) {
 	struct ymsghandler *mh;
 	srand(time(NULL));
 
-	ml = ymsglooper_start_looper_thread(FALSE);
+	ml = ymsglooper_start_looper_thread();
 	mh = ymsghandler_create(ml, NULL, NULL, NULL); /* use default handle */
 
 	ylogv("----- TC0 --------\n");
@@ -183,11 +183,11 @@ test_taskdepman(void) {
 	ylogv("----- TC3 --------\n");
 	tc3(mh);
 
-	/* clean up all others */
-	ymsghandler_destroy(mh);
 	ymsglooper_stop(ml);
 	while (YMSGLOOPER_TERMINATED != ymsglooper_get_state(ml))
 		usleep(10 * 1000);
+	/* clean up all others */
+	ymsghandler_destroy(mh);
 	ymsglooper_destroy(ml);
 }
 

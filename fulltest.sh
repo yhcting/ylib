@@ -2,9 +2,9 @@
 
 set -e
 
-topdir=$(readlink -e $(dirname $0))
+wsdir="$(realpath $(dirname $0))"
 
-pushd $topdir >/dev/null
+pushd "$wsdir" >/dev/null
 
 function usage() {
     prog=$1
@@ -57,6 +57,11 @@ shift $((OPTIND-1))
 # Test doxygen
 # ------------
 if [[ "$skipDoxy" != "true" ]]; then
+    if [[ -z $(which doxygen) ]]; then
+        echo "doxygen not found!" >&2
+        exit 1
+    fi
+
     doxyerr=$(doxygen Doxyfile 2>&1 1>/dev/null | wc -l)
     if [ 0 != $doxyerr ]; then
         # Doxygen also has lots of unknown bugs.
@@ -72,7 +77,9 @@ if [[ "$skipUnit" != "true" ]]; then
     cfgopts="--with-debug"
     for opt in "" $cfgopts; do
         git clean -dfx
-        ./configure-full --prefix="$topdir" $opt
+        mkdir -p build
+        cd build
+        "$wsdir/configure-full" --prefix="$wsdir" $opt
         make -j$nrcores install
         if [ x$skipUnit != xtrue -a -e bin/y ]; then
             bin/y

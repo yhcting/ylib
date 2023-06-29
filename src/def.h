@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2015
+ * Copyright (C) 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -34,13 +34,12 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-#ifndef __DEf_h__
-#define __DEf_h__
+#pragma once
 
 #include "ydef.h"
 
 #ifndef CONFIG_IGNORE_CONFIG
-#  include "config.h"
+#include "config.h"
 #endif
 
 
@@ -67,14 +66,14 @@
 /* GNU C Specific */
 #ifdef __GNUC__
 
-#	define __barrier() __asm__ __volatile__("": : :"memory")
-#	define __unused __attribute__((unused))
+#define barrier __asm__ __volatile__("": : :"memory")
+#define unused __attribute__((unused))
 
 #else /* __GNUC__ */
 
-#	error barrier() should be defined.
-#	define __barrier()
-#	define __unused
+#error barrier() should be defined.
+#define barrier
+#define unused
 
 #endif /* __GNUC__ */
 
@@ -93,6 +92,3 @@ typedef int8_t s8;
 typedef int16_t s16;
 typedef int32_t s32;
 typedef int64_t s64;
-
-
-#endif /* __DEf_h__ */

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -41,8 +41,7 @@
  * Only crc16 and crc32 are supported.
  */
 
-#ifndef __YCRc_h__
-#define __YCRc_h__
+#pragma once
 
 #include "ydef.h"
 
@@ -63,6 +62,3 @@ ycrc16(uint16_t crc, const uint8_t *data, uint32_t len);
  */
 YYEXPORT uint32_t
 ycrc32(uint32_t crc, const uint8_t *data, uint32_t len);
-
-
-#endif /* __YCRc_h__ */

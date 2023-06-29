@@ -79,11 +79,11 @@ destroy_lock(struct ypool *p) {
  *****************************************************************************/
 struct ypool *
 ypool_create(int capacity) {
-        int r __unused;
-        struct ypool *p;
-        p = ycalloc(1, sizeof(*p));
-        if (unlikely(!p))
-                return NULL;
+	unused int r;
+	struct ypool *p;
+	p = ycalloc(1, sizeof(*p));
+	if (unlikely(!p))
+		return NULL;
 	init_lock(p);
 	ylistl_init_link(&p->hd);
 	p->capacity = capacity;
@@ -93,7 +93,7 @@ ypool_create(int capacity) {
 void
 ypool_destroy(struct ypool *p) {
 	destroy_lock(p);
-        yfree(p);
+	yfree(p);
 }
 
 struct ylistl_link *
@@ -107,7 +107,7 @@ ypool_get(struct ypool *p) {
 	p->sz--;
  done_unlock:
 	unlock(p);
-        return lk;
+	return lk;
 }
 
 bool

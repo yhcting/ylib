@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -34,8 +34,7 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-#ifndef __TESt_h__
-#define __TESt_h__
+#pragma once
 
 #include "common.h"
 
@@ -47,22 +46,17 @@ void dunregister_clearfn(void (*fn)(void), const char *mod);
 
 
 #define TESTFN(name)					\
-	static void __tst_register_test_##name(void)	\
-		__attribute__ ((constructor)); 		\
+	__attribute__ ((constructor))			\
 	static void __tst_register_test_##name(void) {	\
 		dregister_tstfn(&test_##name, #name);	\
 	}						\
-	static void __tst_unregister_test_##name(void)	\
-		 __attribute__ ((destructor));		\
+	__attribute__ ((destructor))			\
 	static void __tst_unregister_test_##name(void) {\
 		dunregister_tstfn(&test_##name, #name);	\
 	}
 
 #define CLEARFN(name)					\
-	static void __tst_register_clear_##name(void)	\
-		__attribute__ ((constructor));		\
+	__attribute__ ((constructor))			\
 	static void __tst_register_clear_##name(void) {	\
 		dregister_clearfn(&clear_##name, #name);\
 	}
-
-#endif /* __TESt_h__ */

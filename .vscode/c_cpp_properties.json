@@ -3,12 +3,14 @@
         {
             "name": "ylib",
             "defines": [
-                "_GNU_SOURCE"
+                "_GNU_SOURCE",
+                "CONFIG_DEBUG"
             ],
             // Set priority on ardk SDK.
             "includePath": [
                 "${workspaceFolder}",
-                "${workspaceFolder}/src"
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/build"
             ]
         }
     ],

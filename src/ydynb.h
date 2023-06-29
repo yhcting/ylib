@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header file for dynamic buffer
  */
 
-#ifndef __YDYNb_h__
-#define __YDYNb_h__
+#pragma once
 
 #include <memory.h>
 #include <string.h>
@@ -223,7 +222,7 @@ ydynb_expand(struct ydynb *);
 static YYINLINE int
 ydynb_expand2(struct ydynb *b, uint32_t sz_required) {
 	while (sz_required > ydynb_freesz(b)
-	       && !ydynb_expand(b));
+		&& !ydynb_expand(b));
 	return sz_required <= ydynb_freesz(b) ? 0 : -ENOMEM;
 }
 
@@ -258,6 +257,3 @@ static YYINLINE int
 ydynb_append(struct ydynb *b, const void *ea) {
 	return ydynb_appends(b, ea, 1);
 }
-
-
-#endif /* __YDYNb_h__ */

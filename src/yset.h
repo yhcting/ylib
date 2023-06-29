@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header for 'set' module
  */
 
-#ifndef __YSEt_h__
-#define __YSEt_h__
+#pragma once
 
 #include "yhash.h"
 
@@ -125,13 +124,13 @@ yset_sz(const yset_t s) {
  *
  * @param s Set
  * @param[in,out] elemsbuf
- *	Buffer to contain pointer of element.
- *	'shallow copy' of elements are stored at buffer.
- *	So, DO NOT free/modify element's value pointed.
+ * Buffer to contain pointer of element.
+ * 'shallow copy' of elements are stored at buffer.
+ * So, DO NOT free/modify element's value pointed.
  * @param bufsz sizeof @p elemsbuf
  * @return number keys assigned to @p elemsbuf
- *	`return value == bufsz` may mean that @p elemsbuf is
- *	not large enough to contains all elements in the set.
+ * `return value == bufsz` may mean that @p elemsbuf is
+ * not large enough to contains all elements in the set.
  */
 static YYINLINE uint32_t
 yset_elements(
@@ -150,7 +149,7 @@ yset_elements(
  * @param s Set
  * @param elem data value(item)
  * @return @c -errno if fails.
- *	Otherwise # of newly added item (0 means overwritten).
+ * Otherwise # of newly added item (0 means overwritten).
  */
 static YYINLINE int
 yset_add(yset_t s, void *elem) {
@@ -164,7 +163,7 @@ yset_add(yset_t s, void *elem) {
  * @param s Set
  * @param elem data value(item)
  * @return @c -errno if fails.
- * 	Otherwise # of deleted (0 means nothing to delete).
+ * Otherwise # of deleted (0 means nothing to delete).
  */
 static YYINLINE int
 yset_remove(yset_t s, const void *elem) {
@@ -218,6 +217,3 @@ yset_union(const yset_t, const yset_t);
  */
 YYEXPORT yset_t
 yset_diff(const yset_t, const yset_t);
-
-
-#endif /* __YSEt_h__ */

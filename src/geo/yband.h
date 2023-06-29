@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2015
+ * Copyright (C) 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -42,8 +42,7 @@
  * Band is area between two lines that are parallel to x-y axis.
  */
 
-#ifndef __YBANd_h__
-#define __YBANd_h__
+#pragma once
 
 #include "../ydef.h"
 
@@ -188,5 +187,3 @@ ygeob_analyze_layout(
 		return YBAND_OVERLAP;
 	}
 }
-
-#endif /* __YBANd_h__ */

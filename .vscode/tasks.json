@@ -8,6 +8,9 @@
             "type": "shell",
             "command": "make",
             "args": ["-j", "install"],
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            },
             "problemMatcher": {
                 "base": "$gcc",
                 "fileLocation": ["relative", "${workspaceFolder}/src"]
@@ -19,6 +22,9 @@
             "type": "shell",
             "command": "make",
             "args": ["-j", "install"],
+            "options": {
+                "cwd": "${workspaceFolder}/build"
+            },
             "problemMatcher": {
                 "base": "$gcc",
                 "fileLocation": ["relative", "${workspaceFolder}/tests"]

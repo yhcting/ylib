@@ -119,9 +119,9 @@ test_operation(void) {
 	 *               C   E  H
 	 */
 	{ /* Just scope */
-		static const char __vseq[] = {
+		static const char vseq[] = {
 			'F', 'B', 'G', 'A', 'D', 'I', 'C', 'E', 'H' };
-		test_iterator(LK(F), YTREELI_LEVEL_OT, __vseq);
+		test_iterator(LK(F), YTREELI_LEVEL_OT, vseq);
 	}
 
 	ytreel_remove(LK(I));
@@ -137,9 +137,9 @@ test_operation(void) {
 	 *               C   E
 	 */
 	{ /* Just scope */
-		static const char __vseq[] = {
+		static const char vseq[] = {
 			'F', 'B', 'G', 'I', 'A', 'D', 'H', 'C', 'E' };
-		test_iterator(LK(F), YTREELI_LEVEL_OT, __vseq);
+		test_iterator(LK(F), YTREELI_LEVEL_OT, vseq);
 	}
 }
 

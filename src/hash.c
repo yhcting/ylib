@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2021
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2021, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -34,11 +34,9 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-
 #include <memory.h>
 #include <string.h>
 #include <errno.h>
-#include <stdint.h>
 
 #include "common.h"
 #include "yhash.h"
@@ -63,8 +61,8 @@ typedef void (*free_func_t)(void *);
 struct yhash {
 	struct yhashl h;
 	void (*vfree)(void *); /* free for hash value */
-        void (*kfree)(void *); /* free for hash key */
-        kcp_func_t kcp; /* copy hash key */
+	void (*kfree)(void *); /* free for hash key */
+	kcp_func_t kcp; /* copy hash key */
 };
 
 
@@ -78,12 +76,12 @@ struct yhash {
  *--------------------------------------------------------------------------*/
 static INLINE void
 free_default(void *v) {
-        if (likely(v))
-                yfree(v);
+	if (likely(v))
+		yfree(v);
 }
 
 static INLINE void
-free_noop(void *v __unused) {
+free_noop(unused void *v) {
 	return;
 }
 
@@ -102,14 +100,14 @@ kcp_shallow(const void **out, const void *k) {
 
 static INLINE int
 kcp_i(const void **ni, const void *i) {
-        /* return address value itself */
+	/* return address value itself */
 	*ni = i;
-        return 0;
+	return 0;
 }
 
 static INLINE u32
 hfunc_i(const void *k) {
-        return (intptr_t)k & 0xffffffff;
+	return (intptr_t)k & 0xffffffff;
 }
 
 /**
@@ -120,24 +118,24 @@ kcp_s(const void **news, const void *s) {
 	void *ns = ystrdup(s);
 	if (unlikely(!ns))
 		return -ENOMEM;
-        *news = ns;
+	*news = ns;
 	return 0;
 }
 
 static INLINE void
 kfree_s(void *s) {
-        if (likely(s))
-                yfree(s);
+	if (likely(s))
+		yfree(s);
 }
 
 static INLINE int
 keq_s(const void *s0, const void *s1) {
-        return strcmp((const char *)s0, (const char *)s1);
+	return strcmp((const char *)s0, (const char *)s1);
 }
 
 static INLINE u32
 hfunc_s(const void *k) {
-        return ycrc32(0, (const u8 *)k, (u32)strlen((const char *)k) + 1);
+	return ycrc32(0, (const u8 *)k, (u32)strlen((const char *)k) + 1);
 }
 
 /****************************************************************************
@@ -212,9 +210,9 @@ hash_create_internal(
 		yfree(h);
 		return NULL;
 	}
-        h->vfree = vfree;
-        h->kfree = kfree;
-        h->kcp = kcp;
+	h->vfree = vfree;
+	h->kfree = kfree;
+	h->kcp = kcp;
 	return h;
 }
 
@@ -269,7 +267,7 @@ hash_set(
  ****************************************************************************/
 struct yhash *
 yhashi_create(void (*vfree)(void *)) {
-        return hash_create_internal(
+	return hash_create_internal(
 		hfree_func(vfree),
 		&free_noop, /* kfree */
 		&kcp_i, /* kcp */
@@ -279,7 +277,7 @@ yhashi_create(void (*vfree)(void *)) {
 
 struct yhash *
 yhashs_create(void (*vfree)(void *), bool key_deepcopy) {
-        return hash_create_internal(
+	return hash_create_internal(
 		hfree_func(vfree),
 		&kfree_s, /* kfree */
 		key_deepcopy ? &kcp_s : &kcp_shallow, /* kcp */
@@ -297,7 +295,7 @@ yhasho_create(
 ) {
 	/* Invalid request */
 	if (unlikely(!hfunc)) return NULL;
-        return hash_create_internal(
+	return hash_create_internal(
 		hfree_func(vfree),
 		hfree_func(keyfree),
 		keycopy ? keycopy : &kcp_shallow, /* kcp */

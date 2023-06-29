@@ -38,7 +38,6 @@
 #include <memory.h>
 #include <string.h>
 #include <errno.h>
-#include <stdint.h>
 
 #include "common.h"
 #include "yhashl.h"
@@ -63,7 +62,7 @@ hf_default_ptr(const void *k) {
 
 static u32
 hf_default_str(const void *k) {
-        return ycrc32(0, (const u8 *)k, (u32)strlen((const char *)k));
+	return ycrc32(0, (const u8 *)k, (u32)strlen((const char *)k));
 }
 
 static int

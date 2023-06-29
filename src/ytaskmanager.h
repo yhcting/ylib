@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016, 2017
+ * Copyright (C) 2016, 2017, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header
  */
 
-#ifndef __YTASKMANAGEr_h__
-#define __YTASKMANAGEr_h__
+#pragma once
 
 #include <pthread.h>
 
@@ -85,7 +84,7 @@ struct ytaskmanager_qevent_listener {
 	/**
 	 * Callback function executed at owner's context.
 	 */
- 	void (*on_event)(
+	void (*on_event)(
 		struct ytaskmanager_qevent_listener *,
 		struct ytaskmanager *,
 		enum ytaskmanager_qevent,
@@ -108,8 +107,8 @@ struct ytaskmanager_qevent_listener {
  *
  * @param owner Context owner in where listener is executed.
  * @param slots Maximum number of slots in where task can run.
- *	That is, this value is max-number of concurrency.
- *	< 0 means not-limited.
+ * That is, this value is max-number of concurrency.
+ * < 0 means not-limited.
  * @return NULL if fails.
  */
 
@@ -162,8 +161,7 @@ ytaskmanager_get_tag(struct ytaskmanager *, const char *key);
 /**
  * Removes tag.
  *
- * @return Number of deleted tags (0 means nothing deleted).
- *	@c -errno if fails.
+ * @return Number of deleted tags (0 means nothing deleted). @c -errno if fails.
  */
 YYEXPORT int
 ytaskmanager_remove_tag(struct ytaskmanager *, const char *key);
@@ -204,9 +202,8 @@ ytaskmanager_cancel_all(struct ytaskmanager *);
 
 /**
  * @param arg Argument passed to @p match function
- * @param match Return whether task matches requirement.
- *	TRUE is returned by @p match, the task becomes final
- *	return value of this interface function.
+ * @param match Return whether task matches requirement. TRUE is returned
+ * by @p match, the task becomes final return value of this interface function.
  * @return Task matched.
  */
 YYEXPORT struct ytask *
@@ -251,6 +248,3 @@ YYEXPORT int
 ytaskmanager_remove_qevent_listener(
 	struct ytaskmanager *,
 	struct ytaskmanager_qevent_listener_handle *);
-
-
-#endif /* __YTASKMANAGEr_h__ */

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016, 2017
+ * Copyright (C) 2016, 2017, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header
  */
 
-#ifndef __YTASKDEPMAn_h__
-#define __YTASKDEPMAn_h__
+#pragma once
 
 #include "ydef.h"
 
@@ -58,7 +57,7 @@ enum ytaskdepman_errcode {
 	YTASKDEPMAN_MULTI_ROOT, /**< More than one root tasks are detectded */
 	/**
 	 * Isolated task(Tasks there is NO dependency path from root task)
-	 *   is detected.
+	 * is detected.
 	 */
 	YTASKDEPMAN_ISOLATED_TASK,
 };
@@ -141,7 +140,7 @@ ytaskdepman_remove_dependency(
 /**
  * @param roottsk root(target) task. NULL is allowed.
  * @return enum @ref ytaskdepman_errcode value if success.
- * 	Otherwise @c -errno.
+ * Otherwise @c -errno.
  */
 YYEXPORT int
 ytaskdepman_verify(struct ytaskdepman *, struct ytask **roottsk);
@@ -160,5 +159,3 @@ ytaskdepman_start(struct ytaskdepman *);
  */
 YYEXPORT int
 ytaskdepman_cancel(struct ytaskdepman *);
-
-#endif /* __YTASKDEPMAn_h__ */

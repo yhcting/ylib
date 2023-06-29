@@ -82,7 +82,7 @@ run(void *a) {
 
 
 static void
-handle0(struct ymsghandler *handler __unused,
+handle0(unused struct ymsghandler *handler,
 	const struct ymsg *m) {
 	if (YMSG_TYP_DATA == m->type) {
 		struct msgA *ma = (struct msgA *)m->data;
@@ -110,7 +110,7 @@ test_msghandler(void) {
 	for (i = 0; i < 10; i++) {
 		struct msgB *m = ymalloc(sizeof(*m));
 		m->s = ymalloc(100);
-	        sprintf(m->s, "ABC %d: message", i);
+		sprintf(m->s, "ABC %d: message", i);
 		ymsghandler_post_exec(mh0, m, &free_msgB, &run);
 	}
 	usleep(1000 * 500);

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header to use ythreadex in inside library
  */
 
-#ifndef __THREADEx_h__
-#define __THREADEx_h__
+#pragma once
 
 #include "ythreadex.h"
 #include "def.h"
@@ -90,6 +89,3 @@ threadex_init(
  */
 int
 threadex_clean(struct ythreadex *);
-
-
-#endif /* __THREADEx_h__ */

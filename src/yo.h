@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header for simple object knowing how to free itself.
  */
 
-#ifndef __Yo_h__
-#define __Yo_h__
+#pragma once
 
 #include "ydef.h"
 
@@ -48,11 +47,11 @@
  * To easy handle simple multiple value object.
  */
 struct yo {
-        void *o0; /**< user object0 */
-        void *o1; /**< user object1 */
-        void *o2; /**< user object2 */
-        void *o3; /**< user object3 */
-        void *o4; /**< user object4 */
+	void *o0; /**< user object0 */
+	void *o1; /**< user object1 */
+	void *o2; /**< user object2 */
+	void *o3; /**< user object3 */
+	void *o4; /**< user object4 */
 };
 
 /**
@@ -129,5 +128,3 @@ yocreate0(void *o0, void (*ofree0)(void *)) {
  */
 YYEXPORT void
 yodestroy(struct yo *);
-
-#endif /*__Yo_h__ */

@@ -85,8 +85,8 @@ struct lnode {
 
 static INLINE void
 lru_free_default(void *v) {
-        if (likely(v))
-                yfree(v);
+	if (likely(v))
+		yfree(v);
 }
 
 static INLINE u32

@@ -84,7 +84,7 @@ make_test_graph(struct ygraph *g) {
 	struct mynode *v000, *v001, *v002, *v003, *v012, *v022, *v032;
 	struct mynode *v112;
 
-#define __add_v(g, N, NAMe)			\
+#define add_v(g, N, NAMe)			\
 	do {					\
 		N = ymalloc(sizeof(*N));	\
 		N->name = NAMe;			\
@@ -92,36 +92,36 @@ make_test_graph(struct ygraph *g) {
 		ygraph_add_vertex(g, &N->v);	\
 	} while (0)
 
-#define __add_edge(g, oe, mn0, mn1) \
+#define add_edge(g, oe, mn0, mn1) \
 	ygraph_add_edge(g, oe, &mn0->v, &mn1->v);
 
-	__add_v(g, v000, "v000");
-	__add_v(g, v001, "v001");
-	__add_v(g, v002, "v002");
-	__add_v(g, v003, "v003");
-	__add_v(g, v012, "v012");
-	__add_v(g, v022, "v022");
-	__add_v(g, v032, "v032");
-	__add_v(g, v112, "v112");
+	add_v(g, v000, "v000");
+	add_v(g, v001, "v001");
+	add_v(g, v002, "v002");
+	add_v(g, v003, "v003");
+	add_v(g, v012, "v012");
+	add_v(g, v022, "v022");
+	add_v(g, v032, "v032");
+	add_v(g, v112, "v112");
 
-	__add_edge(g, NULL, v000, v001);
-	__add_edge(g, NULL, v000, v002);
-	__add_edge(g, NULL, v000, v003);
-	__add_edge(g, NULL, v000, v022);
-	__add_edge(g, NULL, v001, v001);
-	__add_edge(g, NULL, v002, v012);
-	__add_edge(g, NULL, v002, v022);
-	__add_edge(g, NULL, v002, v003);
-	__add_edge(g, NULL, v003, v022);
-	__add_edge(g, NULL, v012, v002);
-	__add_edge(g, NULL, v022, v002);
-	__add_edge(g, NULL, v022, v000);
-	__add_edge(g, NULL, v022, v022);
-	__add_edge(g, NULL, v032, v002);
-	__add_edge(g, NULL, v112, v012);
+	add_edge(g, NULL, v000, v001);
+	add_edge(g, NULL, v000, v002);
+	add_edge(g, NULL, v000, v003);
+	add_edge(g, NULL, v000, v022);
+	add_edge(g, NULL, v001, v001);
+	add_edge(g, NULL, v002, v012);
+	add_edge(g, NULL, v002, v022);
+	add_edge(g, NULL, v002, v003);
+	add_edge(g, NULL, v003, v022);
+	add_edge(g, NULL, v012, v002);
+	add_edge(g, NULL, v022, v002);
+	add_edge(g, NULL, v022, v000);
+	add_edge(g, NULL, v022, v022);
+	add_edge(g, NULL, v032, v002);
+	add_edge(g, NULL, v112, v012);
 
-#undef __add_edge
-#undef __add_v
+#undef add_edge
+#undef add_v
 }
 
 

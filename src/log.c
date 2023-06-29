@@ -50,7 +50,7 @@
 /**
  * global variable is used for performance.
  */
-enum yloglv ___yloglv;
+enum yloglv yloglv___;
 
 static struct {
 	int stdfd;
@@ -103,9 +103,13 @@ write_fd(int fd, const char *buf, int sz) {
  *
  *****************************************************************************/
 void
-___ylog_write(enum yloglv lv,
-	      const char *file, int lineno,
-	      const char *fmt, ...) {
+ylog_write___(
+	enum yloglv lv,
+	const char *file,
+	int lineno,
+	const char *fmt,
+	...
+) {
 	int r, fd;
 	struct timespec tm;
 	char *buf = get_buffer();
@@ -160,7 +164,7 @@ minit(const struct ylib_config *cfg) {
 		return -r;
 
 	/* Set to default value */
-	___yloglv = YLOG_WARN;
+	yloglv___ = YLOG_WARN;
 	_cfg.stdfd = STDOUT_FILENO;
 	_cfg.errfd = STDERR_FILENO;
 
@@ -173,7 +177,7 @@ minit(const struct ylib_config *cfg) {
 		_cfg.errfd = cfg->ylog_errfd;
 	if (unlikely(YLOG_VERBOSE <= cfg->ylog_level
 		|| YLOG_FATAL >= cfg->ylog_level)
-	) { ___yloglv = cfg->ylog_level; }
+	) { yloglv___ = cfg->ylog_level; }
 	return 0;
 }
 

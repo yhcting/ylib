@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -45,8 +45,7 @@
  * Operation to the empty list is not defined. It's user's responsibility!
  */
 
-#ifndef __YLISt_h__
-#define __YLISt_h__
+#pragma once
 
 #include <errno.h>
 #include <malloc.h>
@@ -62,7 +61,7 @@
 /** List node object. */
 struct ylist_node {
 	/* @cond */
-        /* This MUST be on top of struct members */
+	/* This MUST be on top of struct members */
 	void *item; /* node data */
 	struct ylistl_link lk; /* node for list link */
 	/* @endcond */
@@ -207,10 +206,10 @@ ylist_peek_first(const struct ylist *);
  * Remove last item from list.
  *
  * @param free TRUE to free item after removing it from list.
- *	FALSE to remove item from list and preserve it.
+ * FALSE to remove item from list and preserve it.
  * @return
- *	NULL if fails(ex. list is empty) Otherwise pointer to requested item.
- *	In case that free == TRUE, returned pointer is invalid one.
+ * NULL if fails(ex. list is empty) Otherwise pointer to requested item.
+ * In case that free == TRUE, returned pointer is invalid one.
  */
 YYEXPORT void *
 ylist_remove_last(struct ylist *, int free);
@@ -302,5 +301,3 @@ ylisti_next(struct ylisti *itr) {
 		return NULL;
 	return (*itr->next)(itr);
 }
-
-#endif /* __YLISt_h__ */

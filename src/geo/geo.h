@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2015
+ * Copyright (C) 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -60,9 +60,7 @@
  *
  *****************************************************************************/
 
-
-#ifndef __GEo_h__
-#define __GEo_h__
+#pragma once
 
 #include <limits.h>
 #include "../common.h"
@@ -82,6 +80,3 @@ enum optype {
 	OP_DIFF,
 	OP_UNION
 };
-
-
-#endif /* __GEo_h__ */

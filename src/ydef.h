@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -41,8 +41,7 @@
  * Most files are including this file.
  */
 
-#ifndef __YDEf_h__
-#define __YDEf_h__
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -72,21 +71,21 @@
 /*
  * Visibility(especially default visibility) is different among compilers.
  */
-#	define YYEXPORT __attribute__ ((visibility ("default")))
+#define YYEXPORT __attribute__ ((visibility ("default")))
 /*
  * 'YYINLINE' directive is introduced at C99.
  * It's NOT original ANSI C standard(C89).
  */
-#	define YYINLINE inline
-#	define YYlikely(x) __builtin_expect(!!(x), 1)
-#	define YYunlikely(x) __builtin_expect(!!(x), 0)
+#define YYINLINE inline
+#define YYlikely(x) __builtin_expect(!!(x), 1)
+#define YYunlikely(x) __builtin_expect(!!(x), 0)
 
 #else /* __GNUC__ */
 
-#	define YYEXPORT /* default visibility */
-#	define YYINLINE
-#	define YYlikely(x) x
-#	define YYunlikely(x) x
+#define YYEXPORT /* default visibility */
+#define YYINLINE
+#define YYlikely(x) x
+#define YYunlikely(x) x
 
 #endif /* __GNUC__ */
 
@@ -104,28 +103,26 @@
  *****************************************************************************/
 #ifndef NULL
 /** NULL pointer */
-#	define NULL ((void *)0)
+#define NULL ((void *)0)
 #endif
 
 #ifndef TRUE
 /** Boolean TRUE */
-#	define TRUE (0 == 0)
+#define TRUE (0 == 0)
 #endif
 
 #ifndef FALSE
 /** Boolean FALSE */
-#	define FALSE (0 != 0)
+#define FALSE (0 != 0)
 #endif
 
 #ifndef bool
 /** bool type */
-#	define bool char
+#define bool char
 #endif
 
 /* offsetof is included at C standard since C99 */
 #ifndef offsetof
 /** offset of macro */
-#	define offsetof(type, member) ((size_t) &((type *)0)->member)
+#define offsetof(type, member) ((size_t) &((type *)0)->member)
 #endif
-
-#endif /* __YDEf_h__ */

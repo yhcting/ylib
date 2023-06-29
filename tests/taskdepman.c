@@ -52,8 +52,7 @@
 
 
 static void
-on_jobs_done(struct ytaskdepman *tdm,
-	     struct ytask *tsk) {
+on_jobs_done(struct ytaskdepman *tdm, struct ytask *tsk) {
 	if (tsk)
 		ylogv("Task Done: %s\n", ytask_get_name(tsk));
 }

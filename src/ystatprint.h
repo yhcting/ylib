@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014
+ * Copyright (C) 2011, 2012, 2013, 2014, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header to printing ascii bar graph with statistics data.
  */
 
-#ifndef __YSTATPRINt_h__
-#define __YSTATPRINt_h__
+#pragma once
 
 #include "ydef.h"
 
@@ -65,7 +64,7 @@
  * @param vsz Size of value array
  * @param height Height of longest bar
  * @param idxs Index array to add comment at.
- *	This SHOULD be incrementally sorted array.
+ * This SHOULD be incrementally sorted array.
  * @param cmts Array of comment string.
  * @param isz Array size of @p idxs and @p cmts
  * @param isp Inter-space. # of spaces between bar.
@@ -126,5 +125,3 @@ ystpr_distgraph(
 	uint32_t h,
 	uint32_t isp,
 	char barc);
-
-#endif /* __YSTATPRINt_h__ */

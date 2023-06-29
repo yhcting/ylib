@@ -38,7 +38,6 @@
 #include <pthread.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
-#include <stdint.h>
 #include <time.h>
 #include <errno.h>
 #include <unistd.h>
@@ -191,7 +190,7 @@ looper_thread(void *arg) {
 	struct looper_thread_share *ts = (struct looper_thread_share *)arg;
 	dfpr("looper thread");
 	r = ymsglooper_create();
-        fatali0(pthread_mutex_lock(&ts->lock));
+	fatali0(pthread_mutex_lock(&ts->lock));
 	if (unlikely(r)) {
 		ts->result = r;
 		goto cond_done;
@@ -200,10 +199,10 @@ looper_thread(void *arg) {
 	ts->ml = ymsglooper_get();
 
  cond_done:
-        fatali0(pthread_cond_broadcast(&ts->cond));
-        fatali0(pthread_mutex_unlock(&ts->lock));
+	fatali0(pthread_cond_broadcast(&ts->cond));
+	fatali0(pthread_mutex_unlock(&ts->lock));
 	if (unlikely(r))
-	    return NULL;
+		return NULL;
 
 	pthread_cleanup_push(&looper_stop, ts->ml);
 	ymsglooper_loop();
@@ -319,7 +318,7 @@ ymsglooper_loop(void) {
 
 struct ymsglooper *
 ymsglooper_start_looper_thread(void) {
-	int r, r0;
+	int r, unused r0;
 	pthread_t thread;
 	struct looper_thread_share ts;
 
@@ -429,6 +428,7 @@ ymsglooper_stop(struct ymsglooper *ml) {
  * This function is used for testing and debugging.
  */
 extern void msg_clear(void);
+
 void
 msglooper_clear(void) {
 	msg_clear();
@@ -448,7 +448,7 @@ minit(const struct ylib_config *cfg) {
 
 static void
 mexit(void) {
-	int r __unused;
+	unused int r;
 	r = pthread_key_delete(_tkey);
 	yassert(!r);
 }

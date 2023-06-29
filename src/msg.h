@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header to use ymsg in inside library
  */
 
-#ifndef __MSg_h__
-#define __MSg_h__
+#pragma once
 
 #include "ymsg.h"
 #include "def.h"
@@ -94,9 +93,9 @@ _msg_magic_set(struct ymsg_ *m) {
 #else /* CONFIG_DEBUG */
 
 static INLINE void
-_msg_magic_verify(struct ymsg_ *m __unused) {}
+_msg_magic_verify(unused struct ymsg_ *m) {}
 static INLINE void
-_msg_magic_set(struct ymsg_ *m __unused) {}
+_msg_magic_set(unused struct ymsg_ *m) {}
 
 #endif /* CONFIG_DEBUG */
 
@@ -117,6 +116,3 @@ msg_mutate(struct ymsg *ym) {
 	_msg_magic_verify(m);
 	return m;
 }
-
-
-#endif /* __MSg_h__ */

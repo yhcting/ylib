@@ -148,7 +148,7 @@ on_progress_runnable(void *arg) {
 		if (tsk->listener.on_early_##nAME) {			\
 			(*tsk->listener.on_early_##nAME) cALLaRG;	\
 		}							\
-                lock_elh(tsk);						\
+		lock_elh(tsk);						\
 		ylistl_foreach_item(					\
 			elh,						\
 			&tsk->elhhd,					\
@@ -177,7 +177,7 @@ on_progress_runnable(void *arg) {
 					&task_put_runnable));		\
 			}						\
 		}							\
-                unlock_elh(tsk);					\
+		unlock_elh(tsk);					\
 		if (tsk->listener.on_late_##nAME) {			\
 			(*tsk->listener.on_late_##nAME) cALLaRG;	\
 		}							\
@@ -269,12 +269,12 @@ on_progress(struct ythreadex *threadex, long prog) {
 #undef listener_stmt
 
 static const struct ythreadex_listener _threadex_listener = {
-        .on_started = &on_started,
-        .on_done = &on_done,
-        .on_cancelling = &on_cancelling,
-        .on_cancelled = &on_cancelled,
-        .on_progress_init = &on_progress_init,
-        .on_progress = &on_progress
+	.on_started = &on_started,
+	.on_done = &on_done,
+	.on_cancelling = &on_cancelling,
+	.on_cancelled = &on_cancelled,
+	.on_progress_init = &on_progress_init,
+	.on_progress = &on_progress
 };
 
 
@@ -300,17 +300,17 @@ int
 task_init(
 	struct ytask *tsk,
 	const char *name,
-        struct ymsghandler *owner,
-        enum ythreadex_priority priority,
-        const struct ytask_listener *listener,
-        void *arg,
-        void (*free_arg)(void *),
-        void (*free_result)(void *),
-        int (*run)(struct ytask *, void **result),
-        bool pthdcancel
+	struct ymsghandler *owner,
+	enum ythreadex_priority priority,
+	const struct ytask_listener *listener,
+	void *arg,
+	void (*free_arg)(void *),
+	void (*free_result)(void *),
+	int (*run)(struct ytask *, void **result),
+	bool pthdcancel
 ) {
 	int r;
-        if (unlikely(r = threadex_init(
+	if (unlikely(r = threadex_init(
 			&tsk->t,
 			name,
 			owner,
@@ -321,14 +321,14 @@ task_init(
 			free_result,
 			(int(*)(struct ythreadex *, void **))run)))
 		return r;
-        tsk->pthdcancel = pthdcancel;
-        ylistl_init_link(&tsk->elhhd);
-        tsk->prog.interval = PROG_DEFAULT_INTERVAL;
-        if (listener)
-                tsk->listener = *listener;
-        tsk->tagmap = yhashs_create((void (*)(void *))&yodestroy, TRUE);
-        if (unlikely(!tsk->tagmap)) {
-                r = -ENOMEM;
+	tsk->pthdcancel = pthdcancel;
+	ylistl_init_link(&tsk->elhhd);
+	tsk->prog.interval = PROG_DEFAULT_INTERVAL;
+	if (listener)
+		tsk->listener = *listener;
+	tsk->tagmap = yhashs_create((void (*)(void *))&yodestroy, TRUE);
+	if (unlikely(!tsk->tagmap)) {
+		r = -ENOMEM;
 		goto clean_threadex;
 	}
 	init_tagmap_lock(tsk);
@@ -360,10 +360,10 @@ task_clean(struct ytask *tsk) {
 	) {
 		free_event_listener_handle(pos);
 	}
-        yhash_destroy(tsk->tagmap);
+	yhash_destroy(tsk->tagmap);
 	destroy_tagmap_lock(tsk);
 	destroy_elh_lock(tsk);
-        return 0;
+	return 0;
 }
 
 static bool
@@ -391,7 +391,7 @@ notify_current_progress_to_new_listener(void *arg) {
 	struct ytask *tsk = yo->o0;
 	struct ytask_event_listener_handle *el = yo->o1;
 	yassert(tsk->prog.init);
-        if (unlikely(YTHREADEX_STARTED != ythreadex_get_state(&tsk->t)))
+	if (unlikely(YTHREADEX_STARTED != ythreadex_get_state(&tsk->t)))
 		return; /* ignore notifying progress requrest */
 	(*el->el.on_progress_init)(&el->el, tsk, tsk->prog.max);
 	(*el->el.on_progress)(&el->el, tsk, tsk->prog.prog);
@@ -421,7 +421,7 @@ ytask_create3(
 		ylogf("Out of memory!");
 		return NULL;
 	}
-        if (unlikely(task_init(
+	if (unlikely(task_init(
 			tsk,
 			name,
 			owner,
@@ -433,11 +433,11 @@ ytask_create3(
 			run,
 			pthdcancel))
 	) {
-                yfree(tsk);
-                return NULL;
-        }
+		yfree(tsk);
+		return NULL;
+	}
 	task_get(tsk);
-        return tsk;
+	return tsk;
 }
 
 int
@@ -445,12 +445,12 @@ ytask_destroy(struct ytask *tsk) {
 	if (unlikely(!ythreadex_is_terminated(ythreadex_get_state(&tsk->t))))
 		return -EPERM;
 	task_put(tsk);
-        return 0;
+	return 0;
 }
 
 int
 ytask_cancel(struct ytask *tsk) {
-        return ythreadex_cancel(&tsk->t, tsk->pthdcancel);
+	return ythreadex_cancel(&tsk->t, tsk->pthdcancel);
 }
 
 int
@@ -489,12 +489,12 @@ ytask_add_tag(
 	void *tag,
 	void (*tagfree)(void *)
 ) {
-        int r;
-        struct yo *o = yocreate0(tag, tagfree);
-        if (unlikely(!o))
-                return -ENOMEM;
+	int r;
+	struct yo *o = yocreate0(tag, tagfree);
+	if (unlikely(!o))
+		return -ENOMEM;
 	lock_tagmap(tsk);
-        r = yhash_set(tsk->tagmap, (void *)name, o);
+	r = yhash_set(tsk->tagmap, (void *)name, o);
 	unlock_tagmap(tsk);
 	return r;
 }
@@ -502,20 +502,20 @@ ytask_add_tag(
 void *
 ytask_get_tag(struct ytask *tsk, const char *name) {
 	int r;
-        struct yo *o;
+	struct yo *o;
 	lock_tagmap(tsk);
 	r = yhash_get(tsk->tagmap, name, (void **)&o);
 	unlock_tagmap(tsk);
-        if (unlikely(r))
-                return NULL;
-        return o->o0;
+	if (unlikely(r))
+		return NULL;
+	return o->o0;
 }
 
 int
 ytask_remove_tag(struct ytask *tsk, const char *name) {
 	int r;
 	lock_tagmap(tsk);
-        r = yhash_remove(tsk->tagmap, name);
+	r = yhash_remove(tsk->tagmap, name);
 	unlock_tagmap(tsk);
 	return r;
 }

@@ -105,15 +105,15 @@ test_mempool(void) {
 	 * Defragmentation Test
 	 */
 
-#define __MAGICV 0x12345678
-#define __POISONV 0xdeaddead /* poision value */
+#define MAGICV 0x12345678
+#define POISONV 0xdeaddead /* poision value */
 
 	mp = ymempool_create(TESTGRPSZ, sizeof(int), YMEMPOOL_mt_safe);
 
 	/* initialize */
 	for (i = 0; i < TESTSZ; i++) {
 		b[i] = ymempool_get(mp);
-		*b[i] = __MAGICV; /* magic value */
+		*b[i] = MAGICV; /* magic value */
 	}
 
 	/*
@@ -127,7 +127,7 @@ test_mempool(void) {
 		for (j = 0; j < TESTSZ / 2; j++) {
 			k = rand() % TESTSZ;
 			if (b[k]) {
-				*b[k] = __POISONV;
+				*b[k] = POISONV;
 				ymempool_put(mp, b[k]);
 				b[k] = NULL;
 			}
@@ -137,14 +137,14 @@ test_mempool(void) {
 		for (j = 0; j < TESTSZ; j++) {
 			if (!b[j]) {
 				b[j] = ymempool_get(mp);
-				*b[j] = __MAGICV;
+				*b[j] = MAGICV;
 			}
 		}
 	}
 
 	/* free enough blocks to prepare defragmentation */
 	for (i = 0; i < TESTSZ / 4 * 3; i++) {
-		*b[i] = __POISONV;
+		*b[i] = POISONV;
 		ymempool_put(mp, b[i]);
 		b[i] = NULL;
 	}
@@ -158,7 +158,7 @@ test_mempool(void) {
 		for (i = 0; i < TESTSZ; i++) {
 			if (b[i]) {
 				nr++;
-				assert(__MAGICV == *b[i]);
+				assert(MAGICV == *b[i]);
 			}
 		}
 		assert(nr == ymempool_usedsz(mp));
@@ -166,8 +166,8 @@ test_mempool(void) {
 #endif
 	ymempool_destroy(mp);
 
-#undef __POISONV
-#undef __MAGICV
+#undef POISONV
+#undef MAGICV
 }
 
 TESTFN(mempool)

@@ -350,12 +350,13 @@ iterate_internal(
 				}
 			}
 			/* go to next depth */
-			r = iterate_internal(tag,
-                                             n->n[i],
-                                             cb,
-                                             buf,
-                                             bsz,
-                                             bitoffset + 4);
+			r = iterate_internal(
+				tag,
+				n->n[i],
+				cb,
+				buf,
+				bsz,
+				bitoffset + 4);
 			if (r <= 0)
 				return r;
 		}
@@ -393,12 +394,13 @@ ytrie_iterate(
 
 	yassert(t && key);
 	if (n)
-		return iterate_internal(tag,
-                                        n,
-                                        cb,
-                                        (u8 *)buf,
-                                        YTRIE_MAX_KEY_LEN,
-                                        0);
+		return iterate_internal(
+			tag,
+			n,
+			cb,
+			(u8 *)buf,
+			YTRIE_MAX_KEY_LEN,
+			0);
 	else
 		return -EINVAL;
 }
@@ -457,9 +459,9 @@ int
 ytrie_remove(struct ytrie *t, const u8 *key, u32 sz) {
 	yassert(t && key);
 	switch(remove_key(&t->rt, key, sz, t->vfree)) {
-        case 1:
-        case 0:    return 1;
-        default:   return 0;
+	case 1:
+	case 0: return 1;
+	default: return 0;
 	}
 }
 

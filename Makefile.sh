@@ -4,6 +4,8 @@
 # This is source of Makefile.am
 #
 
+wsdir=$(dirname $(realpath $0))
+
 modules="
 :crc
 :dynb
@@ -173,7 +175,7 @@ cat <<EOF >tests/Makefile.am
 if DEBUG
     bin_PROGRAMS = y
     y_SOURCES = $prog_sources
-    y_CFLAGS = -I../src
+    y_CFLAGS = -I$wsdir/src
 
     y_LDADD = ../src/liby.la -lpthread -lrt -lm
 endif

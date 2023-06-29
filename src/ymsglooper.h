@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016, 2021
+ * Copyright (C) 2016, 2021, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header to use message looper.
  */
 
-#ifndef __YMSGLOOPEr_h__
-#define __YMSGLOOPEr_h__
+#pragma once
 
 #include <pthread.h>
 
@@ -84,7 +83,7 @@ typedef void (*ymsglooper_eventcb_t)(
  * If success, returned looper is assigned to current thread.
  *
  * @return 0 if success. Otherwise @c -errno
- *	(ex. -EPERM if there is looper already at current thread.)
+ * (ex. -EPERM if there is looper already at current thread.)
  */
 YYEXPORT int
 ymsglooper_create(void);
@@ -94,7 +93,7 @@ ymsglooper_create(void);
  * Looper SHOULD be in TERMINATED state.
  *
  * @return 0 if success otherwise @c -errno.
- *	(Ex. if looper state is NOT TERMINATED, -EPERM is returned.)
+ * (Ex. if looper state is NOT TERMINATED, -EPERM is returned.)
  */
 YYEXPORT int
 ymsglooper_destroy(struct ymsglooper *);
@@ -125,7 +124,7 @@ ymsglooper_del_fd(struct ymsglooper *, int fd);
  * Start loop of current-thread-looper.
  *
  * @return 0 if success. Otherwise @c -errno
- *	(ex. -EPERM if there is no looper at current thread.)
+ * (ex. -EPERM if there is no looper at current thread.)
  */
 YYEXPORT int
 ymsglooper_loop(void);
@@ -171,6 +170,3 @@ ymsglooper_get_state(struct ymsglooper *);
  */
 YYEXPORT int
 ymsglooper_stop(struct ymsglooper *);
-
-
-#endif /* __YMSGLOOPEr_h__ */

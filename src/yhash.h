@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -41,8 +41,7 @@
  * This is NOT MT(Multithread)-safe.
  */
 
-#ifndef __YHASh_h__
-#define __YHASh_h__
+#pragma once
 
 #include "ydef.h"
 
@@ -64,9 +63,9 @@ struct yhash;
  * ex. (void *)0x01 => integer '1'
  *
  * @param vfree
- *	function to free hash value.
- *	set as NULL not to free.
- *	set as @ref YHASH_MEM_FREE to use standard 'free' function.
+ * function to free hash value.
+ * set as NULL not to free.
+ * set as @ref YHASH_MEM_FREE to use standard 'free' function.
  * @return NULL if fails(ex. ENOMEM). Otherwise new hash object.
  */
 YYEXPORT struct yhash *
@@ -102,12 +101,12 @@ yhashs_create(void (*vfree)(void *), bool key_deepcopy);
  * @param vfree See @c vfree at @ref yhashi_create
  * @param keyfree Same with @c vfree
  * @param keycopy
- *	Callback function to copy key. Set NULL to use shallow copy.
- *	This should return 0 if success. Otherwise non-zero.
+ * Callback function to copy key. Set NULL to use shallow copy.
+ * This should return 0 if success. Otherwise non-zero.
  * @param keyeq
- *	Callback function to compare key objects.
- *	Set as NULL to compare mem-addresses of key-objects.
- *	This should return 0 if same. Otherewise non-zero.
+ * Callback function to compare key objects.
+ * Set as NULL to compare mem-addresses of key-objects.
+ * This should return 0 if same. Otherewise non-zero.
  * @param hfunc Hash function creating 32bit hash value from @c key.
  * @return NULL if fails(ex. ENOMEM). Otherwise new hash object.
  */
@@ -191,10 +190,9 @@ yhash_set(struct yhash *, void *key, void *v);
  * Set new item to hash and get existing value.
  *
  * @param key Key
- * @param oldv
- *	Existing old value object.
- *	If function doesn't overwrite anything, this is un-touched.
- *	If this is NULL, function is exactly same with @ref yhash_set
+ * @param oldv Existing old value object.
+ * If function doesn't overwrite anything, this is un-touched.
+ * If this is NULL, function is exactly same with @ref yhash_set
  * @param v new value object
  * @return # of newly added item (0 means overwritten). @c -errno if fails.
  */
@@ -207,7 +205,7 @@ yhash_set2(struct yhash *, void *key, void **oldv, void *v);
  * This is useful to reuse key as read-only value.
  *
  * @param phkey Address of key used in hash.
- *	If this is NULL, function is same with @ref yhash_set
+ * If this is NULL, function is same with @ref yhash_set
  * @param key Key
  * @param v New value
  * @return # of newly added item (0 means overwritten). @c -errno if fails.
@@ -219,8 +217,8 @@ yhash_set3(struct yhash *, const void ** const phkey, void *key, void *v);
  * Delete key from hash. Value in the hash is destroied.
  *
  * @param key Key
- * @return Number of deleted values (0 means nothing deleted).
- * 	@c -errno if fails.
+ * @return Number of deleted values (0 means nothing deleted). @c -errno if
+ * fails.
  */
 YYEXPORT int
 yhash_remove(struct yhash *, const void *key);
@@ -230,9 +228,9 @@ yhash_remove(struct yhash *, const void *key);
  *
  * @param key Key
  * @param value Value in the hash.
- *	If this is NULL, function is same with @ref yhash_remove
- * @return Number of deleted values. (0 means nothing deleted).
- *	@c -errno if fails.
+ * If this is NULL, function is same with @ref yhash_remove
+ * @return Number of deleted values. (0 means nothing deleted). @c -errno if
+ * fails.
  */
 YYEXPORT int
 yhash_remove2(struct yhash *, const void *key, void **value);
@@ -257,6 +255,3 @@ static YYINLINE bool
 yhash_has(const struct yhash *h, const void *key) {
 	return !yhash_get(h, key, NULL);
 }
-
-
-#endif /* __YHASh_h__ */

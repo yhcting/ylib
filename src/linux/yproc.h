@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Module for easy-use linux /proc file system.
  */
 
-#ifndef __YPROc_h__
-#define __YPROc_h__
+#pragma once
 
 #ifndef __linux__
 #	error yproc is linux specific module!
@@ -98,6 +97,3 @@ yproc_pid_cmdline(int pid, char *buf, unsigned bufsz);
  */
 YYEXPORT int
 yproc_pid_stat(struct yproc_pid_stat *stat, int pid);
-
-
-#endif /* __YPROc_h__ */

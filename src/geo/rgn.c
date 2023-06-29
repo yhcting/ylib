@@ -210,7 +210,9 @@ bands2rband(const struct yband *b) {
 	return (struct rectband *)b;
 }
 
-/* assumes buffer(out) size is large enough */
+/**
+ * This assumes buffer(out) size is large enough
+ */
 static INLINE void
 mutate_rect_to_rgnbands(struct yband *out, const struct yrect *r) {
 	if (ygeor_is_empty(r))
@@ -222,7 +224,7 @@ mutate_rect_to_rgnbands(struct yband *out, const struct yrect *r) {
 	}
 }
 
-/*
+/**
  * 'bsz' means 'Band SiZe'
  * # of bands in rect band(including end-sentinels).
  * Band-array in region follows special rules.
@@ -287,7 +289,7 @@ band_can_merge(const struct yband *bs, const struct yband *bb) {
 	return bs->b == bb->s;
 }
 
-/*
+/**
  * @param top_lho Is top-band belongs to lho-band?
  * @return # of bands added to 'outb'(0 or 1).
  */
@@ -307,10 +309,10 @@ band_add(struct yband *prevb, struct yband *outb, const struct yband *b) {
 	return 1;
 }
 
-/*
+/**
+ *
  * @param b_lho Is band belongs to lho-band?
  * @return # of bands added to 'outb' (0 or 1).
- *
  */
 static INLINE u32
 band_op_no_overlap(
@@ -339,10 +341,9 @@ band_op_overlap(
 	return band_add(prevb, outb, ol);
 }
 
-/*
+/**
  * @param pprevb Value is updated inside this function.
- * @return # of bands written at 'outb'
- *         (Never fails!)
+ * @return # of bands written at 'outb' (Never fails!)
  */
 static INLINE u32
 band_op(
@@ -393,10 +394,10 @@ band_op(
  * Rect Band
  *
  *****************************************************************************/
-/*
+/**
  * TODO: This is NOT optimal!
  * Maximum # of band-buffer required as output, is
- *         (Never fails!)
+ * (Never fails!)
  */
 static INLINE u32
 rband_max_requred_outbands(u32 rb0sz, u32 rb1sz, enum optype opty) {
@@ -413,7 +414,7 @@ rband_max_requred_outbands(u32 rb0sz, u32 rb1sz, enum optype opty) {
 }
 
 
-/*
+/**
  * 'rbs' and 'rbb' should follows below rules
  * - rbs.s <= rbb.s
  * - They are separated (No-overlap)
@@ -443,10 +444,10 @@ rband_can_merge(
 	return TRUE;
 }
 
-/*
+/**
  * @return # of bands added to 'outb' (0 or at least 2;"yb + xb")
- *         > 0 means one 'rectband' is added to 'outb'
- *         (Never fails!)
+ * > 0 means one 'rectband' is added to 'outb'
+ * (Never fails!)
  */
 static u32
 rband_add(
@@ -474,12 +475,12 @@ rband_add(
 }
 
 
-/*
+/**
  * @param yb y-band
  * @param xbs array of x-bands ends with empty band.
  * @return # of bands added to 'outb' (0 or at least 2;"yb + xb")
- *         > 0 means one 'rectband' is added to 'outb'
- *         (Never fails!)
+ * > 0 means one 'rectband' is added to 'outb'
+ * (Never fails!)
  */
 static INLINE u32
 rband_op_no_overlap(
@@ -586,10 +587,10 @@ rband_op_overlap(
 	return cob - outb;
 }
 
-/*
+/**
  * @return # of bands added to 'outb'
- *         > 0 means some 'rectband' is added to 'outb'
- *         (Never fails!)
+ * > 0 means some 'rectband' is added to 'outb'
+ * (Never fails!)
  */
 static u32
 rband_op(

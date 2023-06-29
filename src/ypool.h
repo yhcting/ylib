@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header to use pool of data structure
  */
 
-#ifndef __YPOOl_h__
-#define __YPOOl_h__
+#pragma once
 
 #include "ydef.h"
 #include "ylistl.h"
@@ -74,5 +73,3 @@ ypool_get(struct ypool *);
  */
 YYEXPORT bool
 ypool_put(struct ypool *, struct ylistl_link *);
-
-#endif /*__Yo_h__ */

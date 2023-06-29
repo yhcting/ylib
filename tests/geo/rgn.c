@@ -33,6 +33,7 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+
 #include "../test.h"
 #ifdef CONFIG_DEBUG
 #include "geo/yrgn.h"
@@ -756,7 +757,7 @@ static void
 test_geo_rgn(void)  {
 	int cnt = 1000;
 	srand(time(NULL));
-        /* NOT IMPLEMENTED YET */
+	/* NOT IMPLEMENTED YET */
 	dpr(
 "**************************************************************************\n"
 "\n"

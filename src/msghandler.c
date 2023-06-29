@@ -45,7 +45,7 @@
 
 static void
 default_handle(
-	struct ymsghandler *handler __unused,
+	unused struct ymsghandler *handler,
 	const struct ymsg *m
 ) {
 	if (unlikely(YMSG_TYP_EXEC != m->type
@@ -224,6 +224,7 @@ ymsghandler_exec_on(
  * This function is used for testing and debugging.
  */
 extern void msg_clear(void);
+
 void
 msghandler_clear(void) {
 	msg_clear();

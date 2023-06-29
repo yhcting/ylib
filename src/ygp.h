@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -40,8 +40,7 @@
  *	reference count of object with MT-safe way(lock).
  */
 
-#ifndef __YGp_h__
-#define __YGp_h__
+#pragma once
 
 #include <pthread.h>
 
@@ -107,5 +106,3 @@ static YYINLINE void *
 ygpcontainer(struct ygp *gp) {
 	return gp->container;
 }
-
-#endif /* __YGp_h__ */

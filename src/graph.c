@@ -44,7 +44,7 @@
 #include "ylist.h"
 
 #ifndef NAN
-#  error NAN is required at ygraph.
+#error NAN is required at ygraph.
 #endif /* NAN */
 
 /******************************************************************************
@@ -81,7 +81,7 @@ edge_remove(struct yedge *e) {
  *
  *****************************************************************************/
 int
-ygraph_remove_vertex(struct ygraph *g __unused, struct yvertex *v) {
+ygraph_remove_vertex(struct ygraph *g, struct yvertex *v) {
 	struct yedge *e, *etmp;
 	yassert(v);
 
@@ -114,24 +114,26 @@ ygraph_has_vertex(const struct ygraph *g, const struct yvertex *v) {
 }
 
 int
-ygraph_has_cycle(const struct ygraph *g __unused,
-                 const struct yvertex *basev,
-		 int *n_visited) {
+ygraph_has_cycle(
+	unused const struct ygraph *g,
+	const struct yvertex *basev,
+	int *n_visited
+) {
 	struct yvertex *v;
 	struct yedge* e;
 	struct ylist *vs = NULL; /* Vertex Stack */
 	struct ylist *es = NULL; /* Edge Stack */
 	int nv = 0;
-        yset_t visited = NULL;
+	yset_t visited = NULL;
 	int r = 0;
 
-#define __mark_visited(v)                                       \
-        if (unlikely(0 > (r = yset_add(visited, (void *)v)))) { \
-                goto done;                                      \
-        }
-#define __is_visited(v) yset_has(visited, (void *)v)
+#define mark_visited(v)						\
+	if (unlikely(0 > (r = yset_add(visited, (void *)v)))) {	\
+		goto done;					\
+	}
+#define is_visited(v) yset_has(visited, (void *)v)
 
-        visited = yseti_create();
+	visited = yseti_create();
 	/* DFS */
 	vs = ylist_create(0, NULL);
 	es = ylist_create(0, NULL);
@@ -163,7 +165,7 @@ ygraph_has_cycle(const struct ygraph *g __unused,
 		       && ylist_size(vs) > 0)
 			ylist_pop(vs);
 
-		if (__is_visited(v)) {
+		if (is_visited(v)) {
 			if (ylist_has(vs, v)) {
 				r = 1;
 				goto done;
@@ -176,7 +178,7 @@ ygraph_has_cycle(const struct ygraph *g __unused,
 
 		/* save to history stack */
 		nv++;
-		__mark_visited(v);
+		mark_visited(v);
 		if (unlikely(r = ylist_push(vs, v)))
 			goto done;
 
@@ -194,18 +196,18 @@ ygraph_has_cycle(const struct ygraph *g __unused,
 		ylist_destroy(vs);
 	if (likely(es))
 		ylist_destroy(es);
-        if (likely(visited))
-                yset_destroy(visited);
+	if (likely(visited))
+		yset_destroy(visited);
 	return r;
 
-#undef __is_visited
-#undef __mark_visited
+#undef is_visited
+#undef mark_visited
 
 }
 
 struct yedge *
 ygraph_find_edge(
-	const struct ygraph *g __unused,
+	unused const struct ygraph *g,
 	const struct yvertex *from,
 	const struct yvertex *to
 ) {

@@ -43,8 +43,8 @@ imean_add(u32 n, /* # of elements - including given new value 'v' */
 	double u, /* mean of 'n-1' elements */
 	double v /* new value */
 ) {
-       /* n is never 0 */
-       return u + (v - u) / (double)n;
+	/* n is never 0 */
+	return u + (v - u) / (double)n;
 }
 
 /******************************************************************************

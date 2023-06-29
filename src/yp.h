@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header for simple smart-pointer-like-implementation.
  */
 
-#ifndef __Yp_h__
-#define __Yp_h__
+#pragma once
 
 #include "ydef.h"
 
@@ -76,20 +75,14 @@ YYEXPORT void
 ypfree(void *);
 
 /**
- * Put pointer.
- * Reference counter is decreased.
+ * Put pointer. Reference counter is decreased.
  * And if reference count is '0', memory is freed automatically.
  */
 YYEXPORT void
 ypput(void *);
 
 /**
- * Get pointer.
- * Reference counter is increased.
- * @return return pointer itself.
+ * Get pointer. Reference counter is increased.
  */
 YYEXPORT void
 ypget(const void *);
-
-
-#endif /* __Yp_h__ */

@@ -40,7 +40,7 @@
 
 yset_t
 yset_intersect(const yset_t s0, const yset_t s1) {
-        /* NOT TESTED YET */
+	/* NOT TESTED YET */
 	yset_t ss; /* source set - smaller set */
 	yset_t ts; /* target set - larger set */
 	u32 sz0, sz1, sssz, i;
@@ -96,12 +96,12 @@ yset_intersect(const yset_t s0, const yset_t s1) {
 
 yset_t
 yset_union(const yset_t s0, const yset_t s1) {
-        /* NOT IMPLEMENTED YET */
-        return NULL;
+	/* NOT IMPLEMENTED YET */
+	return NULL;
 }
 
 yset_t
 yset_diff(const yset_t s0, const yset_t s1) {
-        /* NOT IMPLEMENTED YET */
-        return NULL;
+	/* NOT IMPLEMENTED YET */
+	return NULL;
 }

@@ -34,7 +34,6 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 #include <string.h>
-#include <stdint.h>
 #include <pthread.h>
 
 #include "common.h"
@@ -72,7 +71,7 @@
  */
 
 #ifndef __GNUC__
-#	error This module uses GNU C Extentions for atomic operations.
+#error This module uses GNU C Extentions for atomic operations.
 #endif
 
 
@@ -80,8 +79,8 @@ struct ypmblk {
 	s32 refcnt; /* reference count */
 #ifdef CONFIG_DEBUG
 	/* Size of user memory allocated
-         * Excluding overheads
-         */
+	 * Excluding overheads
+	 */
 	u64 sz;
 	u32 magic;
 #endif /* CONFIG_DEBUG */
@@ -95,11 +94,9 @@ struct ypmblk {
 
 
 #ifdef CONFIG_DEBUG
-
-
-#	define YP_MAGIC 0xde
-#	define tail_magic_guard(p) \
-		((void *)(((char *)&(p)->blk) + (p)->sz))
+#define YP_MAGIC 0xde
+#define tail_magic_guard(p) \
+	((void *)(((char *)&(p)->blk) + (p)->sz))
 
 static const char _magicn[sizeof(((struct ypmblk *)0)->magic)] =
 	{[0 ... (yut_arrsz(_magicn) - 1)] = YP_MAGIC };
@@ -116,10 +113,10 @@ set_size(struct ypmblk *p, u32 sz) {
 
 static void
 set_magic_guard(struct ypmblk *p) {
-        /* set head-magic-guard */
-        memset(&p->magic, YP_MAGIC, sizeof(p->magic));
-        /* set tail-magic-guard */
-        memset(tail_magic_guard(p), YP_MAGIC, sizeof(p->magic));
+	/* set head-magic-guard */
+	memset(&p->magic, YP_MAGIC, sizeof(p->magic));
+	/* set tail-magic-guard */
+	memset(tail_magic_guard(p), YP_MAGIC, sizeof(p->magic));
 }
 
 static void
@@ -129,10 +126,8 @@ chk_magic_guard(struct ypmblk *p) {
 		&& !memcmp(&_magicn, tail_magic_guard(p), sizeof(p->magic)));
 }
 
-#	undef YP_MAGIC
-#	undef tail_magic_guard
-
-
+#undef YP_MAGIC
+#undef tail_magic_guard
 #else /* CONFIG_DEBUG */
 
 

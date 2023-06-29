@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2015
+ * Copyright (C) 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -43,8 +43,7 @@
  * In case of line segment, 2nd point is 'open' point.
  */
 
-#ifndef __YLINe_h__
-#define __YLINe_h__
+#pragma once
 
 #include "ypoint.h"
 
@@ -112,6 +111,3 @@ ygeol_eq(const struct yline *l0, const struct yline *l1) {
 	return ygeop_eq(&l0->p0, &l1->p0)
 		&& ygeop_eq(&l0->p1, &l1->p1);
 }
-
-
-#endif /* __YLINe_h__ */

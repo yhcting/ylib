@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -43,8 +43,7 @@
  * So, before using this, user should understand algorithm of this module.
  */
 
-#ifndef __YTREEl_h__
-#define __YTREEl_h__
+#pragma once
 
 #include "ydef.h"
 #include "ylistl.h"
@@ -347,5 +346,3 @@ ytreeli_get(struct ytreeli *);
  */
 YYEXPORT bool
 ytreeli_has_next(struct ytreeli *);
-
-#endif /* __YTREEl_h__ */

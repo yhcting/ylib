@@ -44,7 +44,7 @@
 
 static void
 test_trie(void) {
-        /* NOT IMPLEMENTED YET */
+	/* NOT IMPLEMENTED YET */
 }
 
 

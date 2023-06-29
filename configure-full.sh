@@ -1,5 +1,7 @@
 #!/bin/bash
 
+wsdir="$(dirname $(realpath $0))"
+
 if [[ -z $(which aclocal) \
      || -z $(which autoheader) \
      || -z $(which autoconf) \
@@ -8,6 +10,8 @@ if [[ -z $(which aclocal) \
     exit 1
 fi
 
+cd "$wsdir"
+
 aclocal
 autoheader
 autoconf
@@ -15,5 +19,6 @@ autoconf
 ./Makefile.sh
 automake
 
-./configure $@
-
+mkdir -p build
+cd build
+"$wsdir/configure" --srcdir="$wsdir" --prefix="$(pwd)" --with-debug "$@"

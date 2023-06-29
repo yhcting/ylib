@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2021
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2021, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -36,7 +36,6 @@
 
 #include <pthread.h>
 #include <sys/eventfd.h>
-#include <stdint.h>
 #include <time.h>
 #include <unistd.h>
 #include <errno.h>
@@ -106,7 +105,7 @@ static INLINE void set_time_stamp(struct ymsg_ *m) { }
  *****************************************************************************/
 static int
 qen(struct ymsgq *q, struct ymsg_ *m) {
-	int r;
+	unused int r;
 	int64_t v = 1;
 	r = pthread_mutex_lock(&q->lock);
 	yassert(!r);
@@ -133,7 +132,7 @@ qen(struct ymsgq *q, struct ymsg_ *m) {
 struct ymsgq *
 ymsgq_create(int capacity) {
 	int i;
-	int r __unused;
+	unused int r;
 	struct ymsgq *q = ymalloc(sizeof(*q));
 	if (unlikely(!q))
 		return NULL; /* OOM */
@@ -158,7 +157,7 @@ ymsgq_create(int capacity) {
 void
 ymsgq_destroy(struct ymsgq *q) {
 	int i;
-	int r __unused;
+	int r unused;
 	struct ymsg_ *pos, *tmp;
 	r = close(q->evfd);
 	yassert(!r);
@@ -203,7 +202,7 @@ ymsgq_en(struct ymsgq *q, struct ymsg *ym) {
  */
 struct ymsg *
 ymsgq_de(struct ymsgq *q) {
-	int i, r;
+	int i, unused r;
 	int64_t v;
 	struct ylistl_link *lk;
 

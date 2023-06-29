@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,13 +39,12 @@
  * @brief Header file to use memory pool.
  */
 
+#pragma once
+
 /*
  * Memory pool is tested at ylisp and writer.
  * So, there is no specific test file....
  */
-
-#ifndef __YMEMPOOl_h__
-#define __YMEMPOOl_h__
 
 #include "ydef.h"
 
@@ -106,5 +105,3 @@ ymempool_sz(struct ymempool *);
  */
 YYEXPORT int
 ymempool_usedsz(struct ymempool *);
-
-#endif /* __YMEMPOOl_h__ */

@@ -50,17 +50,17 @@
 static const int DEFAULT_O_POOL_SIZE = 1000;
 
 struct o {
-        struct yo o;
-        void (*ofree0)(void *);
-        void (*ofree1)(void *);
-        void (*ofree2)(void *);
-        void (*ofree3)(void *);
-        void (*ofree4)(void *);
+	struct yo o;
+	void (*ofree0)(void *);
+	void (*ofree1)(void *);
+	void (*ofree2)(void *);
+	void (*ofree3)(void *);
+	void (*ofree4)(void *);
 	struct ylistl_link lk;
 };
 
 
-static struct ypool *_pool;
+static struct ypool *pool_;
 
 
 /******************************************************************************
@@ -95,25 +95,24 @@ oclear(struct o *o) {
 static struct o *
 pool_get(void) {
 	struct ylistl_link *lk;
-        lk = ypool_get(_pool);
-        if (unlikely(!lk))
-                return NULL;
-        return containerof(lk, struct o, lk);
+	lk = ypool_get(pool_);
+	if (unlikely(!lk))
+		return NULL;
+	return containerof(lk, struct o, lk);
 }
 
 static bool
 pool_put(struct o *o) {
-        return ypool_put(_pool, &o->lk);
+	return ypool_put(pool_, &o->lk);
 }
 
-static void pool_clear(void) __unused;
-static void
+unused static void
 pool_clear(void) {
-        struct o *o;
-        while ((o = pool_get())) {
-                oclear(o);
-                yfree(o);
-        }
+	struct o *o;
+	while ((o = pool_get())) {
+		oclear(o);
+		yfree(o);
+	}
 }
 
 /*****************************************************************************
@@ -132,10 +131,10 @@ yocreate4(
 	struct o *o = pool_get();
 	if (unlikely(!o))
 		o = (struct o *)ycalloc(1, sizeof(*o));
-        else
-                memset(o, 0, sizeof(*o));
-        if (unlikely(!o))
-                return NULL;
+	else
+		memset(o, 0, sizeof(*o));
+	if (unlikely(!o))
+		return NULL;
 	o->o.o0 = o0;
 	o->ofree0 = ofree0;
 	o->o.o1 = o1;
@@ -153,9 +152,9 @@ yocreate4(
 void
 yodestroy(struct yo *yo) {
 	struct o *o = (struct o *)yo;
-        oclear(o);
+	oclear(o);
 	if (unlikely(!pool_put(o)))
-                yfree(o);
+		yfree(o);
 }
 
 /*****************************************************************************
@@ -178,14 +177,14 @@ minit(const struct ylib_config *cfg) {
 	int capacity = cfg && (cfg->yo_pool_capacity > 0)
 		? cfg->yo_pool_capacity
 		: DEFAULT_O_POOL_SIZE;
-        _pool = ypool_create(capacity);
-        return _pool ? 0 : -ENOMEM;
+	pool_ = ypool_create(capacity);
+	return pool_ ? 0 : -ENOMEM;
 }
 
 static void
 mexit(void) {
-        pool_clear();
-        ypool_destroy(_pool);
+	pool_clear();
+	ypool_destroy(pool_);
 }
 
 LIB_MODULE(o, minit, mexit);

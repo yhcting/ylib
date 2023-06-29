@@ -94,7 +94,7 @@ test_dynb(void) {
 		es[i].c = 'A' + i;
 	}
 	ydynb_appends(b, &es[1], 9);
-        yassert(10 == ydynb_sz(b));
+	yassert(10 == ydynb_sz(b));
 	pe = ydynb_get(b, 2);
 	yassert(2 == pe->v && 'C' == pe->c);
 

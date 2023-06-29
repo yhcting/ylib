@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header
  */
 
-#ifndef __YTHREADEx_h__
-#define __YTHREADEx_h__
+#pragma once
 
 #include "ydef.h"
 
@@ -107,25 +106,25 @@ enum ythreadex_state {
 	YTHREADEX_READY, /**< before new thread is running */
 	YTHREADEX_STARTED, /**< new thread is started. */
 	YTHREADEX_CANCELLING, /**< thread is cancelling */
-        /**
-         * New thread is cancelled. But, post processing(sending
+	/**
+	 * New thread is cancelled. But, post processing(sending
 	 * @c on_cancelled notification message to owner thread
-         * is not done yet.
-         */
+	 * is not done yet.
+	 */
 	YTHREADEX_CANCELLED,
-        /**
-         * New thread is done. But, post processing(sending
-         * @c on_post_run notification message to owner thread
-         * is not done yet.
-         */
+	/**
+	 * New thread is done. But, post processing(sending
+	 * @c on_post_run notification message to owner thread
+	 * is not done yet.
+	 */
 	YTHREADEX_DONE,
-        /**
-         * All jobs are done.
-         */
+	/**
+	 * All jobs are done.
+	 */
 	YTHREADEX_TERMINATED,
-        /**
-         * All jobs are done after cancel.
-         */
+	/**
+	 * All jobs are done after cancel.
+	 */
 	YTHREADEX_TERMINATED_CANCELLED,
 };
 
@@ -133,29 +132,29 @@ enum ythreadex_state {
  * Listener interface of threadex.
  */
 struct ythreadex_listener {
-        /**
-         * @c ythreadex enter STARTED state.
-         */
+	/**
+	 * @c ythreadex enter STARTED state.
+	 */
 	void (*on_started)(struct ythreadex *);
-        /**
-         * This message is sent after DONE state.
-         */
+	/**
+	 * This message is sent after DONE state.
+	 */
 	void (*on_done)(struct ythreadex *, void *result, int errcode);
 	/**
 	 * @c started is TRUE if cancel is requrested after thread is started
 	 */
 	void (*on_cancelling)(struct ythreadex *, bool started);
-        /**
-         * This message is sent after CANCELLED state.
-         */
+	/**
+	 * This message is sent after CANCELLED state.
+	 */
 	void (*on_cancelled)(struct ythreadex *, int errcode);
-        /**
-         * Progress is ready.
-         */
+	/**
+	 * Progress is ready.
+	 */
 	void (*on_progress_init)(struct ythreadex *, long max_prog);
-        /**
-         * Progress notification
-         */
+	/**
+	 * Progress notification
+	 */
 	void (*on_progress)(struct ythreadex *, long prog);
 };
 
@@ -173,8 +172,8 @@ struct ythreadex_listener {
  * @param free_arg Function to free @p arg. Can be NULL.
  * @param free_result Function to free return of @p run. Can be NULL.
  * @param run Routine run at new thread. Not NULL.
- *	It MUST return 0 if success, otherwise @c -errno.
- *	In case of not-success, result of threadex is ignored.
+ * It MUST return 0 if success, otherwise @c -errno.
+ * In case of not-success, result of threadex is ignored.
  * @return NULL if fails.
  */
 YYEXPORT struct ythreadex *
@@ -196,21 +195,21 @@ ythreadex_create(
  * to background thread.
  *
  * @return 0 if success otherwise -errno.
- *	(Ex. thread is in invalid state, -EPERM is returned.)
+ * (Ex. thread is in invalid state, -EPERM is returned.)
  */
 YYEXPORT int
 ythreadex_destroy(struct ythreadex *);
 
 /**
  * @return 0 if success. Otherwise @c -errno
- *	(ex. -EPERM if thread is already started.)
+ * (ex. -EPERM if thread is already started.)
  */
 YYEXPORT int
 ythreadex_start(struct ythreadex *);
 
 /**
  * @return 0 if success. Otherwise @c -errno
- *	(ex. -EPERM if thread is already started.)
+ * (ex. -EPERM if thread is already started.)
  */
 YYEXPORT int
 ythreadex_start_sync(struct ythreadex *);
@@ -220,8 +219,8 @@ ythreadex_start_sync(struct ythreadex *);
  * This is ythreadex version of pthread_join.
  *
  * @return 0 if success. Otherwise @c -errno.
- *	(ex. -EPERM if thread is NOT started yet or started by
- *	@ref ythreadex_start_sync.)
+ * (ex. -EPERM if thread is NOT started yet or started by
+ * @ref ythreadex_start_sync.)
  */
 YYEXPORT int
 ythreadex_join(struct ythreadex *, void **retval);
@@ -257,7 +256,7 @@ ythreadex_publish_progress(struct ythreadex *, long prog);
  *
  * @param pthdcancel If it is True, @c pthread_cancel is executed.
  * @return 0 if success. Otherwise -errno
- *         (ex -EPERM if thread is NOT in READY or STARTED.)
+ * (ex -EPERM if thread is NOT in READY or STARTED.)
  */
 YYEXPORT int
 ythreadex_cancel(struct ythreadex *, bool pthdcancel);
@@ -342,7 +341,7 @@ ythreadex_is_active(enum ythreadex_state state) {
 /**
  * Is thread cancel?
  * If thread is one of CANCELLING, CANCELLED, TERMINATED_CANCELLED, TRUE is
- *   returned.
+ * returned.
  */
 static YYINLINE bool
 ythreadex_is_cancel(enum ythreadex_state state) {
@@ -370,5 +369,3 @@ ythreadex_is_terminated(enum ythreadex_state state) {
 		return FALSE;
 	}
 }
-
-#endif /* __YTHREADEx_h__ */

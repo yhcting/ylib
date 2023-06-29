@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header to use ylog
  */
 
-#ifndef __YLOg_h__
-#define __YLOg_h__
+#pragma once
 
 #include "ydef.h"
 
@@ -62,28 +61,28 @@ enum yloglv {
  * Internal variable. DO NOT edit this value directly.
  * Due to performance reason, varaible is exposed to the public(global).
  */
-extern enum yloglv ___yloglv;
+extern enum yloglv yloglv___;
 
 /**
  * Get current log level.
  */
 static YYINLINE enum yloglv
 ylog_loglv(void) {
-	return ___yloglv;
+	return yloglv___;
 }
 
 /**
  * This is only for internal use. Client SHOULD NOT use this function DIRECTLY.
  */
 YYEXPORT void
-___ylog_write(enum yloglv, const char *file, int lineno, const char *fmt, ...);
+ylog_write___(enum yloglv, const char *file, int lineno, const char *fmt, ...);
 
 /**
  * This is only for internal use. Client SHOULD NOT use this function DIRECTLY.
  */
 #define _ylog(lv, fmt, args...)						\
 	if (YYunlikely((lv) >= ylog_loglv())) {				\
-		___ylog_write(lv, __FILE__, __LINE__, fmt, ##args);	\
+		ylog_write___(lv, __FILE__, __LINE__, fmt, ##args);	\
 	}
 
 /**
@@ -115,6 +114,3 @@ ___ylog_write(enum yloglv, const char *file, int lineno, const char *fmt, ...);
  * log YLOG_FATAL
  */
 #define ylogf(fmt, args...) _ylog(YLOG_FATAL, fmt, ##args)
-
-
-#endif /* __YLOg_h__ */

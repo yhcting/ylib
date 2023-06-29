@@ -182,9 +182,7 @@ test_hashs(void) {
 	yhash_destroy(h);
 }
 
-static void
-test_hashi(void) __unused;
-static void
+unused static void
 test_hashi(void) {
 	int i, r;
 	char buf[4096];

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2015
+ * Copyright (C) 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -42,8 +42,7 @@
  * Most important point here is 'non-overlapping'.
  */
 
-#ifndef __YRGn_h__
-#define __YRGn_h__
+#pragma once
 
 /* Including heads to use macros */
 #include "yband.h"
@@ -174,6 +173,3 @@ ygeog_union3(const struct yrect *, const struct yrect *);
 			b_____Z++; /* move to next rect-band */	\
 		} /* end of y-band loop */ 			\
 	} while (0)
-
-
-#endif /* __YRGn_h__ */

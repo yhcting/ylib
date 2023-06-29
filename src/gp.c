@@ -43,7 +43,7 @@
 #include "ygp.h"
 
 #ifndef __GNUC__
-#	error This module uses GNU C Extentions for atomic operations.
+#error This module uses GNU C Extentions for atomic operations.
 #endif
 
 /*****************************************************************************

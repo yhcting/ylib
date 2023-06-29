@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header to use ylib
  */
 
-#ifndef __YLIb_h__
-#define __YLIb_h__
+#pragma once
 
 /*
  * Include headers for modules
@@ -60,7 +59,7 @@ struct ylib_config {
 	int yo_pool_capacity;
 	/**
 	 * capacity of ygp-pool. if <=0, then default capacity is used
-         * It's recommended using smaller value than yo_pool_capacity.
+	 * It's recommended using smaller value than yo_pool_capacity.
 	 */
 	int ygp_pool_capacity;
 	/**
@@ -84,8 +83,8 @@ struct ylib_config {
  * Before calling this, ylib may not be available.
  *
  * @param c Config struct. Once it is used, ylib doesn't refer it anymore.
- *	(This is, client can free memory.)
- *	Set to NULL to use default configuration.
+ * (This is, client can free memory.)
+ * Set to NULL to use default configuration.
  * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
@@ -99,6 +98,3 @@ ylib_init(const struct ylib_config *c);
  */
 YYEXPORT int
 ylib_exit(void);
-
-
-#endif /* __YLIb_h__ */

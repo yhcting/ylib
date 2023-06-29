@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2021
+ * Copyright (C) 2021, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -41,8 +41,7 @@
  * This is NOT MT(Multithread)-safe.
  */
 
-#ifndef __YHASHl_h__
-#define __YHASHl_h__
+#pragma once
 
 #include <stddef.h>
 #include "ylistl.h"
@@ -166,7 +165,7 @@ yhashl_hremap(struct yhashl *, u32 mapbits);
  * be freed.
  *
  * @return If node of same key already exists, it will be returned.
- *	Otherwise NULL.
+ * Otherwise NULL.
  */
 YYEXPORT struct yhashl_node *
 yhashl_set(struct yhashl *h, void *key, struct yhashl_node *);
@@ -213,6 +212,3 @@ yhashl_get(const struct yhashl *h, const void *key);
 	for (unsigned int i___ = 0; i___ < yhashl_hmapsz(h); i___++)	\
 		ylistl_foreach_item_safe(cur, tmp, &(h)->map[i___],	\
 			struct yhashl_node, lk)
-
-
-#endif /* __YHASHl_h__ */

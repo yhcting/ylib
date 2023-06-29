@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -34,8 +34,7 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-#ifndef __LIb_h__
-#define __LIb_h__
+#pragma once
 
 #include "ylib.h"
 
@@ -48,11 +47,7 @@ ylib_register_module(
 /* Module requiring init/exit, SHOULD use this marco.
  */
 #define LIB_MODULE(name, init_, exit_)				\
-	static void __ylib_mod_register_##name(void) 		\
-		__attribute__ ((constructor)); 			\
-	static void __ylib_mod_register_##name(void) {		\
+	__attribute__ ((constructor))				\
+	static void ylib_mod_register_##name##__(void) {	\
 		ylib_register_module(#name, &init_, &exit_);	\
 	}
-
-
-#endif /* __LIb_h__ */

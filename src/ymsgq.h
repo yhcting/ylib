@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,10 +39,8 @@
  * @brief Header to use simple message queue module.
  */
 
-#ifndef __YMSGq_h__
-#define __YMSGq_h__
+#pragma once
 
-#include <stdint.h>
 #include <string.h>
 
 #include "ymsg.h"
@@ -54,7 +52,7 @@ struct ymsgq;
  * Create message-queue object.
  *
  * @param capacity Max number of msgs that Q can have.
- *	'<= 0' means 'unlimited capacity'
+ * '<= 0' means 'unlimited capacity'
  * @return NULL if fails.
  */
 YYEXPORT struct ymsgq *
@@ -76,7 +74,7 @@ ymsgq_evfd(const struct ymsgq *);
  * Enqueue message to message queue
  *
  * @return 0 if success. Otherwise @c -errno
- * 	(EAGAIN means 'Q is already full')
+ * (EAGAIN means 'Q is already full')
  */
 YYEXPORT int
 ymsgq_en(struct ymsgq *, struct ymsg *);
@@ -98,5 +96,3 @@ ymsgq_de(struct ymsgq *);
  */
 YYEXPORT uint32_t
 ymsgq_sz(const struct ymsgq *);
-
-#endif /* __YMSGq_h__ */

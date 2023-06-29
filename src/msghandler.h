@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016, 2021
+ * Copyright (C) 2016, 2021, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -34,8 +34,7 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-#ifndef __MSGHANDLEr_h__
-#define __MSGHANDLEr_h__
+#pragma once
 
 struct ymsg;
 struct ymsglooper;
@@ -48,5 +47,3 @@ struct ymsghandler {
 	void *tag;
 	void (*tagfree)(void *);
 };
-
-#endif /* __MSGHANDLEr_h__ */

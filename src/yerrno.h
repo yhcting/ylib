@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief ylib specific error number is defined.
  */
 
-#ifndef __YERRNo_h__
-#define __YERRNo_h__
+#pragma once
 
 /* yerrno SHOULD be SUPER-SET of standard errno */
 #include <errno.h>
@@ -70,5 +69,3 @@ enum {
  */
 YYEXPORT const char *
 yerrno_str(int ec);
-
-#endif /* __YERRNo_h__ */

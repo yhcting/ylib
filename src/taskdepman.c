@@ -125,9 +125,7 @@ vertex_ttg(struct yvertex *v) {
 	return containerof(v, struct ttg, v);
 }
 
-static INLINE bool
-verify_ttg(struct ytaskdepman *tdm, struct ytask *tsk) __unused;
-static INLINE bool
+unused static INLINE bool
 verify_ttg(struct ytaskdepman *tdm, struct ytask *tsk) {
 	struct ttg *ttg = task_ttg(tsk);
 	return ttg
@@ -283,8 +281,8 @@ static void
 task_on_done(
 	struct ytask_event_listener *el,
 	struct ytask *tsk,
-	void *result __unused,
-	int errcode __unused
+	unused void *result,
+	unused int errcode
 ) {
 	on_task_finished(el, tsk);
 }
@@ -293,7 +291,7 @@ static void
 task_on_cancelled(
 	struct ytask_event_listener *el,
 	struct ytask *tsk,
-	int errcode __unused
+	unused int errcode
 ) {
 	on_task_finished(el, tsk);
 }

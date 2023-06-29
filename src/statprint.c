@@ -104,7 +104,7 @@ bargraph_prline(
 	double v
 ) {
 	u32 i;
-	int r __unused;
+	unused int r;
 	char *p, *pe;
 
 	/* print top line */

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -41,8 +41,7 @@
  * Low level list implementation.
  */
 
-#ifndef __YLISTl_h__
-#define __YLISTl_h__
+#pragma once
 
 #include "ydef.h"
 
@@ -236,7 +235,7 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
  * @param head (struct @ref ylistl_link *) Head of list
  */
 #define ylistl_foreach(cur, head) \
-        for ((cur) = (head)->next; (cur) != (head); (cur) = (cur)->next)
+	for ((cur) = (head)->next; (cur) != (head); (cur) = (cur)->next)
 
 /**
  * Same with @ref ylistl_foreach. But direction is opposite.
@@ -245,7 +244,7 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
  * @param head See @ref ylistl_foreach
  */
 #define ylistl_foreach_reverse(cur, head) \
-        for ((cur) = (head)->prev; (cur) != (head); (cur) = (cur)->prev)
+	for ((cur) = (head)->prev; (cur) != (head); (cur) = (cur)->prev)
 
 /**
  * Same with @ref ylistl_foreach. And it is safe from removal.
@@ -255,9 +254,9 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
  * @param head See @ref ylistl_foreach
  */
 #define ylistl_foreach_safe(cur, tmp, head)		\
-        for ((cur) = (head), (tmp) = (cur)->next;	\
-	     (cur) != (head);				\
-	     (cur) = (tmp), (tmp) = (cur)->next)
+	for ((cur) = (head), (tmp) = (cur)->next;	\
+		(cur) != (head);			\
+		(cur) = (tmp), (tmp) = (cur)->next)
 
 /**
  * Same with @ref ylistl_foreach_safe. But direction is opposite.
@@ -267,9 +266,9 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
  * @param head See See @ref ylistl_foreach_safe
  */
 #define ylistl_foreach_safe_reverse(cur, tmp, head)	\
-        for ((cur) = (head), (tmp) = (cur)->prev;	\
-	     (cur) != (head);				\
-	     (cur) = (tmp), (tmp) = (cur)->prev)
+	for ((cur) = (head), (tmp) = (cur)->prev;	\
+		(cur) != (head);			\
+		(cur) = (tmp), (tmp) = (cur)->prev)
 
 /**
  * Iterates item of the list.
@@ -280,7 +279,7 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
  * @param member Name of the @ref ylistl_link within item-struct
  */
 #define ylistl_foreach_item(cur, head, type, member)			\
-        for ((cur) = YYcontainerof((head)->next, type, member);		\
+	for ((cur) = YYcontainerof((head)->next, type, member);		\
 		&(cur)->member != (head);				\
 		(cur) = YYcontainerof((cur)->member.next, type, member))
 
@@ -293,7 +292,7 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
  * @param member See @ref ylistl_foreach_item
  */
 #define ylistl_foreach_item_reverse(cur, head, type, member)		\
-        for ((cur) = YYcontainerof((head)->prev, type, member);		\
+	for ((cur) = YYcontainerof((head)->prev, type, member);		\
 		&(cur)->member != (head);				\
 		(cur) = YYcontainerof((cur)->member.prev, type, member))
 
@@ -306,8 +305,8 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
  * @param type See @ref ylistl_foreach_item
  * @param member See @ref ylistl_foreach_item
  */
-#define ylistl_foreach_item_safe(cur, tmp, head, type, member)    	\
-        for ((cur) = YYcontainerof((head)->next, type, member),		\
+#define ylistl_foreach_item_safe(cur, tmp, head, type, member)		\
+	for ((cur) = YYcontainerof((head)->next, type, member),		\
 			(tmp) = YYcontainerof((cur)->member.next,	\
 				type, member); 				\
 		&(cur)->member != (head);				\
@@ -324,7 +323,7 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
  * @param member See @ref ylistl_foreach_item_safe
  */
 #define ylistl_foreach_item_safe_reverse(cur, tmp, head, type, member)	\
-        for ((cur) = YYcontainerof((head)->prev, type, member),		\
+	for ((cur) = YYcontainerof((head)->prev, type, member),		\
 			(tmp) = YYcontainerof((cur)->member.prev,	\
 				type, member); 				\
 		&(cur)->member != (head);				\
@@ -415,5 +414,3 @@ ylistl_remove_first2(struct ylistl_link *head) {
 		return NULL;
 	return ylistl_remove_first(head);
 }
-
-#endif /* __YLISTl_h__ */

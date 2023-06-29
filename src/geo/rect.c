@@ -39,9 +39,11 @@
 #include "../yut.h"
 
 void
-ygeor_set3(struct yrect *or,
-	   int x0, int x1,
-	   int y0, int y1) {
+ygeor_set3(
+	struct yrect *or,
+	int x0, int x1,
+	int y0, int y1
+) {
 	int l, t, r, b;
 	yut_cmpst(l, r, x0, x1,);
 	yut_cmpst(t, b, y0, y1,);
@@ -49,8 +51,11 @@ ygeor_set3(struct yrect *or,
 }
 
 void
-ygeor_intersect(struct yrect *or,
-		const struct yrect *r0, const struct yrect *r1) {
+ygeor_intersect(
+	struct yrect *or,
+	const struct yrect *r0,
+	const struct yrect *r1
+) {
 	const struct yrect *pr0, *pr1;
 	int l, t, r, b;
 	yut_cmpst(pr0, pr1, r0, r1, ->l);

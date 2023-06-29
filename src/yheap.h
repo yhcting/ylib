@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2015
+ * Copyright (C) 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -41,8 +41,7 @@
  * Biggest element is at top.
  */
 
-#ifndef __YHEAp_h__
-#define __YHEAp_h__
+#pragma once
 
 #include "ydef.h"
 
@@ -53,10 +52,10 @@ struct yheap;
  * Create heap object.
  *
  * @param capacity Inital heap capacity. Capacity means space available without
- *	additional memory allocation.
+ * additional memory allocation.
  * @param vfree Function to free item.
  * @param cmp Function to compare two heap items.
- *	Return value follows rule of strcmp function.
+ * Return value follows rule of strcmp function.
  * @return NULL if fails (ex. ENOMEM)
  */
 YYEXPORT struct yheap *
@@ -114,20 +113,15 @@ yheap_sz(const struct yheap *);
  * Iterate heap elements
  *
  * @param tag Tag during iteration.
- * @param cb
- *	callback called whenever visiting element.
- *	If callback returns TRUE, iteration keeps going.
- *	But if callback returns FALSE, iteration stops and function is returned.
- * @return
- * 	-1 if fails (ex. internal error.)
- *	0 if iteration to all heap nodes are done.
- *	1 if iteration is stopped in the middle because @p cb returns FALSE.
+ * @param cb callback called whenever visiting element.
+ * If callback returns TRUE, iteration keeps going.
+ * But if callback returns FALSE, iteration stops and function is returned.
+ * @return -1 if fails (ex. internal error.).
+ * 0 if iteration to all heap nodes are done.
+ * 1 if iteration is stopped in the middle because @p cb returns FALSE.
  */
 YYEXPORT int
 yheap_iterates(
 	struct yheap *,
 	void *tag,
 	int (*cb)(void *e, void *tag));
-
-
-#endif /* __YHEAp_h__ */

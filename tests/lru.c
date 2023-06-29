@@ -43,10 +43,7 @@
 #include "ylru.h"
 
 
-static void
-data_free(void *v) __unused;
-
-static void
+unused static void
 data_free(void *v) {
 	yfree(v);
 }

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,27 +39,23 @@
  * @brief Header to use ytask in inside library
  */
 
-#ifndef __TASKMANAGEr_h__
-#define __TASKMANAGEr_h__
+#pragma once
 
 #include "ytaskmanager.h"
 #include "ythreadex.h"
 
 struct ytaskmanager {
-        /* -------- READ ONLY values(set only once) --------*/
+	/* -------- READ ONLY values(set only once) --------*/
 	struct ymsghandler *owner;
 	int slots;
-        /* ---------- Dynamically updated values ----------*/
-        struct yhash *tagmap;
+	/* ---------- Dynamically updated values ----------*/
+	struct yhash *tagmap;
 	pthread_mutex_t tagmap_lock;
 
 	pthread_mutex_t elh_lock;
-        struct ylistl_link elhhd; /* head of event listener handle */
+	struct ylistl_link elhhd; /* head of event listener handle */
 
 	pthread_mutex_t q_lock;
-        struct ylistl_link readyq_hd[YTHREADEX_NUM_PRIORITY];
-        struct ylistl_link runq_hd; /* head of run Q */
+	struct ylistl_link readyq_hd[YTHREADEX_NUM_PRIORITY];
+	struct ylistl_link runq_hd; /* head of run Q */
 };
-
-
-#endif /* __TASKMANAGEr_h__ */

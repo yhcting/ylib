@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header to use ymsg
  */
 
-#ifndef __YMSg_h__
-#define __YMSg_h__
+#pragma once
 
 #include "ydef.h"
 #include "ylistl.h"
@@ -181,6 +180,3 @@ ymsg_create(void);
  */
 YYEXPORT void
 ymsg_destroy(struct ymsg *);
-
-
-#endif /* __YMSg_h__ */

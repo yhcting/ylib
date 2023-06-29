@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Simple LRU cache
  */
 
-#ifndef __YLRu_h__
-#define __YLRu_h__
+#pragma once
 
 #include "ydef.h"
 
@@ -54,14 +53,14 @@ struct ylru;
  * Create lru cache that uses integer value as key.
  *
  * @param maxsz Maximum size that cache can keep (NOT bytes).
- *	'0' means infinite (as many as possible)
+ * '0' means infinite (as many as possible)
  * @param datafree Function to free user data evicted from cache
- *	'NULL' means 'DO NOT free'.
+ * 'NULL' means 'DO NOT free'.
  * @param datacreate Function to create data if cache misses.
- *	'NULL' means 'DO NOT create'.
+ * 'NULL' means 'DO NOT create'.
  * @param datasize Function to calculate data size.
- *	This is to compare with 'maxsz' of cache.
- *	'NULL' means fixed value (1).
+ * This is to compare with 'maxsz' of cache.
+ * 'NULL' means fixed value (1).
  * @return NULL for fails (ex. there is NULL in arguments)
  */
 YYEXPORT struct ylru *
@@ -140,10 +139,9 @@ ylru_put(struct ylru *, const void *key, void *data);
  *
  * @param data 'NULL' is NOT allowed.
  * @param key Key value of data to get.
- * @return
- *	- 0 for getting data(existing one, or newly created one)
- *	- 1 cache missed and not newly created.
- *	- <0 error (@c -errno)
+ * @return 0 for getting data(existing one, or newly created one).
+ * 1 cache missed and not newly created.
+ * <0 error (@c -errno)
  */
 YYEXPORT int
 ylru_get(struct ylru *, void **data, const void *key);
@@ -158,6 +156,3 @@ ylru_get(struct ylru *, void **data, const void *key);
  */
 YYEXPORT uint32_t
 ylru_sz(struct ylru *);
-
-
-#endif /* __YLRu_h__ */

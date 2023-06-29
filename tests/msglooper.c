@@ -37,7 +37,6 @@
 #include "test.h"
 #ifdef CONFIG_DEBUG
 
-#include <stdint.h>
 #include <assert.h>
 #include <unistd.h>
 

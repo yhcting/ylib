@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2015, 2016, 2021
+ * Copyright (C) 2015, 2016, 2021, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header defines small utilities.
  */
 
-#ifndef __YUt_h__
-#define __YUt_h__
+#pragma once
 
 #include "ydef.h"
 
@@ -86,7 +85,7 @@
  * @param bitsz Size of bits to set
  * @param v New value to be replaced with
  */
-#define yut_set_bits(x, offset, bitsz, v) 	\
+#define yut_set_bits(x, offset, bitsz, v)	\
 	(yut_clear_bits(x, offset, bitsz)	\
 		| ((((1LL << (bitsz)) - 1) & (v)) << (offset)))
 
@@ -193,14 +192,14 @@
 	 * Reason: 'count' argument may update some values.	\
 	 */							\
 	do {							\
-		int ___n___;					\
-		int ___c___ = (count);				\
-		if (unlikely(___c___ < 0)) {			\
-			___c___ = 0;				\
+		int n___;					\
+		int c___ = (count);				\
+		if (unlikely(c___ < 0)) {			\
+			c___ = 0;				\
 		}						\
-		___n___ = ___c___ / 16;				\
-		switch (___c___ & 0xf) {			\
-		case 0: while ( ___n___--) {			\
+		n___ = c___ / 16;				\
+		switch (c___ & 0xf) {				\
+		case 0: while ( n___--) {			\
 				stmt;				\
 			case 15: stmt;				\
 			case 14: stmt;				\
@@ -281,5 +280,3 @@ yut_starts_with(const char *str, const char *substr);
  */
 YYEXPORT uint64_t
 yut_current_time_millis(void);
-
-#endif /* __YUt_h__ */

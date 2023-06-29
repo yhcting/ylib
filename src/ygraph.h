@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -46,8 +46,7 @@
  * This is biggest difference from list or tree structure.
  */
 
-#ifndef __YGRAPh_h__
-#define __YGRAPh_h__
+#pragma once
 
 #include <string.h>
 
@@ -365,5 +364,3 @@ ygraph_clean(struct ygraph *g) {
 		ygraph_remove_vertex(g, v);
 	}
 }
-
-#endif /* __YGRAPh_h__ */

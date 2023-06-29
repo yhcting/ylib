@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2011, 2012, 2013, 2014, 2015
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header to use statmath module which helps calculate statistics data.
  */
 
-#ifndef __YSTATMATh_h__
-#define __YSTATMATh_h__
+#pragma once
 
 #include <math.h>
 #include <string.h>
@@ -252,5 +251,3 @@ ysm_ivar_combine(
  */
 YYEXPORT void
 ysm_ivar_ci95(const struct ysm_ivar *iv, double *min, double *max);
-
-#endif /* __YSTATMATh_h__ */

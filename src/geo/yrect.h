@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2015
+ * Copyright (C) 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -42,8 +42,7 @@
  * or 4 lines (left, top, right, bottom)
  */
 
-#ifndef __YRECt_h__
-#define __YRECt_h__
+#pragma once
 
 #include "yband.h"
 #include "ypoint.h"
@@ -187,5 +186,3 @@ ygeor_contain(const struct yrect *r, const struct ypoint *p) {
  */
 YYEXPORT void
 ygeor_intersect(struct yrect *r, const struct yrect *, const struct yrect *);
-
-#endif /* __YRECt_h__ */

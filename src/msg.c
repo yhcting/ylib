@@ -48,7 +48,7 @@
 #define DEFAULT_MSG_POOL_SIZE 100  /* Should this be configurable? */
 
 
-static struct ypool *_pool;
+static struct ypool *pool_;
 
 
 /******************************************************************************
@@ -88,27 +88,26 @@ mdestroy(struct ymsg_ *m) {
  *****************************************************************************/
 static struct ymsg_ *
 pool_get(void) {
-        struct ymsg_ *m;
+	struct ymsg_ *m;
 	struct ylistl_link *lk;
-        lk = ypool_get(_pool);
-        if (unlikely(!lk))
-                return NULL;
-        m = containerof(lk, struct ymsg_, lk);
-        minit_to_zero(m);
+	lk = ypool_get(pool_);
+	if (unlikely(!lk))
+		return NULL;
+	m = containerof(lk, struct ymsg_, lk);
+	minit_to_zero(m);
 	return m;
 }
 
 static bool
 pool_put(struct ymsg_ *m) {
-        return ypool_put(_pool, &m->lk);
+	return ypool_put(pool_, &m->lk);
 }
 
-static void pool_clear(void) __unused;
-static void
+unused static void
 pool_clear(void) {
-        struct ymsg_ *m;
-        while ((m = pool_get()))
-                mdestroy(m);
+	struct ymsg_ *m;
+	while ((m = pool_get()))
+		mdestroy(m);
 }
 
 
@@ -160,14 +159,14 @@ minit(const struct ylib_config *cfg) {
 	int capacity = cfg && (cfg->ymsg_pool_capacity > 0)
 		? cfg->ymsg_pool_capacity
 		: DEFAULT_MSG_POOL_SIZE;
-        _pool = ypool_create(capacity);
-        return _pool ? 0 : -ENOMEM;
+	pool_ = ypool_create(capacity);
+	return pool_ ? 0 : -ENOMEM;
 }
 
 static void
 mexit(void) {
-        pool_clear();
-        ypool_destroy(_pool);
+	pool_clear();
+	ypool_destroy(pool_);
 }
 
 LIB_MODULE(msg, minit, mexit);

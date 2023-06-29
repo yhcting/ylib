@@ -40,7 +40,6 @@
 #include <errno.h>
 #include <limits.h>
 #include <unistd.h>
-#include <stdint.h>
 
 #include "common.h"
 #include "lib.h"
@@ -57,11 +56,11 @@
 
 struct ytaskmanager_qevent_listener_handle {
 	struct ymsghandler *owner;
-        /**
-         * Fields used inside task module. This value is initialized inside
-         * task module.
-         */
-        struct ylistl_link lk;
+	/**
+	 * Fields used inside task module. This value is initialized inside
+	 * task module.
+	 */
+	struct ylistl_link lk;
 	/**
 	 * {@code el} MUST be at the end of this struct, because
 	 *   {@code struct ytaskmanager_qevent_listener} has extra bytes at
@@ -93,9 +92,7 @@ declare_lock(mutex, struct ytaskmanager, q, NULL)
  *
  *
  *****************************************************************************/
-static INLINE bool
-is_in_owner_thread(struct ytaskmanager *tm) __unused;
-static INLINE bool
+unused static INLINE bool
 is_in_owner_thread(struct ytaskmanager *tm) {
 	return pthread_self() == ymsglooper_get_thread
 		(ymsghandler_get_looper(ytaskmanager_get_owner(tm)));
@@ -106,9 +103,7 @@ is_in_owner_thread(struct ytaskmanager *tm) {
  *
  *
  *****************************************************************************/
-static INLINE bool
-verify_ttg(struct ytaskmanager *tm, struct ytask *tsk) __unused;
-static INLINE bool
+unused static INLINE bool
 verify_ttg(struct ytaskmanager *tm, struct ytask *tsk) {
 	struct ttg *ttg = tsk->tmtag;
 	return ttg
@@ -154,7 +149,7 @@ create_ttg(struct ytaskmanager *tm, struct ytask *tsk) {
 
 static INLINE void
 destroy_ttg(struct ytask *tsk) {
-	struct ttg *ttg __unused = tsk->tmtag;
+	unused struct ttg *ttg = tsk->tmtag;
 	yassert(ttg);
 	yassert(ttg->tsk == tsk);
 	yfree(tsk->tmtag);
@@ -198,7 +193,7 @@ readyq_enq_locked(struct ytaskmanager *tm, struct ytask *tsk) {
 }
 
 static INLINE int
-readyq_remove_locked(struct ytaskmanager *tm __unused,
+readyq_remove_locked(unused struct ytaskmanager *tm,
 		     struct ytask *tsk) {
 	struct ylistl_link *lk = task_lk(tsk);
 	yassert(verify_ttg(tm, tsk));
@@ -281,17 +276,17 @@ task_event_on_finished(struct ytask *tsk) {
 
 static void
 task_event_on_done(
-	struct ytask_event_listener *el __unused,
+	unused struct ytask_event_listener *el,
 	struct ytask *tsk,
-	void *result __unused,
-	int errcode __unused
+	unused void *result,
+	unused int errcode
 ) {
 	task_event_on_finished(tsk);
 }
 
 static void
 task_event_on_cancelled(
-	struct ytask_event_listener *el __unused,
+	unused struct ytask_event_listener *el,
 	struct ytask *tsk,
 	int errcode
 ) {
@@ -532,12 +527,12 @@ ytaskmanager_add_tag(
 	void *tag,
 	void (*tagfree)(void *)
 ) {
-        int r;
-        struct yo *o = yocreate0(tag, tagfree);
-        if (unlikely(!o))
-                return -ENOMEM;
+	int r;
+	struct yo *o = yocreate0(tag, tagfree);
+	if (unlikely(!o))
+		return -ENOMEM;
 	lock_tagmap(tm);
-        r = yhash_set(tm->tagmap, (void *)key, o);
+	r = yhash_set(tm->tagmap, (void *)key, o);
 	unlock_tagmap(tm);
 	return r;
 }
@@ -545,20 +540,20 @@ ytaskmanager_add_tag(
 void *
 ytaskmanager_get_tag(struct ytaskmanager *tm, const char *key) {
 	int r;
-        struct yo *o;
+	struct yo *o;
 	lock_tagmap(tm);
 	r = yhash_get(tm->tagmap, key, (void **)&o);
 	unlock_tagmap(tm);
-        if (unlikely(r))
-                return NULL;
-        return o->o0;
+	if (unlikely(r))
+		return NULL;
+	return o->o0;
 }
 
 int
 ytaskmanager_remove_tag(struct ytaskmanager *tm, const char *key) {
 	int r;
 	lock_tagmap(tm);
-        r = yhash_remove(tm->tagmap, key);
+	r = yhash_remove(tm->tagmap, key);
 	unlock_tagmap(tm);
 	return r;
 }

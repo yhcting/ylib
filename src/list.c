@@ -141,7 +141,7 @@ ylist_add_last(struct ylist *l, void *item) {
 	n = node_create(item);
 	if (unlikely(!n))
 		return -ENOMEM;
-        ylistl_add_prev(&l->head, &n->lk);
+	ylistl_add_prev(&l->head, &n->lk);
 	++l->sz;
 	return 0;
 }
@@ -154,7 +154,7 @@ ylist_add_first(struct ylist *l, void *item) {
 	n = node_create(item);
 	if (unlikely(!n))
 		return -ENOMEM;
-        ylistl_add_next(&l->head, &n->lk);
+	ylistl_add_next(&l->head, &n->lk);
 	++l->sz;
 	return 0;
 }
@@ -220,15 +220,15 @@ ylisti_create(struct ylist *l, int type) {
 	itr->list = l;
 	itr->lcurr = &l->head;
 	switch(type) {
-        case YLISTI_FORWARD:
+	case YLISTI_FORWARD:
 		itr->next = &inext_forward;
 		itr->lnext = l->head.next;
 	break;
-        case YLISTI_BACKWARD:
+	case YLISTI_BACKWARD:
 		itr->next = &inext_backward;
 		itr->lnext = l->head.prev;
 	break;
-        default:
+	default:
 		yfree(itr);
 		itr = NULL;
 	}

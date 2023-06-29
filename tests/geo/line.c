@@ -33,6 +33,7 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
+
 #include "../test.h"
 #ifdef CONFIG_DEBUG
 
@@ -42,7 +43,7 @@
 
 static void
 test_geo_line(void)  {
-        /* NOT IMPLEMENTED YET */
+	/* NOT IMPLEMENTED YET */
 }
 
 

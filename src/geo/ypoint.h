@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2015
+ * Copyright (C) 2015, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -42,8 +42,7 @@
  * Point is represented as (x, y).
  */
 
-#ifndef __YPOINt_h__
-#define __YPOINt_h__
+#pragma once
 
 #include "../ydef.h"
 
@@ -80,6 +79,3 @@ ygeop_eq(const struct ypoint *p0, const struct ypoint *p1) {
 	return p0->x == p1->x
 		&& p0->y == p1->y;
 }
-
-
-#endif /* __YPOINt_h__ */

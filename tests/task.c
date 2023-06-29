@@ -262,7 +262,7 @@ runnable0(struct ytask *tsk, void **result) {
  */
 static void
 tc1(struct ymsghandler *mh0,
-    struct ymsghandler *mh1 __unused) {
+    unused struct ymsghandler *mh1) {
 	struct ytask *t;
 	struct targ *ta;
 	struct tres *tr;
@@ -302,10 +302,10 @@ tc1(struct ymsghandler *mh0,
  */
 static void
 tc2(struct ymsghandler *mh0,
-    struct ymsghandler *mh1 __unused) {
+    unused struct ymsghandler *mh1) {
 	struct ytask *t;
 	struct targ *ta;
-	struct tres *tr __unused;
+	unused struct tres *tr;
 	/* Normal successful thread */
 	ta = ycalloc(1, sizeof(*ta));
 	ta->s = ymalloc(16);
@@ -339,7 +339,7 @@ tc3(struct ymsghandler *mh0,
     struct ymsghandler *mh1) {
 	struct ytask *t;
 	struct targ *ta;
-	struct tres *tr __unused;
+	unused struct tres *tr;
 	ylogv("***************** tc3 S *********************\n");
 	/* Normal successful thread */
 	ta = ycalloc(1, sizeof(*ta));

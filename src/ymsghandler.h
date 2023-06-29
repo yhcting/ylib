@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016, 2021
+ * Copyright (C) 2016, 2021, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief message handler
  */
 
-#ifndef __YMSGHANDLEr_h__
-#define __YMSGHANDLEr_h__
+#pragma once
 
 #include <pthread.h>
 #include "ydef.h"
@@ -57,8 +56,8 @@ struct ymsglooper;
  * @param tag Custom tag.
  * @param tagfree Function to free @p tag
  * @param handle message handle function.
- *	'handle' MUST NOT change value or destroy(free) msg object!
- *	To use default handler, set to NULL.
+ * 'handle' MUST NOT change value or destroy(free) msg object!
+ * To use default handler, set to NULL.
  * @return NULL if fails.
  */
 YYEXPORT struct ymsghandler *
@@ -144,6 +143,3 @@ ymsghandler_exec_on(
 	void *arg,
 	void (*argfree)(void *),
 	void (*run)(void *));
-
-
-#endif /* __YMSGHANDLEr_h__ */

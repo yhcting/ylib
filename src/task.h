@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016
+ * Copyright (C) 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -39,8 +39,7 @@
  * @brief Header to use ytask in inside library
  */
 
-#ifndef __TASk_h__
-#define __TASk_h__
+#pragma once
 
 #include <pthread.h>
 
@@ -53,25 +52,25 @@
 
 
 struct ytask {
-        /* -------- READ ONLY values(set only once --------*/
-        struct ythreadex t; /* MUST be on TOP of the struct */
-        bool pthdcancel; /* See ytask_create at ytask.h */
+	/* -------- READ ONLY values(set only once --------*/
+	struct ythreadex t; /* MUST be on TOP of the struct */
+	bool pthdcancel; /* See ytask_create at ytask.h */
 	struct ytask_listener listener;
-        /* ---------- Dynamically updated values ----------*/
-        struct yhash *tagmap;
+	/* ---------- Dynamically updated values ----------*/
+	struct yhash *tagmap;
 	pthread_mutex_t tagmap_lock;
-        struct ylistl_link elhhd; /**< header of event listener handle */
+	struct ylistl_link elhhd; /**< header of event listener handle */
 	pthread_mutex_t elh_lock;
 	struct ygp gp;
-        struct {
-                u64 interval; /**< interval between progress. ms */
-                u64 pubtm; /**< last publish time. ms */
-                long max; /**< max progress value */
-                long prog; /**< current progress value */
+	struct {
+		u64 interval; /**< interval between progress. ms */
+		u64 pubtm; /**< last publish time. ms */
+		long max; /**< max progress value */
+		long prog; /**< current progress value */
 #ifdef CONFIG_DEBUG
 		volatile bool init; /**< progress is initialized */
 #endif /* CONFIG_DEBUG */
-        } prog;
+	} prog;
 	/* ------------------------------------------------
 	 * Values used only inside library.
 	 * These are to support other library modules.
@@ -89,17 +88,17 @@ struct ytask {
 
 struct ytask_event_listener_handle {
 	struct ymsghandler *owner;
-        /**
-         * Fields used inside task module. This value is initialized inside
-         * task module.
-         */
-        struct ylistl_link lk;
+	/**
+	 * Fields used inside task module. This value is initialized inside
+	 * task module.
+	 */
+	struct ylistl_link lk;
 	/**
 	 * {@code el} MUST be at the end of this struct, because
 	 *   {@code struct ytask_event_listener} has extra bytes at the end of
 	 *   struct
 	 */
-        struct ytask_event_listener el;
+	struct ytask_event_listener el;
 };
 
 /**
@@ -138,5 +137,3 @@ static INLINE int
 task_refcnt(struct ytask *tsk) {
 	return ygpref_cnt(&tsk->gp);
 }
-
-#endif /* __TASk_h__ */

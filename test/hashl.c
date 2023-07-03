@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016, 2021
+ * Copyright (C) 2021
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,82 +33,53 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include <limits.h>
-#include <pthread.h>
-#include <errno.h>
 
-#include "lib.h"
-#include "def.h"
-#include "common.h"
-#include "ygp.h"
-
-#ifndef __GNUC__
-#error This module uses GNU C Extentions for atomic operations.
-#endif
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-int
-ygpinit(struct ygp *gp, void *container, void (*container_free)(void *)) {
-	if (unlikely(!container || !gp))
-		return -EINVAL;
-	gp->container = container;
-	gp->container_free = container_free;
-	gp->refcnt = 0;
-	return 0;
-}
-
-void
-ygpdestroy(struct ygp *gp) {
-	if (likely(gp->container_free))
-		(*gp->container_free)(gp->container);
-}
-
-int
-ygpref_cnt(const struct ygp *gp) {
-	return gp->refcnt;
-}
-
-int
-ygpput(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, -1, __ATOMIC_SEQ_CST);
-	yassert(0 <= refcnt);
-	if (unlikely(refcnt <= 0))
-		ygpdestroy(gp);
-	return refcnt;
-}
-
-int
-ygpget(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, 1, __ATOMIC_SEQ_CST);
-	yassert(0 < refcnt);
-	return refcnt;
-}
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
+#include "test.h"
 #ifdef CONFIG_TEST
-/*
- * This function is used for testing and debugging.
- */
-void
-gp_clear(void) {
-}
-#endif /* CONFIG_TEST */
 
-static int
-minit(const struct ylib_config *cfg) {
-	return 0;
-}
+#include <string.h>
+
+#include "yhashl.h"
+
+struct item {
+	struct yhashl_node hn;
+	int v;
+};
 
 static void
-mexit(void) {
+test_hashl(void) {
+	int i;
+	struct yhashl_node *rn, *tmp;
+	struct item *itm;
+	char sbuf[128];
+	struct yhashl *h = ymalloc(sizeof(*h));
+	yhashl_init(h, YHASHL_HFUNC_STR, YHASHL_KEYEQ_STR);
+	for (i = 0; i < 1024; i++) {
+		itm = ymalloc(sizeof(*itm));
+		sprintf(sbuf, "item-%d", i);
+		itm->v = i;
+		rn = yhashl_set(h, ystrdup(sbuf), &itm->hn);
+		yassert(!rn);
+	}
+	rn = yhashl_get(h, "item-10");
+	yassert(rn && 10 == containerof(rn, struct item, hn)->v);
+
+	itm = ymalloc(sizeof(*itm));
+	itm->v = -1;
+	rn = yhashl_set(h, "item-10", &itm->hn);
+	yassert(rn);
+	yfree(containerof(rn, struct item, hn));
+	rn = yhashl_get(h, "item-10");
+	yassert(rn && -1 == containerof(rn, struct item, hn)->v);
+
+	yhashl_foreach_safe(h, rn, tmp) {
+		yfree((void *)yhashl_node_key(rn));
+		yfree(containerof(rn, struct item, hn));
+	}
+	yhashl_clean(h);
+	yfree(h);
 }
 
-LIB_MODULE(gp, minit, mexit);
+TESTFN(hashl)
+
+#endif /* CONFIG_TEST */

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016, 2021
+ * Copyright (C) 2016
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,82 +33,88 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include <limits.h>
-#include <pthread.h>
-#include <errno.h>
 
-#include "lib.h"
-#include "def.h"
-#include "common.h"
+#include "test.h"
+#ifdef CONFIG_TEST
+
+#include <pthread.h>
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
+
+#include "ylog.h"
+#include "yerrno.h"
 #include "ygp.h"
 
-#ifndef __GNUC__
-#error This module uses GNU C Extentions for atomic operations.
-#endif
+struct myvalue {
+	struct ygp gp;
+	int a;
+};
 
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-int
-ygpinit(struct ygp *gp, void *container, void (*container_free)(void *)) {
-	if (unlikely(!container || !gp))
-		return -EINVAL;
-	gp->container = container;
-	gp->container_free = container_free;
-	gp->refcnt = 0;
-	return 0;
+
+static void *
+gpaction(void *arg) {
+	struct ygp *gp = arg;
+	usleep(((rand() % 100) + 10) * 1000);
+	ygpget(gp); //1
+	ygpget(gp); //2
+	ygpput(gp); //1
+	ygpget(gp); //2
+	ygpget(gp); //3
+	ygpput(gp); //2
+	ygpput(gp); //1
+	ygpget(gp); //2
+	ygpput(gp); //1
+	ygpget(gp); //2
+	ygpget(gp); //3
+	ygpput(gp); //2
+	ygpput(gp); //1
+	ygpput(gp); //0
+	return NULL;
 }
 
-void
-ygpdestroy(struct ygp *gp) {
-	if (likely(gp->container_free))
-		(*gp->container_free)(gp->container);
-}
-
-int
-ygpref_cnt(const struct ygp *gp) {
-	return gp->refcnt;
-}
-
-int
-ygpput(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, -1, __ATOMIC_SEQ_CST);
-	yassert(0 <= refcnt);
-	if (unlikely(refcnt <= 0))
-		ygpdestroy(gp);
-	return refcnt;
-}
-
-int
-ygpget(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, 1, __ATOMIC_SEQ_CST);
-	yassert(0 < refcnt);
-	return refcnt;
-}
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-#ifdef CONFIG_TEST
-/*
- * This function is used for testing and debugging.
- */
-void
-gp_clear(void) {
-}
-#endif /* CONFIG_TEST */
-
-static int
-minit(const struct ylib_config *cfg) {
-	return 0;
-}
 
 static void
-mexit(void) {
+test_gp(void) {
+	pthread_t pthd[16];
+	void *retval;
+	int i;
+	struct ygp *gp;
+	struct myvalue *myv;
+	srand(time(NULL));
+
+	myv = ymalloc(sizeof(*myv));
+	gp = &myv->gp;
+	ygpinit(gp, myv, &yfree);
+	ygpget(gp);
+	ygpget(gp);
+	ygpget(gp);
+	ygpput(gp);
+	ygpdestroy(gp);
+
+	myv = ymalloc(sizeof(*myv));
+	gp = &myv->gp;
+	ygpinit(gp, myv, &yfree);
+	ygpget(gp);
+	i = 16;
+	while (i--)
+		pthread_create(&pthd[i], NULL, gpaction, gp);
+	i = 16;
+	while (i--)
+		pthread_join(pthd[i], &retval);
+	ygpput(gp);
+
+	return;
 }
 
-LIB_MODULE(gp, minit, mexit);
+extern void gp_clear(void);
+static void
+clear_gp(void) {
+	gp_clear();
+}
+
+
+TESTFN(gp)
+CLEARFN(gp)
+
+#endif /* CONFIG_TEST */

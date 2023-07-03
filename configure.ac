@@ -53,11 +53,19 @@ AC_CHECK_FUNCS([memmove memset malloc memcpy],
 
 AC_ARG_WITH(debug,
     [AS_HELP_STRING([--with-debug],
-        [Build with debugging feature. This arguement should be enabled for testing.])],
+        [Build with debugging feature.])],
     [AC_DEFINE([CONFIG_DEBUG],
         [1],
         [Debug is enabled.])],
     [with_debug=no])
+
+AC_ARG_WITH(test,
+    [AS_HELP_STRING([--with-test],
+        [Build with test executable])],
+    [AC_DEFINE([CONFIG_TEST],
+        [1],
+        [Test executable is created.])],
+    [with_test=no])
 
 AS_IF([test "x$with_debug" != xno],
     [CFLAGS="-g -O0 -fPIC -D_FORTIFY_SOURCE=2 -fsanitize=address -fsanitize=leak -fsanitize=undefined"],
@@ -66,7 +74,8 @@ CFLAGS="${CFLAGS} -Wall -Werror"
 AC_SUBST([CFLAGS])
 
 AM_CONDITIONAL([DEBUG], [test "x$with_debug" != xno])
+AM_CONDITIONAL([TEST], [test "x$with_test" != xno])
 
-AC_CONFIG_FILES([Makefile src/Makefile tests/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile test/Makefile])
 
 AC_OUTPUT

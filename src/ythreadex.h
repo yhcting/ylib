@@ -268,6 +268,12 @@ YYEXPORT enum ythreadex_state
 ythreadex_get_state(struct ythreadex *);
 
 /**
+ * Get state name as string.
+ */
+YYEXPORT const char *
+ythreadex_get_state_str(enum ythreadex_state state);
+
+/**
  * Get argument of thread. This is the value @c arg passed at
  * @ref ythreadex_create
  */

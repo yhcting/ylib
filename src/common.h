@@ -44,21 +44,29 @@
 
 /*****************************************************************************
  *
- * Debugging
+ * Debugging && Testing
  *
  *****************************************************************************/
-/* For debugging */
 #ifdef CONFIG_DEBUG
+#include <assert.h>
+#define yassert(x) assert(x)
+#else
+#define yassert(x) do { } while (0)
+#endif
+
+
+#ifdef CONFIG_TEST
+/*
+ * Functions defined at tests/main.c
+ */
 
 #include <malloc.h>
-#include <assert.h>
 #include <stdio.h>
 
 #define ymalloc(sz) dmalloc(sz, __FILE__, __LINE__)
 #define yrealloc(p, sz) drealloc(p, sz, __FILE__, __LINE__)
 #define ycalloc(n, sz) dcalloc(n, sz, __FILE__, __LINE__)
 #define yfree dfree
-#define yassert(x) assert(x)
 #define ystrdup(p) dstrdup(p, __FILE__, __LINE__)
 
 EXPORT void *dmalloc(size_t, const char *, int);
@@ -67,7 +75,7 @@ EXPORT void *dcalloc(size_t, size_t, const char *, int);
 EXPORT void dfree(void *);
 EXPORT char *dstrdup(const char *, const char *, int);
 
-#else /* CONFIG_DEBUG */
+#else /* CONFIG_TEST */
 
 #include <malloc.h>
 
@@ -75,11 +83,9 @@ EXPORT char *dstrdup(const char *, const char *, int);
 #define yrealloc realloc
 #define ycalloc calloc
 #define yfree free
-#define yassert(x) do { } while (0)
 #define ystrdup strdup
 
-#endif /* CONFIG_DEBUG */
-
+#endif /* CONFIG_TEST */
 
 /*****************************************************************************
  *

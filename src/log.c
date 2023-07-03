@@ -142,7 +142,7 @@ ylog_write___(
  *
  *
  *****************************************************************************/
-#ifdef CONFIG_DEBUG
+#ifdef CONFIG_TEST
 /*
  * This function is used for testing and debugging.
  */
@@ -153,7 +153,7 @@ log_clear(void) {
 		yfree(b);
 	pthread_setspecific(_tkey, NULL);
 }
-#endif /* CONFIG_DEBUG */
+#endif /* CONFIG_TEST */
 
 static int
 minit(const struct ylib_config *cfg) {

@@ -535,7 +535,7 @@ ytaskdepman_cancel(struct ytaskdepman *tdm) {
  *
  *
  *****************************************************************************/
-#ifdef CONFIG_DEBUG
+#ifdef CONFIG_TEST
 /*
  * This function is used for testing and debugging.
  */
@@ -548,4 +548,4 @@ taskdepman_clear(void) {
 	o_clear();
 	msghandler_clear();
 }
-#endif /* CONFIG_DEBUG */
+#endif /* CONFIG_TEST */

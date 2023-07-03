@@ -33,82 +33,51 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include <limits.h>
-#include <pthread.h>
-#include <errno.h>
 
-#include "lib.h"
-#include "def.h"
-#include "common.h"
-#include "ygp.h"
-
-#ifndef __GNUC__
-#error This module uses GNU C Extentions for atomic operations.
-#endif
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-int
-ygpinit(struct ygp *gp, void *container, void (*container_free)(void *)) {
-	if (unlikely(!container || !gp))
-		return -EINVAL;
-	gp->container = container;
-	gp->container_free = container_free;
-	gp->refcnt = 0;
-	return 0;
-}
-
-void
-ygpdestroy(struct ygp *gp) {
-	if (likely(gp->container_free))
-		(*gp->container_free)(gp->container);
-}
-
-int
-ygpref_cnt(const struct ygp *gp) {
-	return gp->refcnt;
-}
-
-int
-ygpput(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, -1, __ATOMIC_SEQ_CST);
-	yassert(0 <= refcnt);
-	if (unlikely(refcnt <= 0))
-		ygpdestroy(gp);
-	return refcnt;
-}
-
-int
-ygpget(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, 1, __ATOMIC_SEQ_CST);
-	yassert(0 < refcnt);
-	return refcnt;
-}
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
+#include "test.h"
 #ifdef CONFIG_TEST
-/*
- * This function is used for testing and debugging.
- */
-void
-gp_clear(void) {
-}
-#endif /* CONFIG_TEST */
 
-static int
-minit(const struct ylib_config *cfg) {
-	return 0;
-}
+#include <unistd.h>
+
+#include "ymsglooper.h"
+
 
 static void
-mexit(void) {
+test_msglooper(void) {
+	/* create looper thread and stop it */
+	struct ymsglooper *ml0 = ymsglooper_start_looper_thread();
+	struct ymsglooper *ml1 = ymsglooper_start_looper_thread();
+
+	ymsglooper_stop(ml0);
+	ymsglooper_stop(ml1);
+	while (!(ymsglooper_get_state(ml0) == YMSGLOOPER_TERMINATED
+		&& ymsglooper_get_state(ml1) == YMSGLOOPER_TERMINATED)
+	) { usleep(1000 * 50); }
+	ymsglooper_destroy(ml0);
+	ymsglooper_destroy(ml1);
+	usleep(1000 * 500); /* wait until threads are done */
+
+	ml0 = ymsglooper_start_looper_thread();
+	ml1 = ymsglooper_start_looper_thread();
+
+	ymsglooper_stop(ml0);
+	ymsglooper_stop(ml1);
+	yassert(!ymsglooper_get()); /* there is no message looper for this thread. */
+	while (!(ymsglooper_get_state(ml0) == YMSGLOOPER_TERMINATED
+		&& ymsglooper_get_state(ml1) == YMSGLOOPER_TERMINATED)
+	) { usleep(1000 * 50); }
+	ymsglooper_destroy(ml0);
+	ymsglooper_destroy(ml1);
 }
 
-LIB_MODULE(gp, minit, mexit);
+extern void msglooper_clear(void);
+static void
+clear_msglooper(void) {
+	msglooper_clear();
+}
+
+
+TESTFN(msglooper) /* @suppress("Unused static function") */
+CLEARFN(msglooper) /* @suppress("Unused static function") */
+
+#endif /* CONFIG_TEST */

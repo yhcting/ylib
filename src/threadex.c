@@ -53,9 +53,6 @@ static pthread_spinlock_t _id_lock;
  * Debug
  *
  *****************************************************************************/
-#ifdef CONFIG_DEBUG
-#else /* CONFIG_DEBUG */
-#endif /* CONFIG_DEBUG */
 
 /******************************************************************************
  *
@@ -79,13 +76,13 @@ gen_unique_id(void) {
 }
 
 /* ------------------------------------------------------------------------- */
-#define declare_locked_getter_setter(tYPE, fIELD)		       \
-	static inline tYPE					      \
-	get_##fIELD##_locked(struct ythreadex *threadex) {	      \
-		return threadex->fIELD;				 \
-	}							       \
-	static inline void					      \
-	set_##fIELD##_locked(struct ythreadex *threadex, tYPE value) {  \
+#define declare_locked_getter_setter(tYPE, fIELD)			\
+	static inline tYPE						\
+	get_##fIELD##_locked(struct ythreadex *threadex) {		\
+		return threadex->fIELD;					\
+	}								\
+	static inline void						\
+	set_##fIELD##_locked(struct ythreadex *threadex, tYPE value) {	\
 		threadex->fIELD = value;				\
 	}
 
@@ -95,15 +92,15 @@ declare_locked_getter_setter(enum ythreadex_state, state)
 
 /* ------------------------------------------------------------------------- */
 #define declare_with_lock_getter_setter(tYPE, fIELD)		\
-	static inline tYPE				      \
+	static inline tYPE					\
 	get_##fIELD(struct ythreadex *threadex) {		\
 		tYPE value;					\
 		lock_##fIELD(threadex);				\
 		value = get_##fIELD##_locked(threadex);		\
 		unlock_##fIELD(threadex);			\
 		return value;					\
-	}						       \
-	static inline void				      \
+	}							\
+	static inline void					\
 	set_##fIELD(struct ythreadex *threadex, tYPE value) {	\
 		lock_##fIELD(threadex);				\
 		set_##fIELD##_locked(threadex, value);		\
@@ -115,13 +112,13 @@ declare_with_lock_getter_setter(enum ythreadex_state, state)
 #undef declare_with_lock_getter_setter
 
 /* ------------------------------------------------------------------------- */
-#define declare_simple_getter_setter(tYPE, fIELD)	       \
-	static inline tYPE				      \
-	get_##fIELD(struct ythreadex *threadex) {	       \
-		return threadex->fIELD;			 \
-	}						       \
-	static inline void				      \
-	set_##fIELD(struct ythreadex *threadex, tYPE value) {   \
+#define declare_simple_getter_setter(tYPE, fIELD)		\
+	static inline tYPE					\
+	get_##fIELD(struct ythreadex *threadex) {		\
+		return threadex->fIELD;				\
+	}							\
+	static inline void					\
+	set_##fIELD(struct ythreadex *threadex, tYPE value) {	\
 		threadex->fIELD = value;			\
 	}
 
@@ -243,7 +240,6 @@ thread_main_cleanup(void *arg) {
 		post_event_to_owner(threadex, cancelled);
 	else
 		post_event_to_owner(threadex, done);
-
 }
 
 static void *
@@ -281,7 +277,6 @@ thread_main(void *arg) {
 		ylogf("Threadex state internal error!: %d", state);
 		exit(1);
 	}
-
 	pthread_cleanup_pop(1);
 	return NULL;
 }
@@ -389,6 +384,22 @@ enum ythreadex_state
 ythreadex_get_state(struct ythreadex *threadex) {
 	yassert(threadex);
 	return get_state(threadex);
+}
+
+const char *
+ythreadex_get_state_str(enum ythreadex_state state) {
+#define enumstr(eNUM) case eNUM: return #eNUM
+	switch (state) {
+	enumstr(YTHREADEX_READY);
+	enumstr(YTHREADEX_STARTED);
+	enumstr(YTHREADEX_CANCELLING);
+	enumstr(YTHREADEX_CANCELLED);
+	enumstr(YTHREADEX_DONE);
+	enumstr(YTHREADEX_TERMINATED);
+	enumstr(YTHREADEX_TERMINATED_CANCELLED);
+	default: return "?";
+	}
+#undef enumstr
 }
 
 /* ------------------------------------------------------------------------- */
@@ -534,7 +545,7 @@ ythreadex_publish_progress(struct ythreadex *threadex, long prog) {
  *
  *
  *****************************************************************************/
-#ifdef CONFIG_DEBUG
+#ifdef CONFIG_TEST
 /*
  * This function is used for testing and debugging.
  */
@@ -545,7 +556,7 @@ threadex_clear(void) {
 	o_clear();
 	msghandler_clear();
 }
-#endif /* CONFIG_DEBUG */
+#endif /* CONFIG_TEST */
 
 static int
 minit(const struct ylib_config *cfg) {

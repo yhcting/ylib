@@ -21,4 +21,7 @@ automake
 
 mkdir -p build
 cd build
-"$wsdir/configure" --srcdir="$wsdir" --prefix="$(pwd)" --with-debug "$@"
+# "$wsdir/configure" --srcdir="$wsdir" --prefix="$(pwd)" "$@"
+"$wsdir/configure" --srcdir="$wsdir" --prefix="$(pwd)" --with-test "$@"
+# "$wsdir/configure" --srcdir="$wsdir" --prefix="$(pwd)" --with-debug "$@"
+# "$wsdir/configure" --srcdir="$wsdir" --prefix="$(pwd)" --with-test --with-debug "$@"

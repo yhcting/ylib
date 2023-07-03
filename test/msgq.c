@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016, 2021
+ * Copyright (C) 2015
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,82 +33,17 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include <limits.h>
-#include <pthread.h>
-#include <errno.h>
 
-#include "lib.h"
-#include "def.h"
-#include "common.h"
-#include "ygp.h"
-
-#ifndef __GNUC__
-#error This module uses GNU C Extentions for atomic operations.
-#endif
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-int
-ygpinit(struct ygp *gp, void *container, void (*container_free)(void *)) {
-	if (unlikely(!container || !gp))
-		return -EINVAL;
-	gp->container = container;
-	gp->container_free = container_free;
-	gp->refcnt = 0;
-	return 0;
-}
-
-void
-ygpdestroy(struct ygp *gp) {
-	if (likely(gp->container_free))
-		(*gp->container_free)(gp->container);
-}
-
-int
-ygpref_cnt(const struct ygp *gp) {
-	return gp->refcnt;
-}
-
-int
-ygpput(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, -1, __ATOMIC_SEQ_CST);
-	yassert(0 <= refcnt);
-	if (unlikely(refcnt <= 0))
-		ygpdestroy(gp);
-	return refcnt;
-}
-
-int
-ygpget(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, 1, __ATOMIC_SEQ_CST);
-	yassert(0 < refcnt);
-	return refcnt;
-}
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
+#include "test.h"
 #ifdef CONFIG_TEST
-/*
- * This function is used for testing and debugging.
- */
-void
-gp_clear(void) {
-}
-#endif /* CONFIG_TEST */
 
-static int
-minit(const struct ylib_config *cfg) {
-	return 0;
-}
+#include "ymsgq.h"
 
 static void
-mexit(void) {
+test_msgq(void) {
 }
 
-LIB_MODULE(gp, minit, mexit);
+
+TESTFN(msgq)
+
+#endif /* CONFIG_TEST */

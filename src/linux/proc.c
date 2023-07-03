@@ -34,7 +34,7 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
-//#define YDPRINT
+/* #define YDPRINT */
 
 #include <unistd.h>
 #include <errno.h>
@@ -60,7 +60,7 @@ yproc_self_fd_path(int fd, char *buf, unsigned bufsz) {
 		return -EINVAL;
 	r = snprintf(pathbuf, sizeof(pathbuf), "/proc/self/fd/%d", fd);
 	if (unlikely(r >= sizeof(pathbuf)))
-		return -EINVAL; // truncated!
+		return -EINVAL; /* truncated! */
 	if (0 > (r = readlink(pathbuf, buf, bufsz - 1)))
 		return -errno;
 	buf[r] = 0; /* add trailing 0 */
@@ -138,7 +138,7 @@ yproc_pid_stat(struct yproc_pid_stat *stat, int pid) {
 		stat->pgid,
 		stat->sid);
 
-	r = 0; // mark as success
+	r = 0; /* mark as success */
 
  close_fd:
 	close(fd);

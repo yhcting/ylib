@@ -575,7 +575,7 @@ ytask_remove_event_listener(
  *
  *
  *****************************************************************************/
-#ifdef CONFIG_DEBUG
+#ifdef CONFIG_TEST
 /*
  * This function is used for testing and debugging.
  */
@@ -588,4 +588,4 @@ task_clear(void) {
 	msghandler_clear();
 	threadex_clear();
 }
-#endif /* CONFIG_DEBUG */
+#endif /* CONFIG_TEST */

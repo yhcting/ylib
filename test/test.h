@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016, 2021
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,82 +33,37 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include <limits.h>
-#include <pthread.h>
-#include <errno.h>
 
-#include "lib.h"
-#include "def.h"
+#pragma once
+
 #include "common.h"
-#include "ygp.h"
 
-#ifndef __GNUC__
-#error This module uses GNU C Extentions for atomic operations.
-#endif
+int dmem_count(void);
+void dregister_tstfn(void (*fn)(void), const char *mod);
+void dunregister_tstfn(void (*fn)(void), const char *mod);
+void dregister_clearfn(void (*fn)(void), const char *mod);
+void dunregister_clearfn(void (*fn)(void), const char *mod);
 
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-int
-ygpinit(struct ygp *gp, void *container, void (*container_free)(void *)) {
-	if (unlikely(!container || !gp))
-		return -EINVAL;
-	gp->container = container;
-	gp->container_free = container_free;
-	gp->refcnt = 0;
-	return 0;
-}
 
-void
-ygpdestroy(struct ygp *gp) {
-	if (likely(gp->container_free))
-		(*gp->container_free)(gp->container);
-}
+#define TESTFN(name)					\
+	__attribute__ ((constructor))			\
+	static void __tst_register_test_##name(void) {	\
+		dregister_tstfn(&test_##name, #name);	\
+	}						\
+	__attribute__ ((destructor))			\
+	static void __tst_unregister_test_##name(void) {\
+		dunregister_tstfn(&test_##name, #name);	\
+	}
 
-int
-ygpref_cnt(const struct ygp *gp) {
-	return gp->refcnt;
-}
+#define CLEARFN(name)					\
+	__attribute__ ((constructor))			\
+	static void __tst_register_clear_##name(void) {	\
+		dregister_clearfn(&clear_##name, #name);\
+	}
 
-int
-ygpput(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, -1, __ATOMIC_SEQ_CST);
-	yassert(0 <= refcnt);
-	if (unlikely(refcnt <= 0))
-		ygpdestroy(gp);
-	return refcnt;
-}
-
-int
-ygpget(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, 1, __ATOMIC_SEQ_CST);
-	yassert(0 < refcnt);
-	return refcnt;
-}
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-#ifdef CONFIG_TEST
 /*
- * This function is used for testing and debugging.
+ * Always enable assert.
  */
-void
-gp_clear(void) {
-}
-#endif /* CONFIG_TEST */
-
-static int
-minit(const struct ylib_config *cfg) {
-	return 0;
-}
-
-static void
-mexit(void) {
-}
-
-LIB_MODULE(gp, minit, mexit);
+#include <assert.h>
+#undef yassert
+#define yassert(x) assert(x)

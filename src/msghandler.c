@@ -219,7 +219,7 @@ ymsghandler_exec_on(
  *
  *
  *****************************************************************************/
-#ifdef CONFIG_DEBUG
+#ifdef CONFIG_TEST
 /*
  * This function is used for testing and debugging.
  */
@@ -229,4 +229,4 @@ void
 msghandler_clear(void) {
 	msg_clear();
 }
-#endif /* CONFIG_DEBUG */
+#endif /* CONFIG_TEST */

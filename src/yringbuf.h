@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016, 2021
+ * Copyright (C) 2023
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,82 +33,53 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include <limits.h>
-#include <pthread.h>
-#include <errno.h>
 
-#include "lib.h"
-#include "def.h"
-#include "common.h"
-#include "ygp.h"
-
-#ifndef __GNUC__
-#error This module uses GNU C Extentions for atomic operations.
-#endif
-
-/*****************************************************************************
+/**
+ * @file yringbuf.h
+ * @brief Use ring-buffer supporting best-effort lockless single-writer and
+ * multiple readers.
  *
- *
- *
- *****************************************************************************/
-int
-ygpinit(struct ygp *gp, void *container, void (*container_free)(void *)) {
-	if (unlikely(!container || !gp))
-		return -EINVAL;
-	gp->container = container;
-	gp->container_free = container_free;
-	gp->refcnt = 0;
-	return 0;
-}
-
-void
-ygpdestroy(struct ygp *gp) {
-	if (likely(gp->container_free))
-		(*gp->container_free)(gp->container);
-}
-
-int
-ygpref_cnt(const struct ygp *gp) {
-	return gp->refcnt;
-}
-
-int
-ygpput(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, -1, __ATOMIC_SEQ_CST);
-	yassert(0 <= refcnt);
-	if (unlikely(refcnt <= 0))
-		ygpdestroy(gp);
-	return refcnt;
-}
-
-int
-ygpget(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, 1, __ATOMIC_SEQ_CST);
-	yassert(0 < refcnt);
-	return refcnt;
-}
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-#ifdef CONFIG_TEST
-/*
- * This function is used for testing and debugging.
  */
-void
-gp_clear(void) {
-}
-#endif /* CONFIG_TEST */
 
-static int
-minit(const struct ylib_config *cfg) {
-	return 0;
-}
+#pragma once
 
-static void
-mexit(void) {
-}
+#include "ydef.h"
 
-LIB_MODULE(gp, minit, mexit);
+struct yringbuf;
+
+/**
+ * Create ringbuffer. In case that @p slotsz is very large or write happens very
+ * frequently, to avoid retrying read due to polluted data, increase @p slotnr.
+ * But, in most case, 3 is enough.
+ *
+ * @param slotnr Number of slots in ring.
+ * @param slotsz Size of each slot.
+ * @return struct yringbuf *
+ */
+YYEXPORT struct yringbuf *
+yringbuf_create(uint32_t slotnr, uint32_t slotsz);
+
+/**
+ * It should be executed only in thread where `ytringbuf_create` is executed.
+ */
+YYEXPORT void
+yringbuf_destroy(struct yringbuf *);
+
+/**
+ * Write @p slotsz bytes of data (MT-undafe).
+ * This should be called in only one context at a time.
+ * 'write' should be done only in thread where `ytringbuf_create` is executed.
+ * Always success.
+ */
+YYEXPORT void
+yringbuf_write(struct yringbuf *, void *data);
+
+/**
+ * Read data (MT-safe with best-effort). If function fails, data in @p buf is
+ * not defined.
+ *
+ * @param buf Destination buffer
+ * @return 0 if success. Otherwise @c -errno.
+ */
+YYEXPORT int
+yringbuf_read(struct yringbuf *, void *buf);

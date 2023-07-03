@@ -715,7 +715,7 @@ ytaskmanager_remove_qevent_listener(
  *
  *
  *****************************************************************************/
-#ifdef CONFIG_DEBUG
+#ifdef CONFIG_TEST
 /*
  * This function is used for testing and debugging.
  */
@@ -732,4 +732,4 @@ taskmanager_clear(void) {
 	msghandler_clear();
 	msglooper_clear();
 }
-#endif /* CONFIG_DEBUG */
+#endif /* CONFIG_TEST */

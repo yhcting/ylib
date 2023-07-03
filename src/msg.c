@@ -143,7 +143,7 @@ ymsg_destroy(struct ymsg *ym) {
  *
  *
  *****************************************************************************/
-#ifdef CONFIG_DEBUG
+#ifdef CONFIG_TEST
 /*
  * This function is used for testing and debugging.
  */
@@ -151,7 +151,7 @@ void
 msg_clear(void) {
 	pool_clear();
 }
-#endif /* CONFIG_DEBUG */
+#endif /* CONFIG_TEST */
 
 
 static int

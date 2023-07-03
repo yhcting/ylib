@@ -66,13 +66,17 @@
 /* GNU C Specific */
 #ifdef __GNUC__
 
-#define barrier __asm__ __volatile__("": : :"memory")
+/** Software memory barrier */
+#define barrier() __asm__ __volatile__("": : :"memory")
+/** Hardware memory barrier */
+#define hwbarrier() __sync_synchronize()
 #define unused __attribute__((unused))
 
 #else /* __GNUC__ */
 
-#error barrier() should be defined.
-#define barrier
+#error barrier, hwbarrier should be defined.
+#define barrier()
+#define hwbarrier()
 #define unused
 
 #endif /* __GNUC__ */

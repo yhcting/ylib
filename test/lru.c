@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016, 2021
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,82 +33,102 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include <limits.h>
-#include <pthread.h>
-#include <errno.h>
 
-#include "lib.h"
-#include "def.h"
-#include "common.h"
-#include "ygp.h"
-
-#ifndef __GNUC__
-#error This module uses GNU C Extentions for atomic operations.
-#endif
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-int
-ygpinit(struct ygp *gp, void *container, void (*container_free)(void *)) {
-	if (unlikely(!container || !gp))
-		return -EINVAL;
-	gp->container = container;
-	gp->container_free = container_free;
-	gp->refcnt = 0;
-	return 0;
-}
-
-void
-ygpdestroy(struct ygp *gp) {
-	if (likely(gp->container_free))
-		(*gp->container_free)(gp->container);
-}
-
-int
-ygpref_cnt(const struct ygp *gp) {
-	return gp->refcnt;
-}
-
-int
-ygpput(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, -1, __ATOMIC_SEQ_CST);
-	yassert(0 <= refcnt);
-	if (unlikely(refcnt <= 0))
-		ygpdestroy(gp);
-	return refcnt;
-}
-
-int
-ygpget(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, 1, __ATOMIC_SEQ_CST);
-	yassert(0 < refcnt);
-	return refcnt;
-}
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
+#include "test.h"
 #ifdef CONFIG_TEST
-/*
- * This function is used for testing and debugging.
- */
-void
-gp_clear(void) {
-}
-#endif /* CONFIG_TEST */
 
-static int
-minit(const struct ylib_config *cfg) {
-	return 0;
+#include <string.h>
+
+#include "ylru.h"
+
+
+unused static void
+data_free(void *v) {
+	yfree(v);
+}
+
+static void *
+data_create(const void *key) {
+	int *i;
+	i = ymalloc(sizeof(*i));
+	*i = 10;
+	return i;
+}
+
+static u32
+data_size(const void *d) {
+	return sizeof(int);
 }
 
 static void
-mexit(void) {
+test_lru(void) {
+	int *pi;
+	struct ylru *lru = ylrus_create(
+		sizeof(int) * 3,
+		YLRU_PREDEFINED_FREE,
+		NULL,
+		&data_size);
+
+	yassert(1 == ylru_get(lru, (void **)&pi, "key0"));
+	pi = ymalloc(sizeof(*pi));
+	*pi = 100;
+	ylru_put(lru, "k100", pi);
+	yassert(sizeof(int) == ylru_sz(lru));
+
+	yassert(0 == ylru_get(lru, (void **)&pi, "k100"));
+	yassert(100 == *pi);
+	yassert(0 == ylru_sz(lru));
+	ylru_put(lru, "k100", pi);
+
+	pi = ymalloc(sizeof(*pi));
+	*pi = 200;
+	ylru_put(lru, "k200", pi);
+	yassert(sizeof(int) * 2 == ylru_sz(lru));
+
+	pi = ymalloc(sizeof(*pi));
+	*pi = 300;
+	ylru_put(lru, "k300", pi);
+	yassert(sizeof(int) * 3 == ylru_sz(lru));
+
+	pi = ymalloc(sizeof(*pi));
+	*pi = 400;
+	ylru_put(lru, "k400", pi);
+	yassert(sizeof(int) * 3 == ylru_sz(lru));
+
+	/* Now lru is [ 200 - 300 - 400 (newest) ] */
+
+	yassert(1 == ylru_get(lru, (void **)&pi, "k100"));
+	yassert(0 == ylru_get(lru, (void **)&pi, "k200"));
+	yassert(200 == *pi);
+	yassert(sizeof(int) * 2 == ylru_sz(lru));
+	ylru_put(lru, "k200", pi);
+
+	/* Now, [ 300 - 400 - 200 (newest) ] */
+
+	pi = ymalloc(sizeof(*pi));
+	*pi = 500;
+	ylru_put(lru, "k500", pi);
+	yassert(sizeof(int) * 3 == ylru_sz(lru));
+
+	/* Should be [ 400 - 200 - 500 ] */
+
+	yassert(1 == ylru_get(lru, (void **)&pi, "k300"));
+
+	ylru_reset(lru);
+	ylru_destroy(lru);
+
+	lru = ylrus_create(
+		sizeof(int) * 3,
+		YLRU_PREDEFINED_FREE,
+		&data_create,
+		&data_size);
+	yassert(0 == ylru_get(lru, (void **)&pi, "k000"));
+	yassert(10 == *pi);
+	ylru_put(lru, "k000", pi);
+	ylru_destroy(lru);
 }
 
-LIB_MODULE(gp, minit, mexit);
+
+TESTFN(lru)
+
+#endif /* CONFIG_TEST */

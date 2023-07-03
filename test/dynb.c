@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016, 2021
+ * Copyright (C) 2011, 2012, 2013, 2014, 2015
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,82 +33,89 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include <limits.h>
-#include <pthread.h>
-#include <errno.h>
 
-#include "lib.h"
-#include "def.h"
-#include "common.h"
-#include "ygp.h"
-
-#ifndef __GNUC__
-#error This module uses GNU C Extentions for atomic operations.
-#endif
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-int
-ygpinit(struct ygp *gp, void *container, void (*container_free)(void *)) {
-	if (unlikely(!container || !gp))
-		return -EINVAL;
-	gp->container = container;
-	gp->container_free = container_free;
-	gp->refcnt = 0;
-	return 0;
-}
-
-void
-ygpdestroy(struct ygp *gp) {
-	if (likely(gp->container_free))
-		(*gp->container_free)(gp->container);
-}
-
-int
-ygpref_cnt(const struct ygp *gp) {
-	return gp->refcnt;
-}
-
-int
-ygpput(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, -1, __ATOMIC_SEQ_CST);
-	yassert(0 <= refcnt);
-	if (unlikely(refcnt <= 0))
-		ygpdestroy(gp);
-	return refcnt;
-}
-
-int
-ygpget(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, 1, __ATOMIC_SEQ_CST);
-	yassert(0 < refcnt);
-	return refcnt;
-}
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
+#include "test.h"
 #ifdef CONFIG_TEST
-/*
- * This function is used for testing and debugging.
- */
-void
-gp_clear(void) {
-}
-#endif /* CONFIG_TEST */
 
-static int
-minit(const struct ylib_config *cfg) {
-	return 0;
-}
+#include <string.h>
+#include <inttypes.h>
+
+#include "ydynb.h"
+
+struct elem {
+	short v;
+	char c;
+};
 
 static void
-mexit(void) {
+test_dynb(void) {
+	int i;
+	char c;
+	char *pc;
+	struct ydynb *b;
+	struct elem es[10];
+	struct elem *pe;
+	/* Simple byte(character) array.
+	 * =============================
+	 */
+	b = ydynb_create2(2, 1);
+	yassert(2 == ydynb_freesz(b));
+	ydynb_appends(b, "ab ", 3);
+	yassert(1 == ydynb_freesz(b));
+	ydynb_appends(b, "cde fgh ", 8);
+	/* include trailing 0 */
+	ydynb_appends(b, "1234567890123456789012345678901234567890", 41);
+	yassert(52 == ydynb_sz(b));
+	yassert(!strcmp("ab cde fgh 1234567890123456789012345678901234567890",
+			(const char *)ydynb_buf(b)));
+	yassert(-EINVAL == ydynb_shrink(b, 0));
+	yassert(-EINVAL == ydynb_shrink(b, 0xffff));
+	yassert(-EINVAL == ydynb_shrink(b, ydynb_sz(b) - 1));
+	ydynb_shrink(b, ydynb_sz(b));
+	yassert(0 == ydynb_freesz(b));
+	ydynb_destroy(b, FALSE);
+
+	/* Struct array.
+	 * =============
+	 */
+	b = ydynb_create2(2, sizeof(struct elem));
+	/* ydynb_dump(b); */
+	yassert(2 == ydynb_freesz(b));
+	es[0].v = 0;
+	es[0].c = 'A';
+	ydynb_append(b, &es[0]);
+	yassert(1 == ydynb_sz(b));
+	pe = ydynb_get(b, 0);
+	yassert(0 == pe->v && 'A' == pe->c);
+	for (i = 1; i < 10; i++) {
+		es[i].v = i;
+		es[i].c = 'A' + i;
+	}
+	ydynb_appends(b, &es[1], 9);
+	yassert(10 == ydynb_sz(b));
+	pe = ydynb_get(b, 2);
+	yassert(2 == pe->v && 'C' == pe->c);
+
+	ydynb_destroy(b, FALSE);
+
+	/* 4-bytes aligned char
+	 * ====================
+	 */
+	b = ydynb_create(2, 1, 4);
+	c = 'A';
+	ydynb_append(b, &c);
+	c = 'B';
+	ydynb_append(b, &c);
+	c = 'C';
+	ydynb_append(b, &c);
+	pc = ydynb_get(b, 1);
+	yassert(*pc == 'B');
+	yassert((uintptr_t)pc % 4 == 0);
+	ydynb_destroy(b, FALSE);
+
 }
 
-LIB_MODULE(gp, minit, mexit);
+
+TESTFN(dynb)
+
+#endif /* CONFIG_TEST */

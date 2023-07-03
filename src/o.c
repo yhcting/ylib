@@ -162,7 +162,7 @@ yodestroy(struct yo *yo) {
  *
  *
  *****************************************************************************/
-#ifdef CONFIG_DEBUG
+#ifdef CONFIG_TEST
 /*
  * This function is used for testing and debugging.
  */
@@ -170,7 +170,7 @@ void
 o_clear(void) {
 	pool_clear();
 }
-#endif /* CONFIG_DEBUG */
+#endif /* CONFIG_TEST */
 
 static int
 minit(const struct ylib_config *cfg) {

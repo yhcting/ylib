@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright (C) 2016, 2021
+ * Copyright (C) 2015
  * Younghyung Cho. <yhcting77@gmail.com>
  * All rights reserved.
  *
@@ -33,82 +33,46 @@
  * are those of the authors and should not be interpreted as representing
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
-#include <limits.h>
-#include <pthread.h>
-#include <errno.h>
 
-#include "lib.h"
-#include "def.h"
-#include "common.h"
-#include "ygp.h"
-
-#ifndef __GNUC__
-#error This module uses GNU C Extentions for atomic operations.
-#endif
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
-int
-ygpinit(struct ygp *gp, void *container, void (*container_free)(void *)) {
-	if (unlikely(!container || !gp))
-		return -EINVAL;
-	gp->container = container;
-	gp->container_free = container_free;
-	gp->refcnt = 0;
-	return 0;
-}
-
-void
-ygpdestroy(struct ygp *gp) {
-	if (likely(gp->container_free))
-		(*gp->container_free)(gp->container);
-}
-
-int
-ygpref_cnt(const struct ygp *gp) {
-	return gp->refcnt;
-}
-
-int
-ygpput(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, -1, __ATOMIC_SEQ_CST);
-	yassert(0 <= refcnt);
-	if (unlikely(refcnt <= 0))
-		ygpdestroy(gp);
-	return refcnt;
-}
-
-int
-ygpget(struct ygp *gp) {
-	int refcnt = __atomic_add_fetch(&gp->refcnt, 1, __ATOMIC_SEQ_CST);
-	yassert(0 < refcnt);
-	return refcnt;
-}
-
-/*****************************************************************************
- *
- *
- *
- *****************************************************************************/
+#include "test.h"
 #ifdef CONFIG_TEST
-/*
- * This function is used for testing and debugging.
- */
-void
-gp_clear(void) {
-}
-#endif /* CONFIG_TEST */
 
-static int
-minit(const struct ylib_config *cfg) {
-	return 0;
+#include "yut.h"
+
+static void
+bitops(void) {
+	u64 x;
+	x = 0xabcffcda;
+	yassert(0xc == yut_bits(x, 8, 4));
+	yassert(0xa == yut_bits(x, 0, 4));
+	yassert(0xa == yut_bits(x, 28, 4));
+	yassert(0xabcf0cda == yut_clear_bits(x, 12, 4));
+	yassert(0xabcffcd0 == yut_clear_bits(x, 0, 4));
+	yassert(0xabcffcd1 == yut_set_bits(x, 0, 4, 1));
+	yassert(0xabcf1cda == yut_set_bits(x, 12, 4, 1));
+	yassert(yut_test_bit(x, 1));
+	yassert(yut_test_bit(x, 3));
+	yassert(0xabcffcdb == yut_set_bit(x, 0));
+	yassert(0xabcffcda == yut_set_bit(x, 13));
+	yassert(0xabcfecda == yut_clear_bit(x, 12));
+	yassert(0xabcffcda == yut_clear_bit(x, 26));
 }
 
 static void
-mexit(void) {
+others(void) {
+	yassert(!yut_starts_with("abcdef", "abcdefg"));
+	yassert(!yut_starts_with("abcdef", "ae"));
+	yassert(yut_starts_with("abcdef", "abcdef"));
+	yassert(yut_starts_with("abcdef", "ab"));
 }
 
-LIB_MODULE(gp, minit, mexit);
+static void
+test_ut(void) {
+	bitops();
+	others();
+}
+
+
+TESTFN(ut)
+
+#endif /* CONFIG_TEST */

@@ -74,19 +74,21 @@ fi
 # -------------------
 if [[ "$skipUnit" != "true" ]]; then
     nrcores=$(cat /proc/cpuinfo | grep processor | wc -l)
-    cfgopts="--with-debug"
-    for opt in "" $cfgopts; do
-        git clean -dfx
+    for opt in "" "--with-test" "--with-debug" "--with-debug --with-test" ; do
+        pushd "$wsdir" >/dev/null
+        # git clean -dfx
+        rm -rf build
         mkdir -p build
         cd build
-        "$wsdir/configure-full" --prefix="$wsdir" $opt
+        "$wsdir/configure-full.sh" --prefix="$wsdir" $opt
         make -j$nrcores install
         if [ x$skipUnit != xtrue -a -e bin/y ]; then
             bin/y
         fi
+        popd >/dev/null
     done
 fi
 
-echo ">> Congraturations !"
+echo "Congraturations! Full test passed."
 
 popd >/dev/null

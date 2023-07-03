@@ -77,6 +77,9 @@ yringbuf_write(struct yringbuf *, void *data);
 /**
  * Read data (MT-safe with best-effort). If function fails, data in @p buf is
  * not defined.
+ * WARNING: If data is read before first writing, @p buf is filled with 0.
+ * TBD: Above warnning case should be strictly handled? For instance, should
+ * error be returned if read is requested before the first writing?
  *
  * @param buf Destination buffer
  * @return 0 if success. Otherwise @c -errno.

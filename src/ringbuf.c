@@ -87,6 +87,9 @@ struct slot {
 	 *   - Data in slot is valid.
 	 * 1 == (0x1 & version) => invalid
 	 *   - slot is under writing.
+	 *
+	 * This concept is tolerant of overflow, too.
+	 * 0xfffffffe(valid) -> 0xffffffff(invalid) -> 0(valid)
 	 */
 	uint32_t ver;
 	/**
@@ -190,11 +193,11 @@ yringbuf_write(struct yringbuf *rb, void *data) {
 	__atomic_store(&rb->wsi, &wsi, __ATOMIC_RELEASE);
 }
 
-static int
-rb_read(struct yringbuf *rb, void *buf) {
+int
+yringbuf_read(struct yringbuf *rb, void *buf) {
 	uint32_t wsi = __atomic_load_n(&rb->wsi, __ATOMIC_ACQUIRE);
 	/* Most recently written slot index. */
-	wsi = (wsi - 1) % rb->slotnr;
+	wsi = ((0 == wsi ? rb->slotnr : wsi) - 1) % rb->slotnr;
 	struct slot *slot = slotof(rb, wsi);
 	/* ATOMIC_RELAXED is enough because memcpy function works as barrier
 	 * However, to make more explicit, 'ATOMIC_ACQUIRE' is used.
@@ -206,15 +209,4 @@ rb_read(struct yringbuf *rb, void *buf) {
 	memcpy(buf, &slot->d, rb->user_slotsz);
 	uint32_t ver_post = __atomic_load_n(&slot->ver, __ATOMIC_ACQUIRE);
 	return ver_pre == ver_post ? 0 : -EAGAIN;
-}
-
-int
-yringbuf_read(struct yringbuf *rb, void *buf) {
-	int r = 0;
-	int retry = 3; /* retry read tree times */
-	while (retry-- > 0) {
-		if (0 == (r = rb_read(rb, buf)))
-			return 0;
-	};
-	return r;
 }

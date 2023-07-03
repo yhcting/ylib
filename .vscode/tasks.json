@@ -18,7 +18,7 @@
             "group": "build"
         },
         {
-            "label": "Build: tests",
+            "label": "Build: test",
             "type": "shell",
             "command": "make",
             "args": ["-j", "install"],

@@ -80,9 +80,9 @@ if [[ "$skipUnit" != "true" ]]; then
         rm -rf build
         mkdir -p build
         cd build
-        "$wsdir/configure-full.sh" --prefix="$wsdir" $opt
+        "$wsdir/configure-full.sh" --prefix="$(pwd)" $opt
         make -j$nrcores install
-        if [ x$skipUnit != xtrue -a -e bin/y ]; then
+        if [[ -e bin/y ]]; then
             bin/y
         fi
         popd >/dev/null

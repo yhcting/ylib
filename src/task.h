@@ -80,9 +80,9 @@ struct ytask {
 	 *   is better.
 	 * But, it's slow and requires more memory space.
 	 */
-	/* Values used by taskmanager. */
+	/** Values used by taskmanager. */
 	void *tmtag;
-	/* Values used by taskdepman. */
+	/** Values used by taskdepman. */
 	void *tdmtag;
 };
 
@@ -95,8 +95,8 @@ struct ytask_event_listener_handle {
 	struct ylistl_link lk;
 	/**
 	 * {@code el} MUST be at the end of this struct, because
-	 *   {@code struct ytask_event_listener} has extra bytes at the end of
-	 *   struct
+	 * {@code struct ytask_event_listener} has extra bytes at the end of
+	 * struct
 	 */
 	struct ytask_event_listener el;
 };

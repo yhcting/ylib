@@ -79,23 +79,23 @@ struct ymsg_ {
 #ifdef CONFIG_DEBUG
 
 static INLINE void
-_msg_magic_verify(struct ymsg_ *m) {
+msg_magic_verify_(struct ymsg_ *m) {
 	yassert(m
 		&& MSG_MAGIC == m->magic0
 		&& MSG_MAGIC == m->magic1);
 }
 
 static INLINE void
-_msg_magic_set(struct ymsg_ *m) {
+msg_magic_set_(struct ymsg_ *m) {
 	m->magic0 = m->magic1 = MSG_MAGIC;
 }
 
 #else /* CONFIG_DEBUG */
 
 static INLINE void
-_msg_magic_verify(unused struct ymsg_ *m) {}
+msg_magic_verify_(unused struct ymsg_ *m) {}
 static INLINE void
-_msg_magic_set(unused struct ymsg_ *m) {}
+msg_magic_set_(unused struct ymsg_ *m) {}
 
 #endif /* CONFIG_DEBUG */
 
@@ -113,6 +113,6 @@ msg_set_handler(struct ymsg_ *m, struct ymsghandler *h) {
 static INLINE struct ymsg_ *
 msg_mutate(struct ymsg *ym) {
 	struct ymsg_ *m = ym ? containerof(ym, struct ymsg_, m) : NULL;
-	_msg_magic_verify(m);
+	msg_magic_verify_(m);
 	return m;
 }

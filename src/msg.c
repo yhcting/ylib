@@ -124,7 +124,7 @@ ymsg_create(void) {
 	if (unlikely(!m))
 		return NULL;
 	ylistl_init_link(&m->lk);
-	_msg_magic_set(m);
+	msg_magic_set_(m);
 	dfpr(".");
 	return &m->m;
 }

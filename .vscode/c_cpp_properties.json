@@ -5,14 +5,14 @@
             "defines": [
                 "_GNU_SOURCE",
                 "CONFIG_DEBUG",
-                "CONFIG_TEST"
+                "CONFIG_TEST",
+                "CONFIG_IGNORE_CONFIG"
             ],
             // Set priority on ardk SDK.
             "includePath": [
                 "${workspaceFolder}",
                 "${workspaceFolder}/src",
-                "${workspaceFolder}/test",
-                "${workspaceFolder}/build"
+                "${workspaceFolder}/test"
             ]
         }
     ],

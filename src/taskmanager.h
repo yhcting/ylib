@@ -53,9 +53,9 @@ struct ytaskmanager {
 	pthread_mutex_t tagmap_lock;
 
 	pthread_mutex_t elh_lock;
-	struct ylistl_link elhhd; /* head of event listener handle */
+	struct ylistl_link elhhd; /**< head of event listener handle */
 
 	pthread_mutex_t q_lock;
 	struct ylistl_link readyq_hd[YTHREADEX_NUM_PRIORITY];
-	struct ylistl_link runq_hd; /* head of run Q */
+	struct ylistl_link runq_hd; /**< head of run Q */
 };

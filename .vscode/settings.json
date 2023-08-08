@@ -3,6 +3,23 @@
         "functional": "c",
         "string_view": "c",
         "*.h": "c",
-        "*.c": "c"
+        "*.c": "c",
+        "array": "c",
+        "chrono": "c",
+        "compare": "c",
+        "memory_resource": "c",
+        "ratio": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "utility": "c",
+        "__functional_base": "c",
+        "__functional_base_03": "c",
+        "__hash_table": "c",
+        "__tree": "c",
+        "__tuple": "c",
+        "algorithm": "c",
+        "limits": "c",
+        "memory": "c",
+        "random": "c"
     }
 }

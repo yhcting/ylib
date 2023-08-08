@@ -168,6 +168,8 @@ tc0(struct ymsghandler *mh0,
 		ptsks[ptski++] = tsk;
 	}
 
+	/* Wait a little time to avoid EBUSY error that rarely happens. */
+	usleep(10 * 1000);
 	while (ytaskmanager_destroy(tm))
 		usleep(10 * 1000);
 

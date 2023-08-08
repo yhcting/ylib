@@ -112,7 +112,7 @@ test_hasho(void) {
 
 	for (i = 256; i < 512; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-	        r = yhash_get(h, (void *)buf, &v);
+		r = yhash_get(h, (void *)buf, &v);
 		yassert(!r && 0 == strcmp(v, buf));
 	}
 
@@ -164,7 +164,7 @@ test_hashs(void) {
 
 	for (i = 256; i < 512; i++) {
 		snprintf(buf, sizeof(buf), "this is key %d", i);
-	        r = yhash_get(h, (void *)buf, &v);
+		r = yhash_get(h, (void *)buf, &v);
 		yassert(!r && 0 == strcmp(v, buf));
 	}
 

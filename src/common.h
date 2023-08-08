@@ -189,6 +189,7 @@ EXPORT char *dstrdup(const char *, const char *, int);
 	do {							\
 		int rr___  = int0_return_func_call_stmt;	\
 		fatal2(0 == rr___,				\
-			"Failure at MUST-SUCCESS-Function!: %d",\
+			"Failure at MUST-SUCCESS-Function!: %s: %d",\
+			#int0_return_func_call_stmt,		\
 			rr___);					\
 	} while (FALSE)

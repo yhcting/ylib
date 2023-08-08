@@ -47,6 +47,7 @@ test_msglooper(void) {
 	/* create looper thread and stop it */
 	struct ymsglooper *ml0 = ymsglooper_start_looper_thread();
 	struct ymsglooper *ml1 = ymsglooper_start_looper_thread();
+	yassert(ml0 && ml1);
 
 	ymsglooper_stop(ml0);
 	ymsglooper_stop(ml1);
@@ -59,6 +60,7 @@ test_msglooper(void) {
 
 	ml0 = ymsglooper_start_looper_thread();
 	ml1 = ymsglooper_start_looper_thread();
+	yassert(ml0 && ml1);
 
 	ymsglooper_stop(ml0);
 	ymsglooper_stop(ml1);

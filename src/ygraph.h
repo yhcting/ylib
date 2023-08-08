@@ -84,6 +84,9 @@ struct yedge {
  */
 struct ygraph {
 	/* @cond */
+#ifdef CONFIG_DEBUG
+	struct yvertex v_; /**< Dummy vertex to make compiler happer */
+#endif
 	struct ylistl_link vl; /**< head of vertex list */
 	/* @endcond */
 };

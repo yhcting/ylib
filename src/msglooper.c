@@ -151,12 +151,12 @@ destroy_msglooper(void *arg) {
 
 static inline void
 do_lock(struct ymsglooper *ml) {
-        fatali0(pthread_mutex_lock(&ml->lock));
+	fatali0(pthread_mutex_lock(&ml->lock));
 }
 
 static inline void
 do_unlock(struct ymsglooper *ml) {
-        fatali0(pthread_mutex_unlock(&ml->lock));
+	fatali0(pthread_mutex_unlock(&ml->lock));
 }
 
 static inline void

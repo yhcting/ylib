@@ -1,8 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.67])
-AC_INIT([ylib], [1.0], [yhcting77@gmail.com])
+AC_PREREQ([2.71])
+AC_INIT([ylib],[1.0],[yhcting77@gmail.com])
 AC_CONFIG_SRCDIR([Makefile.sh])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -12,12 +12,12 @@ AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects])
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
-AC_GNU_SOURCE
+AC_USE_SYSTEM_EXTENSIONS
 
 AM_PROG_AR
 
 # libtool is used for shared library
-AC_PROG_LIBTOOL
+LT_INIT
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
@@ -68,8 +68,8 @@ AC_ARG_WITH(test,
     [with_test=no])
 
 AS_IF([test "x$with_debug" != xno],
-    [CFLAGS="-g -O0 -fPIC -D_FORTIFY_SOURCE=2 -fsanitize=address -fsanitize=leak -fsanitize=undefined"],
-    [CFLAGS="-fPIC -O2"])
+    [CFLAGS="-g -O0 -fPIC -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -fsanitize=address -fsanitize=leak -fsanitize=undefined"],
+    [CFLAGS="-g -fPIC -O2"])
 CFLAGS="${CFLAGS} -Wall -Werror"
 AC_SUBST([CFLAGS])
 

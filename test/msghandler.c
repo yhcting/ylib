@@ -98,15 +98,18 @@ test_msghandler(void) {
 	struct ymsglooper *ml1 = ymsglooper_start_looper_thread();
 	mh0 = ymsghandler_create(ml0, NULL, NULL, NULL); /* use default handle */
 	mh1 = ymsghandler_create(ml1, NULL, NULL, &handle0);
+	yassert(mh0 && mh1);
 
 	for (i = 0; i < 10; i++) {
 		struct msgA *ma = ymalloc(sizeof(*ma));
+		yassert(ma);
 		ma->a = ma->b = i;
 		ymsghandler_post_data(mh1, i, ma, &free_msgA);
 	}
 
 	for (i = 0; i < 10; i++) {
 		struct msgB *m = ymalloc(sizeof(*m));
+		yassert(m);
 		m->s = ymalloc(100);
 		sprintf(m->s, "ABC %d: message", i);
 		ymsghandler_post_exec(mh0, m, &free_msgB, &run);

@@ -186,26 +186,26 @@ ylistl_remove(struct ylistl_link *link) {
  * Delete link of the first element of the list and return it.
  *
  * @param head Head of list
- * @return The first element
+ * @return The first element. NULL if list is empty.
  */
 static YYINLINE struct ylistl_link *
 ylistl_remove_first(struct ylistl_link *head) {
 	struct ylistl_link *lk = head->next;
 	ylistl_remove(lk);
-	return lk;
+	return lk == head ? NULL : lk;
 }
 
 /**
  * Delete link of the last element of the list and return it.
  *
  * @param head Head of list
- * @return The last element
+ * @return The last element, NULL if list is empty.
  */
 static YYINLINE struct ylistl_link *
 ylistl_remove_last(struct ylistl_link *head) {
 	struct ylistl_link *lk = head->prev;
 	ylistl_remove(lk);
-	return lk;
+	return lk == head ? NULL : lk;
 }
 
 
@@ -308,7 +308,7 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
 #define ylistl_foreach_item_safe(cur, tmp, head, type, member)		\
 	for ((cur) = YYcontainerof((head)->next, type, member),		\
 			(tmp) = YYcontainerof((cur)->member.next,	\
-				type, member); 				\
+				type, member);				\
 		&(cur)->member != (head);				\
 		(cur) = (tmp),						\
 			(tmp) = YYcontainerof((cur)->member.next, type, member))
@@ -325,7 +325,7 @@ ylistl_replace(struct ylistl_link *old, struct ylistl_link *anew) {
 #define ylistl_foreach_item_safe_reverse(cur, tmp, head, type, member)	\
 	for ((cur) = YYcontainerof((head)->prev, type, member),		\
 			(tmp) = YYcontainerof((cur)->member.prev,	\
-				type, member); 				\
+				type, member);				\
 		&(cur)->member != (head);				\
 		(cur) = (tmp),						\
 			(tmp) = YYcontainerof((cur)->member.prev, type, member))
@@ -385,32 +385,4 @@ ylistl_remove2(struct ylistl_link *head, struct ylistl_link *node) {
 		return FALSE;
 	ylistl_remove(node);
 	return TRUE;
-}
-
-/**
- * Delete link of the last element of the list and return it.
- * If list is empty, NULL is returned.
- *
- * @param head Head of list
- * @return The last element or NULL
- */
-static YYINLINE struct ylistl_link *
-ylistl_remove_last2(struct ylistl_link *head) {
-	if (YYunlikely(ylistl_is_empty(head)))
-		return NULL;
-	return ylistl_remove_last(head);
-}
-
-/**
- * Delete link of the first element of the list and return it.
- * If list is empty, NULL is returned.
- *
- * @param head Head of list
- * @return The first element or NULL.
- */
-static YYINLINE struct ylistl_link *
-ylistl_remove_first2(struct ylistl_link *head) {
-	if (YYunlikely(ylistl_is_empty(head)))
-		return NULL;
-	return ylistl_remove_first(head);
 }

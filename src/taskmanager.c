@@ -390,7 +390,8 @@ balance_taskq(struct ytaskmanager *tm) {
 	struct ytask *tsk = NULL;
 	lock_q(tm);
 	if (readyq_size_locked(tm) > 0
-	       && runq_size_locked(tm) < tm->slots) {
+		&& runq_size_locked(tm) < tm->slots
+	) {
 		struct ttg *ttg;
 		tsk = readyq_deq_locked(tm);
 		ttg = task_ttg(tsk);
@@ -415,8 +416,10 @@ static int
 add_task_to_readyq(struct ytaskmanager *tm, struct ytask *tsk) {
 	int r;
 	lock_q(tm);
-	if (unlikely(r = readyq_enq_locked(tm, tsk)))
+	if (unlikely(r = readyq_enq_locked(tm, tsk))) {
+		unlock_q(tm);
 		return r;
+	}
 	/* 'task_get' prevents task from being free outside tm unexpectedly.
 	 * This should be called before notifying to listeners.
 	 * Because, 'ADDED_TO_READY' means "it's ready to being managed by
@@ -502,10 +505,22 @@ ytaskmanager_destroy(struct ytaskmanager *tm) {
 	) {
 		yfree(elh);
 	}
+	/* To wait until lock is free.*/
+	lock_q(tm);
+	unlock_q(tm);
 	destroy_q_lock(tm);
+
+	/* To wait until lock is free.*/
+	lock_tagmap(tm);
+	unlock_tagmap(tm);
 	destroy_tagmap_lock(tm);
+
+	/* To wait until lock is free.*/
+	lock_elh(tm);
+	unlock_elh(tm);
 	destroy_elh_lock(tm);
-        yhash_destroy(tm->tagmap);
+	yhash_destroy(tm->tagmap);
+
 	yfree(tm);
 	return 0;
 }

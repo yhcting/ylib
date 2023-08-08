@@ -472,7 +472,7 @@ ytaskdepman_verify(struct ytaskdepman *tdm, struct ytask **roottsk) {
 int
 ytaskdepman_start(struct ytaskdepman *tdm) {
 	int r;
-	struct yvertex *v;
+	struct yvertex *v, *vtmp;
 	yassert(tdm);
 	if (YTASKDEPMAN_OK != (r = ytaskdepman_verify(tdm, &tdm->target)))
 		return r;
@@ -486,7 +486,7 @@ ytaskdepman_start(struct ytaskdepman *tdm) {
 	unlock_state(tdm);
 
 	/* start all leaf tasks */
-	ygraph_foreach_vertex(&tdm->g, v) {
+	ygraph_foreach_vertex_safe(&tdm->g, v, vtmp) {
 		if (0 == ygraph_iedge_size(&tdm->g, v)) {
 			if (unlikely(r = inject_task(tdm, vertex_ttg(v)->tsk)))
 				return r;

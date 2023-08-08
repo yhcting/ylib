@@ -178,11 +178,12 @@ create_dummy_msg(void) {
 	return m;
 }
 
+/*
 static inline void
-looper_stop(void *arg) {
+looper_cleanup(void *arg) {
 	struct ymsglooper *ml = arg;
-	ymsglooper_stop(ml);
 }
+*/
 
 static void *
 looper_thread(void *arg) {
@@ -201,12 +202,13 @@ looper_thread(void *arg) {
  cond_done:
 	fatali0(pthread_cond_broadcast(&ts->cond));
 	fatali0(pthread_mutex_unlock(&ts->lock));
+	/* Fron now on '*ts' is NOT-safe, anymore! */
 	if (unlikely(r))
 		return NULL;
 
-	pthread_cleanup_push(&looper_stop, ts->ml);
+	/* pthread_cleanup_push(&looper_cleanup, ymsglooper_get()); */
 	ymsglooper_loop();
-	pthread_cleanup_pop(1); /* execute cleanup */
+	/* pthread_cleanup_pop(1); */ /* execute cleanup */
 	return NULL;
 }
 
@@ -294,7 +296,8 @@ ymsglooper_loop(void) {
 		return -EPERM;
 	r = __atomic_compare_exchange_n(&ml->state, &expected,
 		YMSGLOOPER_LOOP, FALSE, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
-	if (!r) goto skip_loop;
+	if (unlikely(!r))
+		goto skip_loop;
 	dfpr("start LOOP!");
 	while (TRUE) {
 		int i, nfds;
@@ -309,9 +312,9 @@ ymsglooper_loop(void) {
 		}
 	}
  skip_loop:
+	set_state(ml, YMSGLOOPER_TERMINATED);
 	r = pthread_setspecific(_tkey, NULL);
 	yassert(!r);
-	set_state(ml, YMSGLOOPER_TERMINATED);
 	return 0;
 #undef MAX_EP_EVENTS
 }
@@ -343,9 +346,7 @@ ymsglooper_start_looper_thread(void) {
 		goto free_cond;
 	}
 
-	r = pthread_mutex_lock(&ts.lock);
-	if (unlikely(r))
-		goto free_lock;
+	fatali0(pthread_mutex_lock(&ts.lock));
 	if (!ts.result) {
 		r = pthread_cond_wait(&ts.cond, &ts.lock);
 		if (unlikely(r)) {

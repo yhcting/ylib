@@ -134,11 +134,12 @@ ylistl_add(
 	struct ylistl_link *anew
 ) {
 	next->prev = prev->next = anew;
-	anew->next = next; anew->prev = prev;
+	anew->next = next;
+	anew->prev = prev;
 }
 
 /**
- * Add new link at next to @p link}.
+ * Add new link at next to @p link.
  *
  * @param link Base link
  * @param anew Node to add

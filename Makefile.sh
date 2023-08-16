@@ -38,6 +38,7 @@ modules="
 :errno
 :ut
 :ringbuf
+:rx
 geo:point
 geo:line
 geo:band

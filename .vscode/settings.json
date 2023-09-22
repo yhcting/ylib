@@ -20,6 +20,11 @@
         "algorithm": "c",
         "limits": "c",
         "memory": "c",
-        "random": "c"
+        "random": "c",
+        "vector": "c",
+        "__bit_reference": "c",
+        "__split_buffer": "c",
+        "string": "c",
+        "__node_handle": "c"
     }
 }

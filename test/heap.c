@@ -45,86 +45,133 @@
 
 #define TESTARRSZ 10000
 
-static void
-chkeq(int a, int b) {
-	if (a != b) {
-		printf("%d, %d\n", a, b);
-		yassert(0);
-	}
-}
+
+struct node {
+	int v;
+#ifdef CONFIG_YHEAP_STATIC_CMP_MAX_HEAP
+	struct yheap_node hn;
+#endif
+};
 
 static int
-cmp_int(const void *v0, const void *v1) {
-	const int *i0 = (const int *)v0;
-	const int *i1 = (const int *)v1;
-	if (*i0 > *i1)
-		return 1;
-	else if (*i0 < *i1)
-		return -1;
-	else
-		return 0;
+cmp_node(const void *v0, const void *v1) {
+	return ((const struct node *)v0)->v - ((const struct node *)v1)->v;
+}
+
+#ifdef CONFIG_YHEAP_STATIC_CMP_MAX_HEAP
+static inline yheap_node_t *
+heap_node(struct node *n) {
+	return &n->hn;
+}
+
+static void
+node_free(yheap_node_t *hn) {
+	yfree(YYcontainerof(hn, struct node, hn));
+}
+
+static struct yheap *
+create_heap(void (*vfree)(yheap_node_t *)) {
+	return yheap_create(0, vfree);
+}
+
+static inline void
+node_setv(struct node *n, int v) {
+	n->v = v;
+	n->hn.v = v;
+}
+
+#else /* CONFIG_YHEAP_STATIC_CMP_MAX_HEAP */
+
+static inline yheap_node_t *
+heap_node(struct node *n) {
+	return (void *)n;
+}
+
+static void
+node_free(yheap_node_t *hn) {
+	yfree(hn);
+}
+
+static struct yheap *
+create_heap(void (*vfree)(yheap_node_t *)) {
+	return yheap_create(0, vfree, &cmp_node);
+}
+
+static inline void
+node_setv(struct node *n, int v) {
+	n->v = v;
+}
+
+#endif /* CONFIG_YHEAP_STATIC_CMP_MAX_HEAP */
+
+static void
+chkeq(struct node *a, struct node *b) {
+	if (a->v != b->v) {
+		printf("%d, %d\n", a->v, b->v);
+		yassert(0);
+	}
 }
 
 static void
 test_heap(void) {
 	int i, j;
-	int a[TESTARRSZ];
-	int *pa[TESTARRSZ];
-	int b[TESTARRSZ];
-	int *pi;
-	struct yheap *h = yheap_create(0, NULL, &cmp_int);
+	struct node a[TESTARRSZ];
+	struct node *pa[TESTARRSZ];
+	struct node b[TESTARRSZ];
+	struct node *pi;
+	struct yheap *h = create_heap(NULL);
 	srand((int)time(NULL));
 	for (i = 0; i < TESTARRSZ; i++) {
-		a[i] = rand();
+		node_setv(&a[i], rand());
 		b[i] = a[i];
-		yheap_add(h, (void *)&a[i]);
+		yheap_add(h, heap_node(&a[i]));
 	}
 	yassert(TESTARRSZ == yheap_sz(h));
-	qsort(b, TESTARRSZ, sizeof(b[0]), &cmp_int);
+	qsort(b, TESTARRSZ, sizeof(b[0]), &cmp_node);
 	pi = yheap_peek(h);
-	chkeq(*pi, b[TESTARRSZ - 1]);
+	chkeq(pi, &b[TESTARRSZ - 1]);
 	j = TESTARRSZ;
 	for (i = 0; i < TESTARRSZ; i++) {
 		pi = yheap_pop(h);
 		j--;
-		chkeq(*pi, b[j]);
+		chkeq(pi, &b[j]);
 	}
 	yheap_destroy(h);
-	h = yheap_create(0, NULL, &cmp_int);
+	h = create_heap(NULL);
 
 	/* fill again to test heap after clean */
 	for (i = 0; i < TESTARRSZ; i++) {
-		a[i] = rand();
+		node_setv(&a[i], rand());
 		b[i] = a[i];
-		yheap_add(h, (void *)&a[i]);
+		yheap_add(h, heap_node(&a[i]));
 	}
-	qsort(b, TESTARRSZ, sizeof(b[0]), &cmp_int);
+	qsort(b, TESTARRSZ, sizeof(b[0]), &cmp_node);
 	pi = yheap_peek(h);
-	yassert(*pi == b[TESTARRSZ - 1]);
+	chkeq(pi, &b[TESTARRSZ - 1]);
 	j = TESTARRSZ;
 	for (i = 0; i < TESTARRSZ; i++) {
 		pi = yheap_pop(h);
 		j--;
-		chkeq(*pi, b[j]);
+		chkeq(pi, &b[j]);
 	}
 	yheap_destroy(h);
 
 	/********************************
 	 * Test for allocated memory
 	 ********************************/
-	h = yheap_create(0, &yfree, &cmp_int);
+	h = create_heap(&node_free);
 	for (i = 0; i < TESTARRSZ; i++) {
 		pa[i] = ymalloc(sizeof(*pa[i]));
-		*pa[i] = rand();
-		yheap_add(h, (void *)pa[i]);
+		node_setv(pa[i], rand());
+		yheap_add(h, heap_node(pa[i]));
 	}
 	yheap_destroy(h);
 
-	h = yheap_create(0, &yfree, &cmp_int);
+	h = create_heap(&node_free);
 	for (i = 0; i < TESTARRSZ; i++) {
 		pa[i] = ymalloc(sizeof(*pa[i]));
-		*pa[i] = rand();
-		yheap_add(h, (void *)pa[i]);
+		node_setv(pa[i], rand());
+		yheap_add(h, heap_node(pa[i]));
 	}
 	yheap_destroy(h);
 }

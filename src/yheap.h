@@ -43,10 +43,28 @@
 
 #pragma once
 
+/**
+ * Define below config to use max-heap using static value instead of using
+ * function pointer for comparison.
+ * This is good to reduce cost spent at function call.
+ */
+/* #define CONFIG_YHEAP_STATIC_CMP_MAX_HEAP 1 */
+
 #include "ydef.h"
 
 /** heap object */
 struct yheap;
+
+
+#ifdef CONFIG_YHEAP_STATIC_CMP_MAX_HEAP
+struct yheap_node {
+	int v; /** Value used for comparison */
+};
+
+typedef struct yheap_node yheap_node_t;
+#else
+typedef void yheap_node_t;
+#endif /* CONFIG_YHEAP_STATIC_CMP_MAX_HEAP */
 
 /**
  * Create heap object.
@@ -61,8 +79,11 @@ struct yheap;
 YYEXPORT struct yheap *
 yheap_create(
 	uint32_t capacity,
-	void (*vfree)(void *),
-	int (*cmp)(const void *, const void *));
+	void (*vfree)(yheap_node_t *)
+#ifndef CONFIG_YHEAP_STATIC_CMP_MAX_HEAP
+	, int (*cmp)(const void *, const void *)
+#endif
+);
 
 /**
  * Clean heap.
@@ -83,7 +104,7 @@ yheap_destroy(struct yheap *);
  * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
-yheap_add(struct yheap *, void *);
+yheap_add(struct yheap *, yheap_node_t *);
 
 /**
  * Get item at top of heap tree. Item is NOT removed from heap.
@@ -124,4 +145,4 @@ YYEXPORT int
 yheap_iterates(
 	struct yheap *,
 	void *tag,
-	int (*cb)(void *e, void *tag));
+	int (*cb)(yheap_node_t *e, void *tag));

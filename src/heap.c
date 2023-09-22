@@ -56,12 +56,14 @@
 #include "yheap.h"
 #include "ydynb.h"
 
-#define MIN_INIT_CAPACITY (4096 / sizeof(void *))
+#define MIN_INIT_CAPACITY (4096 / sizeof(yheap_node_t *))
 
 struct yheap {
 	struct ydynb *b;
-	void (*vfree)(void *);
+	void (*vfree)(yheap_node_t *);
+#ifndef CONFIG_YHEAP_STATIC_CMP_MAX_HEAP
 	int (*cmp)(const void *, const void *);
+#endif
 };
 
 
@@ -107,20 +109,20 @@ is_validi(const struct yheap *h, u32 i) {
 	return 0 < i && i <= lasti(h);
 }
 
-static INLINE void *
+static INLINE yheap_node_t *
 gete(const struct yheap *h, u32 i) {
 	yassert(i <= lasti(h));
-	return ((void **)ydynb_buf(h->b))[i];
+	return ((yheap_node_t **)ydynb_buf(h->b))[i];
 }
 
 static INLINE void
-sete(struct yheap *h, u32 i, void *e) {
+sete(struct yheap *h, u32 i, yheap_node_t *e) {
 	yassert(i < ydynb_limit(h->b));
-	((void **)ydynb_buf(h->b))[i] = e;
+	((yheap_node_t **)ydynb_buf(h->b))[i] = e;
 }
 
 static INLINE void
-adde(struct yheap *h, void *e) {
+adde(struct yheap *h, yheap_node_t *e) {
 	/* To improve performance, ydynb_append is NOT used to avoid memcpy */
 	ydynb_incsz(h->b, 1);
 	sete(h, lasti(h), e);
@@ -138,6 +140,18 @@ swape(struct yheap *h, u32 i0, u32 i1) {
 	sete(h, i1, tmp);
 }
 
+#ifdef CONFIG_YHEAP_STATIC_CMP_MAX_HEAP
+static INLINE int
+cmp(unused struct yheap *h, yheap_node_t *a, yheap_node_t *b) {
+	return a->v - b->v;
+}
+#else /* CONFIG_YHEAP_STATIC_CMP_MAX_HEAP */
+static INLINE int
+cmp(struct yheap *h, yheap_node_t *a, yheap_node_t *b) {
+	return (*h->cmp)(a, b);
+}
+#endif /* CONFIG_YHEAP_STATIC_CMP_MAX_HEAP */
+
 /******************************************************************************
  *
  *
@@ -146,12 +160,16 @@ swape(struct yheap *h, u32 i0, u32 i1) {
 struct yheap *
 yheap_create(
 	u32 capacity,
-	void (*vfree)(void *),
-	int (*cmp)(const void *, const void *)
+	void (*vfree)(yheap_node_t *)
+#ifndef CONFIG_YHEAP_STATIC_CMP_MAX_HEAP
+	, int (*cmp)(const void *, const void *)
+#endif
 ) {
 	struct yheap *h;
+#ifndef CONFIG_YHEAP_STATIC_CMP_MAX_HEAP
 	if (unlikely(!cmp))
 		return NULL; /* invalid argument. */
+#endif
 	if (unlikely(!(h = ymalloc(sizeof(*h)))))
 		return NULL;
 	if (capacity < MIN_INIT_CAPACITY)
@@ -160,8 +178,9 @@ yheap_create(
 	if (unlikely(0 > (h->b = ydynb_create2(capacity, sizeof(void *)))))
 		goto fail;
 	h->vfree = vfree;
+#ifndef CONFIG_YHEAP_STATIC_CMP_MAX_HEAP
 	h->cmp = cmp;
-
+#endif
 	/* element 0 is fixed virtual root */
 	sete(h, 0, NULL);
 	ydynb_setsz(h->b, 1);
@@ -202,7 +221,7 @@ yheap_sz(const struct yheap *h) {
 }
 
 int
-yheap_add(struct yheap *h, void *e) {
+yheap_add(struct yheap *h, yheap_node_t *e) {
 	u32 i, r;
 	if (unlikely(0 > (r = ydynb_expand2(h->b, 1))))
 		return r;
@@ -212,7 +231,7 @@ yheap_add(struct yheap *h, void *e) {
 	/* re-structuring heap */
 	while (has_parent(i)) {
 		u32 p = parenti(i);
-		if (0 >= (*h->cmp)(gete(h, i), gete(h, p)))
+		if (0 >= cmp(h, gete(h, i), gete(h, p)))
 			break; /* Heap structuring is done. */
 		swape(h, i, p);
 		i = p;
@@ -257,10 +276,10 @@ yheap_pop(struct yheap *h) {
 			maxc = lc;
 		else
 			/* Both left and right are available. */
-			maxc = 0 < (*h->cmp)(gete(h, lc), gete(h, rc))
+			maxc = 0 < cmp(h, gete(h, lc), gete(h, rc))
 				? lc : rc;
 
-		if (0 < (*h->cmp)(gete(h, maxc), gete(h, i))) {
+		if (0 < cmp(h, gete(h, maxc), gete(h, i))) {
 			swape(h, maxc, i);
 			i = maxc;
 		} else
@@ -274,7 +293,7 @@ int
 yheap_iterates(
 	struct yheap *h,
 	void *tag,
-	int (*cb)(void *e, void *tag)
+	int (*cb)(yheap_node_t *e, void *tag)
 ) {
 	u32 i;
 	u32 heapsz = yheap_sz(h);
@@ -284,3 +303,4 @@ yheap_iterates(
 	}
 	return 0;
 }
+

@@ -38,7 +38,7 @@
  * @file yheap.h
  * @brief Header to use simple binary heap.
  *
- * Biggest element is at top.
+ * Max-heap. For min-heap, change sign of coimpare function.
  */
 
 #pragma once
@@ -56,20 +56,21 @@
 struct yheap;
 
 
-#ifdef CONFIG_YHEAP_STATIC_CMP_MAX_HEAP
 struct yheap_node {
+	/** Value used internally in heap. DO NOT access it at outside heap */
+	uint32_t i;
+#ifdef CONFIG_YHEAP_STATIC_CMP_MAX_HEAP
 	int v; /** Value used for comparison */
+#endif
+#ifdef CONFIG_DEBUG
+	struct yheap *h; /** heap where this node is living. */
+#endif
 };
-
-typedef struct yheap_node yheap_node_t;
-#else
-typedef void yheap_node_t;
-#endif /* CONFIG_YHEAP_STATIC_CMP_MAX_HEAP */
 
 /**
  * Create heap object.
  *
- * @param capacity Inital heap capacity. Capacity means space available without
+ * @param capacity Initial heap capacity. Capacity means space available without
  * additional memory allocation.
  * @param vfree Function to free item.
  * @param cmp Function to compare two heap items.
@@ -79,9 +80,22 @@ typedef void yheap_node_t;
 YYEXPORT struct yheap *
 yheap_create(
 	uint32_t capacity,
-	void (*vfree)(yheap_node_t *)
+	void (*vfree)(struct yheap_node *)
 #ifndef CONFIG_YHEAP_STATIC_CMP_MAX_HEAP
-	, int (*cmp)(const void *, const void *)
+	, int (*cmp)(const struct yheap_node *, const struct yheap_node *)
+#endif
+);
+
+/**
+ * Create heap with given pointers of nodes.
+ */
+YYEXPORT struct yheap *
+yheap_create2(
+	struct yheap_node **arr,
+	uint32_t arrsz,
+	void (*vfree)(struct yheap_node *)
+#ifndef CONFIG_YHEAP_STATIC_CMP_MAX_HEAP
+	, int (*cmp)(const struct yheap_node *, const struct yheap_node *)
 #endif
 );
 
@@ -99,28 +113,57 @@ YYEXPORT void
 yheap_destroy(struct yheap *);
 
 /**
- * Add item to heap.
+ * Push item to heap.
  *
  * @return 0 if success. Otherwise @c -errno.
  */
 YYEXPORT int
-yheap_add(struct yheap *, yheap_node_t *);
+yheap_push(struct yheap *, struct yheap_node *);
 
 /**
  * Get item at top of heap tree. Item is NOT removed from heap.
  *
- * @return Biggest item.
+ * @return Biggest item. NULL if heap is empty.
  */
-YYEXPORT void *
+YYEXPORT struct yheap_node *
 yheap_peek(const struct yheap *);
 
 /**
  * Get item at top of heap tree, and it is removed from heap.
  *
- * @return Biggest item.
+ * @return Biggest item. NULL if heap is empty.
  */
-YYEXPORT void *
+YYEXPORT struct yheap_node *
 yheap_pop(struct yheap *);
+
+/**
+ * Push then pop.
+ *
+ * @param in node to push
+ * @param out popped node
+ * @return YYEXPORT
+ */
+YYEXPORT struct yheap_node *
+yheap_pushpop(struct yheap *, struct yheap_node *);
+
+
+/**
+ * Pop then push.
+ *
+ * @param in node to push
+ * @param out popped node
+ * @return YYEXPORT
+ */
+YYEXPORT struct yheap_node *
+yheap_poppush(struct yheap *, struct yheap_node *);
+
+/**
+ * Heapify node. This must be called if data of node is updated.
+ * Node must already live in heap.
+ */
+void
+yheap_heapify(struct yheap *, struct yheap_node *);
+
 
 /**
  * Get number of elements in the heap.
@@ -133,7 +176,7 @@ yheap_sz(const struct yheap *);
 /**
  * Iterate heap elements
  *
- * @param tag Tag during iteration.
+ * @param ctx Context of this iteration.
  * @param cb callback called whenever visiting element.
  * If callback returns TRUE, iteration keeps going.
  * But if callback returns FALSE, iteration stops and function is returned.
@@ -144,5 +187,5 @@ yheap_sz(const struct yheap *);
 YYEXPORT int
 yheap_iterates(
 	struct yheap *,
-	void *tag,
-	int (*cb)(yheap_node_t *e, void *tag));
+	void *ctx,
+	int (*cb)(struct yheap_node *e, void *ctx));

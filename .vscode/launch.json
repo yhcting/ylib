@@ -9,10 +9,13 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/bin/y",
-            "args": [],
+            "args": ["heap"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [],
+            "environment": [{
+                "name": "_LSAN_OPTIONS",
+                "value": "verbosity=1:log_threads=1"
+            }],
             "externalConsole": false,
             "MIMode": "gdb",
             "setupCommands": [

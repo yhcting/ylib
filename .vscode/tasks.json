@@ -27,7 +27,7 @@
             },
             "problemMatcher": {
                 "base": "$gcc",
-                "fileLocation": ["relative", "${workspaceFolder}/tests"]
+                "fileLocation": ["relative", "${workspaceFolder}/test"]
             },
             "group": "build"
         }

@@ -41,6 +41,8 @@
 
 #pragma once
 
+#include <time.h>
+
 #include "ydef.h"
 
 /*****************************************************************************
@@ -274,9 +276,126 @@
 YYEXPORT bool
 yut_starts_with(const char *str, const char *substr);
 
+/**
+ * trim leading and trailing whitespaces
+ * Note that string is trimmed in-place.
+ *
+ * @param[inout] s string input. It will be updated in-place.
+ * @return trimmed string.
+ */
+YYEXPORT char *
+yut_trim_whitespaces(char *s);
 
 /**
- * Get current time in milliseconds. @c CLOCK_MONOTONIC is used.
+ * Get current time in microseconds. @c CLOCK_MONOTONIC is used.
  */
 YYEXPORT uint64_t
-yut_current_time_millis(void);
+yut_current_time_us(void);
+
+/**
+ * Write data to fd
+ *
+ * @param fd File descriptor to read
+ * @param buf Data
+ * @param sz Size of data.
+ * @return 0 if success, otherwise -errno.
+ */
+YYEXPORT int
+yut_write_to_fd(int fd, const char *buf, int sz);
+
+/**
+ * Same with @ref ut_write_to_fd except for it read file from file-path instead
+ * of file descriptor.
+ * @see yut_write_to_fd
+ */
+YYEXPORT int
+yut_write_to_file(const char *path, const char *buf, int sz);
+
+/**
+ * Write formatted string to fd.
+ *
+ * @return bytes writeen if success, otherwise -errno;
+ */
+YYEXPORT int
+yut_write_to_fd_fmt(int fd, const char *fmt, ...);
+
+/**
+ * Read all data from file descriptor.
+ * This function always append trailing 0 at the end of data.
+ * That's why name of this function is NOT @c yut_read_from_fd.
+ * However note that newly appended trailing 0 is not counted for return value.
+ * That is @p buf[return-value] is always 0(appended trailing 0) if r >= 0.
+ *
+ * @param[out] out Output. It should be freed(mput) by caller.
+ * @param fd File descriptor to read
+ * @return Bytes read if success, otherwise -errno.
+ */
+YYEXPORT int
+yut_read_fd_str(char **out, int fd);
+
+/**
+ * Read long value from fd. @ref yut_read_fd_str is used internally.
+ * @see yut_read_fd_str
+ */
+YYEXPORT int
+yut_read_fd_long(long *out, int fd);
+
+/**
+ * Same with @ref yut_read_fd_str except for it read file from file-path instead
+ * of file descriptor.
+ * @see yut_read_fd_str
+ */
+YYEXPORT int
+yut_read_file_str(char **out, const char *path);
+
+/**
+ * @see yut_read_fd_long
+ */
+YYEXPORT int
+yut_read_file_long(long *out, const char *path);
+
+/**
+ * Get regular filename that is firstly found at given directory.
+ * If buffer size is not large enough, -EINVAL is returned.
+ *
+ * @param dpath Directory path
+ * @param buf Buffer where filename is stored.
+ * @param bufsz Size of buffer.
+ * @return 0 if success, otherwise -errno.
+ */
+YYEXPORT int
+yut_find_file_one(const char *dpath, char *buf, int bufsz);
+
+/**
+ * Add two timespecs and give result.
+ */
+YYEXPORT struct timespec
+yut_ts_add_ts(const struct timespec *a, const struct timespec *b);
+
+/**
+ * Add milliseconds to timespec and give result
+ */
+YYEXPORT struct timespec
+yut_ts_add_ms(const struct timespec *ts, int ms);
+
+/**
+ * @return 1 if ts0 > ts1, -1 if ts0 < ts1, 0 if ts0 == ts1
+ */
+static YYINLINE int
+yut_ts_cmp(const struct timespec *ts0, const struct timespec *ts1) {
+	return ts0->tv_sec > ts1->tv_sec
+		? 1
+		: ts0->tv_sec < ts1->tv_sec
+			? -1
+			: ts0->tv_nsec > ts1->tv_nsec
+				? 1
+				: ts0->tv_nsec < ts1->tv_nsec
+					? -1
+					: 0;
+
+}
+
+static YYINLINE uint64_t
+yut_ts2ms(const struct timespec *ts) {
+	return ts->tv_sec * 1000 + ts->tv_nsec / (1000 * 1000);
+}

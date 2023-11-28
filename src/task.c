@@ -473,11 +473,11 @@ ytask_publish_progress(struct ytask *tsk, long prog) {
 	yassert(tsk->prog.init);
 	if (unlikely(prog > tsk->prog.max))
 		prog = tsk->prog.max;
-	now = yut_current_time_millis();
+	now = yut_current_time_us();
 	if (now - tsk->prog.pubtm < tsk->prog.interval
 		|| prog == tsk->prog.prog
 	) { return -EPERM; }
-	tsk->prog.pubtm = now;
+	tsk->prog.pubtm = now / 1000;
 	tsk->prog.prog = prog;
 	return ythreadex_publish_progress(&tsk->t, prog);
 }

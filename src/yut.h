@@ -309,7 +309,7 @@ yut_write_to_fd(int fd, const char *buf, int sz);
  * @see yut_write_to_fd
  */
 YYEXPORT int
-yut_write_to_file(const char *path, const char *buf, int sz);
+yut_write_to_file(const char *path, bool append, const char *buf, int sz);
 
 /**
  * Write formatted string to fd.
@@ -318,6 +318,15 @@ yut_write_to_file(const char *path, const char *buf, int sz);
  */
 YYEXPORT int
 yut_write_to_fd_fmt(int fd, const char *fmt, ...);
+
+/**
+ * Same with @ref ut_write_to_fd except for it read file from file-path instead
+ * of file descriptor.
+ * @see yut_write_to_fd_fmt
+ */
+YYEXPORT int
+yut_write_to_file_fmt(const char *path, bool append, const char *fmt, ...);
+
 
 /**
  * Read all data from file descriptor.
@@ -331,14 +340,21 @@ yut_write_to_fd_fmt(int fd, const char *fmt, ...);
  * @return Bytes read if success, otherwise -errno.
  */
 YYEXPORT int
-yut_read_fd_str(char **out, int fd);
+yut_read_fd_str(int fd, char **out);
 
 /**
  * Read long value from fd. @ref yut_read_fd_str is used internally.
  * @see yut_read_fd_str
  */
 YYEXPORT int
-yut_read_fd_long(long *out, int fd);
+yut_read_fd_long(int fd, long *out);
+
+/**
+ * Read double value from fd. @ref yut_read_fd_str is used internally.
+ * @see yut_read_fd_str
+ */
+YYEXPORT int
+yut_read_fd_double(int fd, double *out);
 
 /**
  * Same with @ref yut_read_fd_str except for it read file from file-path instead
@@ -346,13 +362,19 @@ yut_read_fd_long(long *out, int fd);
  * @see yut_read_fd_str
  */
 YYEXPORT int
-yut_read_file_str(char **out, const char *path);
+yut_read_file_str(const char *path, char **out);
 
 /**
  * @see yut_read_fd_long
  */
 YYEXPORT int
-yut_read_file_long(long *out, const char *path);
+yut_read_file_long(const char *path, long *out);
+
+/**
+ * @see yut_read_fd_double
+ */
+YYEXPORT int
+yut_read_file_double(const char *path, double *out);
 
 /**
  * Get regular filename that is firstly found at given directory.

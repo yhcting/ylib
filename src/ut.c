@@ -102,10 +102,11 @@ yut_write_to_fd(int fd, const char *buf, int sz) {
 }
 
 int
-yut_write_to_file(const char *path, const char *buf, int sz) {
+yut_write_to_file(const char *path, bool append, const char *buf, int sz) {
 	int fd, r;
 	if (unlikely(0 > (fd = open(path,
-		O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC,
+		O_WRONLY | O_CLOEXEC
+			| (append ? O_APPEND : (O_CREAT | O_TRUNC)),
 		0600)))
 	) { return -errno; }
 	r = yut_write_to_fd(fd, buf, sz);
@@ -113,20 +114,16 @@ yut_write_to_file(const char *path, const char *buf, int sz) {
 	return r;
 }
 
-
-int
-yut_write_to_fd_fmt(int fd, const char *fmt, ...) {
+static int
+write_to_fd_fmt(int fd, const char *fmt, va_list ap) {
 	int r, len;
-	va_list ap;
 	char *buf = NULL;
 	size_t sz = 2048;
 	do {
 		sz *= 2;
 		if (unlikely(!(buf = realloc(buf, sz))))
 			return -ENOMEM;
-		va_start(ap, fmt);
 		len = vsnprintf(buf, sz, fmt, ap);
-		va_end(ap);
 	} while (len < 0 || len >= sz);
 
 	r = yut_write_to_fd(fd, buf, len);
@@ -134,8 +131,35 @@ yut_write_to_fd_fmt(int fd, const char *fmt, ...) {
 	return r < 0 ? r : len;
 }
 
+
 int
-yut_read_fd_str(char **out, int fd) {
+yut_write_to_fd_fmt(int fd, const char *fmt, ...) {
+	int r;
+	va_list ap;
+	va_start(ap, fmt);
+	r = write_to_fd_fmt(fd, fmt, ap);
+	va_end(ap);
+	return r;
+}
+
+YYEXPORT int
+yut_write_to_file_fmt(const char *path, bool append, const char *fmt, ...) {
+	int fd, r;
+	va_list ap;
+	if (unlikely(0 > (fd = open(path,
+		O_WRONLY | O_CLOEXEC
+			| (append ? O_APPEND : (O_CREAT | O_TRUNC)),
+		0600)))
+	) { return -errno; }
+	va_start(ap, fmt);
+	r = write_to_fd_fmt(fd, fmt, ap);
+	va_end(ap);
+	close(fd);
+	return r;
+}
+
+int
+yut_read_fd_str(int fd, char **out) {
 	ssize_t rd;
 	char *bufp; /* next free position in buf */
 	char *buf;
@@ -183,10 +207,10 @@ yut_read_fd_str(char **out, int fd) {
 }
 
 int
-yut_read_fd_long(long *out, int fd) {
+yut_read_fd_long(int fd, long *out) {
 	int r;
 	char *s = NULL;
-	r = yut_read_fd_str(&s, fd);
+	r = yut_read_fd_str(fd, &s);
 	if (likely(r >= 0 && s))
 		*out = atol(s);
 	if (likely(s))
@@ -195,22 +219,46 @@ yut_read_fd_long(long *out, int fd) {
 }
 
 int
-yut_read_file_str(char **out, const char *path) {
+yut_read_fd_double(int fd, double *out) {
+	int r;
+	char *s = NULL;
+	r = yut_read_fd_str(fd, &s);
+	if (likely(r >= 0 && s))
+		*out = atof(s);
+	if (likely(s))
+		yfree(s);
+	return r;
+}
+
+int
+yut_read_file_str(const char *path, char **out) {
 	int fd, r;
 	if (unlikely(0 > (fd = open(path, O_RDONLY | O_CLOEXEC))))
 		return -errno;
-	r = yut_read_fd_str(out, fd);
+	r = yut_read_fd_str(fd, out);
 	close(fd);
 	return r;
 }
 
 int
-yut_read_file_long(long *out, const char *path) {
+yut_read_file_long(const char *path, long *out) {
 	int r;
 	char *s = NULL;
-	r = yut_read_file_str(&s, path);
+	r = yut_read_file_str(path, &s);
 	if (likely(r >= 0 && s))
 		*out = atol(s);
+	if (likely(s))
+		yfree(s);
+	return r;
+}
+
+int
+yut_read_file_double(const char *path, double *out) {
+	int r;
+	char *s = NULL;
+	r = yut_read_file_str(path, &s);
+	if (likely(r >= 0 && s))
+		*out = atof(s);
 	if (likely(s))
 		yfree(s);
 	return r;

@@ -34,6 +34,8 @@
  * official policies, either expressed or implied, of the FreeBSD Project.
  *****************************************************************************/
 
+#include <stdlib.h>
+
 #include "test.h"
 #ifdef CONFIG_TEST
 
@@ -59,6 +61,23 @@ bitops(void) {
 }
 
 static void
+fileops(void) {
+	long v;
+	double d;
+	const char *tmpfpath = "/tmp/___ylib_test___";
+	yassert(!yut_write_to_file(tmpfpath, FALSE, "100", 3));
+	yassert(3 == yut_read_file_long(tmpfpath, &v));
+	yassert(100L == v);
+	yassert(!yut_write_to_file(tmpfpath, TRUE, "100", 3));
+	yassert(6 == yut_read_file_long(tmpfpath, &v));
+	yassert(100100L == v);
+	yassert(!yut_write_to_file(tmpfpath, TRUE, ".12", 3));
+	yassert(9 == yut_read_file_double(tmpfpath, &d));
+	yassert(100100.12 == d);
+}
+
+
+static void
 others(void) {
 	yassert(!yut_starts_with("abcdef", "abcdefg"));
 	yassert(!yut_starts_with("abcdef", "ae"));
@@ -69,6 +88,7 @@ others(void) {
 static void
 test_ut(void) {
 	bitops();
+	fileops();
 	others();
 }
 

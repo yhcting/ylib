@@ -186,11 +186,24 @@ on_cancelling(void *arg) {
 		(*threadex->listener.on_cancelling)(threadex, started);
 	if (likely(started)) {
 		/* threadex->thread is NULL in case ythreadex_start_sync */
-		if (pthdcancel && threadex->thread)
+		if (pthdcancel && threadex->thread) {
 			/* return value is ignored in intention.
-			 * Thread may be already finised.
+			 * Thread may be already finished.
+			 * Or it may not even started yet!
+			 * (thread is created but thread function is not run yet.)
 			 */
-			pthread_cancel(threadex->thread);
+			/*
+			 * FIXME: Exceptional case should be handled!
+			 * ------------------------------------------
+			 * what if thread is not run yet!
+			 * (pthread is created but thread function is not run yet.)
+			 * Then thread_main_cleanup is not called and thread state
+			 * is never changed from 'cancelling'!
+			 *
+			 * Disable pthread cancel until good solution is found!
+			 */
+			/* pthread_cancel(threadex->thread); */
+		}
 	} else {
 		set_state(threadex, YTHREADEX_CANCELLED);
 		post_event_to_owner(threadex, cancelled);
@@ -227,6 +240,7 @@ thread_main_cleanup(void *arg) {
 	struct ythreadex *threadex = (struct ythreadex *)arg;
 	bool cancel = FALSE;
 
+	ylogv("%ld: >>> thread_main_cleanup\n", threadex->id);
 	lock_state(threadex);
 	if (unlikely(YTHREADEX_CANCELLING == get_state_locked(threadex))) {
 		set_state_locked(threadex, YTHREADEX_CANCELLED);

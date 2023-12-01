@@ -207,6 +207,7 @@ ytask_super___(struct ytask *tsk) {
  * @param free_result See @ref ythreadex_create
  * @param run See @ref ythreadex_create
  * @param pthdcancel To cancel task, @c pthread_cancel is used.
+ * This is IGNORED due to stability issue! Value is ALWAYS FALSE!
  * @return NULL if fails.
  */
 YYEXPORT struct ytask *

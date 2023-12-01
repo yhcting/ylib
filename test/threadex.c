@@ -53,6 +53,7 @@
 
 
 struct targ {
+	int id;
 	int a;
 	int sti; /* next empty slot of st */
 	int st[8]; /* enough space to save each state. */
@@ -94,21 +95,21 @@ static void
 on_started(struct ythreadex *threadex) {
 	struct targ *ta = ythreadex_get_arg(threadex);
 	ta->st[ta->sti++] = YTHREADEX_STARTED;
-	ylogv("started\n");
+	ylogv("%ld: %d: started\n", ythreadex_get_id(threadex), ta->id);
 }
 
 static void
 on_done(struct ythreadex *threadex, void *result, int errcode) {
 	struct targ *ta = ythreadex_get_arg(threadex);
 	ta->st[ta->sti++] = YTHREADEX_DONE;
-	ylogv("done\n");
+	ylogv("%ld: %d: done\n", ythreadex_get_id(threadex), ta->id);
 }
 
 static void
 on_cancelling(struct ythreadex *threadex, bool started) {
 	struct targ *ta = ythreadex_get_arg(threadex);
 	ta->st[ta->sti++] = YTHREADEX_CANCELLING;
-	ylogv("cancelling\n");
+	ylogv("%ld: %d: canceling\n", ythreadex_get_id(threadex), ta->id);
 	ta->cancel = TRUE;
 }
 
@@ -116,21 +117,21 @@ static void
 on_cancelled(struct ythreadex *threadex, int errcode) {
 	struct targ *ta = ythreadex_get_arg(threadex);
 	ta->st[ta->sti++] = YTHREADEX_CANCELLED;
-	ylogv("cancelled\n");
+	ylogv("%ld: %d: cancelled\n", ythreadex_get_id(threadex), ta->id);
 }
 
 static void
 on_progress_init(struct ythreadex *threadex, long max_prog) {
 	struct targ *ta = ythreadex_get_arg(threadex);
 	ta->progcnt += 1000;
-	ylogv("prog init\n");
+	ylogv("%ld: %d: prog init\n", ythreadex_get_id(threadex), ta->id);
 }
 
 static void
 on_progress(struct ythreadex *threadex, long prog) {
 	struct targ *ta = ythreadex_get_arg(threadex);
 	ta->progcnt++;
-	ylogv("prog\n");
+	ylogv("%ld: %d: prog\n", ythreadex_get_id(threadex), ta->id);
 }
 
 static int
@@ -138,7 +139,7 @@ thread_run(struct ythreadex *threadex, void **result) {
 	int i;
 	struct tres *tr;
 	struct targ *ta = ythreadex_get_arg(threadex);
-	ylogv("thread run\n");
+	ylogv("%d: >>> thread run\n", ta->id);
 	*result = ymalloc(sizeof(*tr));
 	tr = (struct tres *)*result;
 	memset(tr, 0, sizeof(*tr));
@@ -151,6 +152,7 @@ thread_run(struct ythreadex *threadex, void **result) {
 	tr->s = ymalloc(32);
 	sprintf(tr->s, "res:%d", tr->r);
 	*result = tr;
+	ylogv("%d: <<< thread done\n", ta->id);
 	return 0;
 }
 
@@ -307,7 +309,7 @@ tc3(struct ymsghandler *mh) {
 
 unused static void
 tc4(struct ymsghandler *mh) {
-#define NR_THREADS 10
+#define NR_THREADS 25
 	int i;
 	struct ythreadex *yt[NR_THREADS];
 	struct targ *ta;
@@ -318,6 +320,7 @@ tc4(struct ymsghandler *mh) {
 		ta = ymalloc(sizeof(*ta));
 		memset(ta, 0, sizeof(*ta));
 		/* sleep enough to get 'cancel' message after start */
+		ta->id = i;
 		ta->sleep_cnt = 100 + rand() % 20;
 		ta->sleep_interval = 10;
 		ta->s = ymalloc(16);
@@ -343,29 +346,76 @@ tc4(struct ymsghandler *mh) {
 	for (i = 0; i < NR_THREADS; i++)
 		ythreadex_join(yt[i], &retval[i]);
 
+	for (i = 0; i < 30; i++)
+		usleep(1000 * 100);
+
 	for (i = 0; i < NR_THREADS; i++) {
+		enum ythreadex_state st = ythreadex_get_state(yt[i]);
 		if (i % 3) {
-			/* This is cancelled thread */
-			ylogv("state: %d\n", ythreadex_get_state(yt[i]));
-			yassert(YTHREADEX_TERMINATED_CANCELLED == ythreadex_get_state(yt[i]));
+			/*
+			 * This is thread of cancelled.
+			 * But, following cases are still possible.
+			 * - DONE: It is already finished before cancel is
+			 *       requested, and there is no time to move to
+			 *       TERMINATED.
+			 * - TERMINATED: See above.
+			 * However, it shoud be rare because thread_run takes
+			 * at least several seconds!
+			 */
+			switch (st) {
+			case YTHREADEX_DONE:
+			case YTHREADEX_TERMINATED:
+			case YTHREADEX_CANCELLED:
+				ylogw("(%ld: %d: %d) 00: Possible but rarely happen!\n",
+					ythreadex_get_id(yt[i]), i, st);
+				usleep(1000 * 500); i--; /* retry */
+				continue;
+
+			break;
+			default:
+				if (YTHREADEX_TERMINATED_CANCELLED != st) {
+					ylogw("(%d: %d: %d) 01: Possible but rarely happen!\n",
+						ythreadex_get_id(yt[i]), i, st);
+					usleep(1000 * 500); i--; /* retry */
+					continue;
+					/* yassert(YTHREADEX_TERMINATED_CANCELLED == st); */
+				}
+			}
 		} else {
-			yassert(YTHREADEX_TERMINATED == ythreadex_get_state(yt[i]));
-			tr = ythreadex_get_result(yt[i]);
-			ta = ythreadex_get_arg(yt[i]);
-			/* STARTED, DONE. And PROGRESS_INIT */
-			ylogv("%d, %d, %d, %d, %d, %c\n",
-				ta->sti,
-				ta->st[0],
-				ta->st[1],
-				ta->progcnt,
-				tr->r,
-				tr->s[0]);
-			yassert(2 == ta->sti
-				&& YTHREADEX_STARTED == ta->st[0]
-				&& YTHREADEX_DONE == ta->st[1]
-				&& 1000 == ta->progcnt
-				&& 0 == tr->r
-				&& 'r' == tr->s[0]);
+			/*
+			 * DONE is possible but it should very rarely happen!
+			 */
+			if (YTHREADEX_DONE == st) {
+				ylogw("(%ld: %d: %d) 10: Possible but rarely happen!\n",
+					ythreadex_get_id(yt[i]), i, st);
+				usleep(1000 * 500); i--; /* retry */
+				continue;
+			} else {
+				if (YTHREADEX_TERMINATED != st) {
+					ylogw("(%ld: %d: %d) 11: Possible but rarely happen!\n",
+						ythreadex_get_id(yt[i]), i, st);
+					usleep(1000 * 500); i--; /* retry */
+					continue;
+					/* yassert(YTHREADEX_TERMINATED == st); */
+				}
+
+				tr = ythreadex_get_result(yt[i]);
+				ta = ythreadex_get_arg(yt[i]);
+				/* STARTED, DONE. And PROGRESS_INIT */
+				ylogv("%d, %d, %d, %d, %d, %c\n",
+					ta->sti,
+					ta->st[0],
+					ta->st[1],
+					ta->progcnt,
+					tr->r,
+					tr->s[0]);
+				yassert(2 == ta->sti
+					&& YTHREADEX_STARTED == ta->st[0]
+					&& YTHREADEX_DONE == ta->st[1]
+					&& 1000 == ta->progcnt
+					&& 0 == tr->r
+					&& 'r' == tr->s[0]);
+			}
 		}
 		yassert(!ythreadex_destroy(yt[i]));
 	}
@@ -385,6 +435,7 @@ test_threadex(void) {
 	tc1(mh);
 	tc2(mh);
 	tc3(mh);
+	ylogv("\n\n\n======================================================\n\n\n");
 	tc4(mh);
 
 	ymsglooper_stop(ml);

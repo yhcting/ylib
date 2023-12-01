@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/bin/y",
-            "args": ["heap"],
+            "args": ["threadex"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [{
@@ -26,6 +26,15 @@
                 }
             ],
             "miDebuggerPath": "/usr/bin/gdb"
+        },
+        {
+            "name": "Debug: Coredump",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/bin/y",
+            "coreDumpPath": "${workspaceFolder}/coredump",
+            "cwd": "${workspaceFolder}",
+            "MIMode": "gdb" // or lldb, if you are using lldb
         }
     ]
 }

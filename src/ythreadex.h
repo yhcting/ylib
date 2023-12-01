@@ -58,6 +58,9 @@
  * --> [ READY ] ----------+(cancel)
  *         |               |
  *         v               |
+ *    [ STARTING ]         |
+ *         |               |
+ *         v               |
  *     [ STARTED ]         |
  *          | <on_started> |
  *        +-+-+            |
@@ -104,6 +107,7 @@ enum ythreadex_priority {
  */
 enum ythreadex_state {
 	YTHREADEX_READY, /**< before new thread is running */
+	YTHREADEX_STARTING, /**< new thread is starting. */
 	YTHREADEX_STARTED, /**< new thread is started. */
 	YTHREADEX_CANCELLING, /**< thread is cancelling */
 	/**
@@ -255,6 +259,7 @@ ythreadex_publish_progress(struct ythreadex *, long prog);
  * (Using @c pthread_push_cleanup may be one opion.)
  *
  * @param pthdcancel If it is True, @c pthread_cancel is executed.
+ * This is IGNORED now due to stability issue. this is ALWAYS FALSE!
  * @return 0 if success. Otherwise -errno
  * (ex -EPERM if thread is NOT in READY or STARTED.)
  */

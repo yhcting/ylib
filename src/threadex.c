@@ -100,11 +100,19 @@ declare_locked_getter_setter(enum ythreadex_state, state)
 		unlock_##fIELD(threadex);			\
 		return value;					\
 	}							\
+	static inline tYPE					\
+	get_##fIELD##_primitive(struct ythreadex *threadex) {	\
+		return __atomic_load_n(&threadex->fIELD, __ATOMIC_ACQUIRE); \
+	}							\
 	static inline void					\
 	set_##fIELD(struct ythreadex *threadex, tYPE value) {	\
 		lock_##fIELD(threadex);				\
 		set_##fIELD##_locked(threadex, value);		\
 		unlock_##fIELD(threadex);			\
+	}							\
+	static inline void					\
+	set_##fIELD##_primitive(struct ythreadex *threadex, tYPE value) { \
+		__atomic_store_n(&threadex->fIELD, value, __ATOMIC_RELEASE); \
 	}
 
 declare_with_lock_getter_setter(enum ythreadex_state, state)
@@ -164,7 +172,7 @@ on_done(void *arg) {
 			threadex,
 			ythreadex_get_result(threadex),
 			ythreadex_get_errcode(threadex));
-	set_state(threadex, YTHREADEX_TERMINATED);
+	set_state_primitive(threadex, YTHREADEX_TERMINATED);
 }
 
 static void
@@ -173,7 +181,7 @@ on_cancelled(void *arg) {
 	if (likely(threadex->listener.on_cancelled))
 		(*threadex->listener.on_cancelled)
 			(threadex, ythreadex_get_errcode(threadex));
-	set_state(threadex, YTHREADEX_TERMINATED_CANCELLED);
+	set_state_primitive(threadex, YTHREADEX_TERMINATED_CANCELLED);
 }
 
 static void
@@ -205,7 +213,7 @@ on_cancelling(void *arg) {
 			/* pthread_cancel(threadex->thread); */
 		}
 	} else {
-		set_state(threadex, YTHREADEX_CANCELLED);
+		set_state_primitive(threadex, YTHREADEX_CANCELLED);
 		post_event_to_owner(threadex, cancelled);
 	}
 }
@@ -397,7 +405,7 @@ ythreadex_destroy(struct ythreadex *threadex) {
 enum ythreadex_state
 ythreadex_get_state(struct ythreadex *threadex) {
 	yassert(threadex);
-	return get_state(threadex);
+	return get_state_primitive(threadex);
 }
 
 const char *
@@ -449,16 +457,17 @@ ythreadex_start(struct ythreadex *threadex) {
 		unlock_state(threadex);
 		return -EPERM;
 	}
+	set_state_locked(threadex, YTHREADEX_STARTED);
 	if (unlikely(r = pthread_create(
 		&threadex->thread,
 		NULL,
 		&thread_main,
 		threadex))
 	) {
+		set_state_locked(threadex, YTHREADEX_READY);
 		unlock_state(threadex);
 		return -r;
 	}
-	set_state_locked(threadex, YTHREADEX_STARTED);
 	post_event_to_owner(threadex, started);
 	unlock_state(threadex);
 	return 0;

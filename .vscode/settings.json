@@ -25,6 +25,13 @@
         "__bit_reference": "c",
         "__split_buffer": "c",
         "string": "c",
-        "__node_handle": "c"
+        "__node_handle": "c",
+        "optional": "c",
+        "system_error": "c",
+        "bitset": "c",
+        "deque": "c",
+        "__memory": "c",
+        "iterator": "c",
+        "locale": "c"
     }
 }

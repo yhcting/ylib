@@ -144,8 +144,11 @@ thread_run(struct ythreadex *threadex, void **result) {
 	tr = (struct tres *)*result;
 	memset(tr, 0, sizeof(*tr));
 	ythreadex_publish_progress_init(threadex, 100);
-	for (i = 0; i < ta->sleep_cnt; i++)
+	for (i = 0; i < ta->sleep_cnt; i++) {
+		if (YTHREADEX_CANCELLING == ythreadex_get_state(threadex))
+			break;
 		usleep(ta->sleep_interval * 1000);
+	}
 	if (ta->retval)
 		return ta->retval;
 	memset(tr, 0, sizeof(*tr));

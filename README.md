@@ -1,6 +1,6 @@
 # ylib
 ## BUILD
-run `configure-full.sh` to prepare build. And then run `make`
+run `configure-full.sh` to prepare build. And then run `make`. Only `gcc` is supported (`gcc atomic builtin` functions are used.)
 
 ### Doxygen
 tested on *doxygen* version 1.9.7.

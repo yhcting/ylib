@@ -58,9 +58,6 @@
  * --> [ READY ] ----------+(cancel)
  *         |               |
  *         v               |
- *    [ STARTING ]         |
- *         |               |
- *         v               |
  *     [ STARTED ]         |
  *          | <on_started> |
  *        +-+-+            |
@@ -107,7 +104,6 @@ enum ythreadex_priority {
  */
 enum ythreadex_state {
 	YTHREADEX_READY, /**< before new thread is running */
-	YTHREADEX_STARTING, /**< new thread is starting. */
 	YTHREADEX_STARTED, /**< new thread is started. */
 	YTHREADEX_CANCELLING, /**< thread is cancelling */
 	/**
